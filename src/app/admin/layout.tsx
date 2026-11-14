@@ -45,6 +45,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             </nav>
             <div className="mt-4 flex flex-col gap-1 border-t border-white/10 pt-3">
               <Link href="/hy" target="_blank" className="flex min-h-10 items-center gap-3 rounded-xl px-3 text-[14px] text-gold-300 no-underline hover:bg-white/5"><Icon name="globe" size={17} />Բացել կայքը</Link>
+              <Link href="/hy/account#profile" className="flex min-h-10 items-center gap-3 rounded-xl px-3 text-[14px] text-[#b9c4d4] no-underline hover:bg-white/5 hover:text-white"><Icon name="lock" size={17} />Փոխել գաղտնաբառը</Link>
               <form action={logoutAction}><input type="hidden" name="locale" value="hy" /><button className="flex min-h-10 w-full items-center gap-3 rounded-xl px-3 text-[14px] text-[#b9c4d4] hover:bg-white/5"><Icon name="logout" size={17} />Դուրս գալ</button></form>
             </div>
           </aside>

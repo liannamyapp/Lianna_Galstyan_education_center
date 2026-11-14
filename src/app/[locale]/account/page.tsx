@@ -208,7 +208,7 @@ export default async function Account({ params }: { params: Promise<{ locale: Lo
               <label className="label flex-[1_1_240px]">{t.auth.name}<input name="name" required defaultValue={user.name} autoComplete="name" className="input" /></label>
               <label className="label flex-[1_1_240px]">{t.auth.phone}<input name="phone" type="tel" defaultValue={user.phone ?? ""} autoComplete="tel" className="input" /></label>
             </div>
-            <label className="label">{t.auth.password}<input name="password" type="password" minLength={8} autoComplete="new-password" placeholder="••••••••" className="input" /><span className="font-normal text-muted">{t.auth.passwordHint}</span></label>
+            <label className="label">{t.account.newPassword}<input name="password" type="password" minLength={8} autoComplete="new-password" placeholder="••••••••" className="input" /><span className="font-normal text-muted">{t.account.newPasswordHint}</span></label>
             <SubmitButton className="btn-navy self-start" pendingText={t.common.sending}>{t.account.save}</SubmitButton>
           </ActionForm>
         </section>

@@ -234,7 +234,9 @@
     "amount": "Amount",
     "description": "Description",
     "course": "Course",
-    "statusCol": "Status"
+    "statusCol": "Status",
+    "newPassword": "New password",
+    "newPasswordHint": "At least 8 characters. Leave empty to keep the current one."
   },
   "verify": {
     "eyebrow": "Certificate verification",

@@ -234,7 +234,9 @@
     "amount": "Сумма",
     "description": "Описание",
     "course": "Курс",
-    "statusCol": "Статус"
+    "statusCol": "Статус",
+    "newPassword": "Новый пароль",
+    "newPasswordHint": "Не менее 8 символов. Оставьте пустым, если не хотите менять."
   },
   "verify": {
     "eyebrow": "Проверка сертификата",
