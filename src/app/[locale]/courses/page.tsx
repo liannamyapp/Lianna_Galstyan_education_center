@@ -24,7 +24,7 @@ export default async function Courses({ params, searchParams }: { params: Promis
       <section className="bg-grid text-white">
         <div className="container-x py-16">
           <p className="eyebrow !text-gold-300">{t.home.coursesEyebrow}</p>
-          <h1 className="mt-3 font-serif text-[clamp(32px,4.4vw,52px)] font-bold">{t.home.coursesTitle}</h1>
+          <h1 className="mt-3 font-serif text-[clamp(28px,6.5vw,52px)] font-bold">{t.home.coursesTitle}</h1>
           <p className="mt-3 max-w-[620px] text-[17px] text-[#c9d3e1]">{t.home.directionsText}</p>
         </div>
       </section>

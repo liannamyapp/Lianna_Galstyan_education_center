@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getDict, tr, type Locale } from "@/lib/i18n";
 import { getSettings } from "@/lib/settings";
 import { UserLinks } from "./UserLinks";
+import { MobileMenu } from "./MobileMenu";
 import { LangSwitch } from "./LangSwitch";
 import { Logo } from "./Logo";
 import { Icon } from "./Icon";
@@ -29,7 +30,7 @@ export async function Header({ locale }: { locale: Locale }) {
           <LangSwitch locale={locale} label={t.nav.language} />
           {userLinks}
         </div>
-        <details className="group relative xl:hidden">
+        <MobileMenu className="group relative xl:hidden">
           <summary className="flex size-11 cursor-pointer list-none items-center justify-center rounded-full ring-1 ring-white/30 [&::-webkit-details-marker]:hidden" aria-label={t.nav.menu}>
             <Icon name="menu" className="group-open:hidden" /><Icon name="close" className="hidden group-open:block" />
           </summary>
@@ -40,7 +41,7 @@ export async function Header({ locale }: { locale: Locale }) {
             <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-white/10 pt-4">{userLinks}</div>
             <div className="mt-4"><LangSwitch locale={locale} label={t.nav.language} /></div>
           </div>
-        </details>
+        </MobileMenu>
       </div>
     </header>
   );

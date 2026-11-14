@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { getDict, tr, type Locale } from "@/lib/i18n";
 import { findCertificate } from "@/lib/data";
 import { date } from "@/lib/format";
@@ -21,7 +22,7 @@ export default async function Verify({ params, searchParams }: { params: Promise
   return (
     <div className="container-x max-w-[900px] pt-16 text-center">
       <p className="eyebrow">{t.verify.eyebrow}</p>
-      <h1 className="mt-3 font-serif text-[clamp(30px,4vw,46px)] font-bold text-navy-900">{t.verify.title}</h1>
+      <h1 className="mt-3 font-serif text-[clamp(26px,6vw,46px)] font-bold text-navy-900">{t.verify.title}</h1>
       <p className="mx-auto mt-3 mb-8 max-w-[560px] text-muted">{t.verify.text}</p>
       <form className="mx-auto flex max-w-[620px] flex-wrap justify-center gap-2.5">
         <label htmlFor="vn" className="sr-only">{t.verify.number}</label>
@@ -49,6 +50,10 @@ export default async function Verify({ params, searchParams }: { params: Promise
           )}
         </div>
       )}
+      <figure className="mx-auto mt-14 max-w-[340px]">
+        <Image src="/images/certificate-sample.webp" alt={t.course.certSample} width={340} height={480} sizes="(max-width: 400px) 90vw, 340px" className="h-auto w-full rounded-lg shadow-[0_14px_40px_rgba(15,36,64,.18)]" />
+        <figcaption className="mt-3 text-[14px] text-muted">{t.course.certSample}. {t.verify.sampleNote}</figcaption>
+      </figure>
     </div>
   );
 }

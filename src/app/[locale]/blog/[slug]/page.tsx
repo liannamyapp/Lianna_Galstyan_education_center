@@ -30,7 +30,7 @@ export default async function Post({ params }: { params: Promise<{ locale: Local
       <JsonLd data={ld} />
       <Link href={`/${locale}/blog`} className="text-[14px] font-semibold">← {t.blog.back}</Link>
       <p className="mt-6 text-[13px] font-semibold text-gold-700">{date(p.publishedAt, locale)}</p>
-      <h1 className="mt-2 font-serif text-[clamp(30px,4vw,44px)] leading-tight font-bold text-navy-900">{tr(p.title, locale)}</h1>
+      <h1 className="mt-2 font-serif text-[clamp(26px,6vw,44px)] leading-tight font-bold text-navy-900">{tr(p.title, locale)}</h1>
       {p.coverUrl && <Image src={p.coverUrl} alt="" width={1560} height={860} priority sizes="(max-width: 820px) 100vw, 780px" className="mt-8 h-auto w-full rounded-2xl" />}
       <div className="prose-lg mt-8" dangerouslySetInnerHTML={{ __html: renderMarkdown(tr(p.body, locale)) }} />
     </article>

@@ -57,7 +57,7 @@ export default async function CoursePage({ params }: { params: Promise<{ locale:
           <div className="mt-7 flex flex-wrap items-start gap-12">
             <div className="min-w-0 flex-[1_1_560px]">
               <span className="rounded-full border border-gold-500/50 px-3 py-1 font-mono text-[13px] text-gold-300">{c.code}</span>
-              <h1 className="mt-5 mb-4 font-serif text-[clamp(32px,4.4vw,54px)] leading-[1.15] font-bold">{tr(c.title, locale)}</h1>
+              <h1 className="mt-5 mb-4 font-serif text-[clamp(28px,6.5vw,54px)] leading-[1.15] font-bold">{tr(c.title, locale)}</h1>
               <p className="mb-7 max-w-[620px] text-[17.5px] text-[#c9d3e1]">{tr(c.summary, locale)}</p>
               <ul className="m-0 flex list-none flex-wrap gap-2.5 p-0 text-[13.5px]">
                 <li className="chip bg-white/10">{c.hours} {t.course.hours}</li>

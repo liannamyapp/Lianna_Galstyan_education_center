@@ -249,7 +249,8 @@
     "program": "Programme",
     "period": "Study period",
     "issued": "Issued on",
-    "privacy": "Personal data is partly hidden for privacy."
+    "privacy": "Personal data is partly hidden for privacy.",
+    "sampleNote": "Every certificate has a unique number you can use to verify it here."
   },
   "blog": {
     "title": "Blog",

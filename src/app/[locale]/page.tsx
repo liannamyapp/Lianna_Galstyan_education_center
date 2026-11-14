@@ -48,7 +48,7 @@ export default async function Home({ params }: { params: Promise<{ locale: Local
         <div className="container-x flex flex-wrap items-center gap-14 pt-14 pb-28 sm:pt-20">
           <div className="min-w-0 flex-[1_1_520px]">
             <p className="eyebrow !text-gold-300">{tr(st.hero.eyebrow, locale)}</p>
-            <h1 className="mt-5 mb-6 font-serif text-[clamp(36px,5vw,62px)] leading-[1.12] font-bold">{tr(st.hero.title, locale)}</h1>
+            <h1 className="mt-5 mb-6 font-serif text-[clamp(26px,7.6vw,62px)] leading-[1.12] font-bold">{tr(st.hero.title, locale)}</h1>
             <p className="mb-9 max-w-[560px] text-[18px] text-[#c9d3e1]">{tr(st.hero.subtitle, locale)}</p>
             <div className="flex flex-wrap gap-3.5">
               <Link href={`/${locale}/courses`} className="btn-gold">{t.home.chooseCourse}<Icon name="arrow" size={18} /></Link>
@@ -188,13 +188,19 @@ export default async function Home({ params }: { params: Promise<{ locale: Local
 
       {/* VERIFY */}
       <section className="container-x pt-24">
-        <div className="flex flex-wrap items-center justify-between gap-8 rounded-[22px] bg-navy-900 p-8 text-white sm:p-11">
-          <div className="flex-[1_1_380px]"><h2 className="mb-2 font-serif text-[28px] font-bold">{t.home.verifyTitle}</h2><p className="m-0 text-[#c9d3e1]">{t.home.verifyText}</p></div>
-          <form action={`/${locale}/verify`} className="flex flex-[1_1_420px] flex-wrap gap-2.5">
+        <div id="certificate" className="flex scroll-mt-24 flex-wrap items-center gap-8 rounded-[22px] bg-navy-900 p-6 text-white sm:gap-11 sm:p-11">
+          <a href="/images/certificate-sample.webp" target="_blank" rel="noopener" className="mx-auto block w-full max-w-[240px] flex-none sm:mx-0" aria-label={t.course.certSample}>
+            <Image src="/images/certificate-sample.webp" alt={t.course.certSample} width={240} height={339} sizes="240px" className="h-auto w-full rounded-lg shadow-[0_18px_50px_rgba(0,0,0,.45)] ring-1 ring-gold-500/40" />
+            <span className="mt-2 block text-center text-[12.5px] text-[#b9c4d4]">{t.course.certSample}</span>
+          </a>
+          <div className="flex min-w-0 flex-[1_1_320px] flex-col gap-6">
+          <div><p className="eyebrow !text-gold-300">{t.course.certSample}</p><h2 className="mt-2 mb-2 font-serif text-[clamp(24px,5vw,28px)] font-bold">{t.home.verifyTitle}</h2><p className="m-0 text-[#c9d3e1]">{t.course.certText}</p></div>
+          <form action={`/${locale}/verify`} className="flex flex-wrap gap-2.5">
             <label htmlFor="cert-no" className="sr-only">{t.verify.number}</label>
             <input id="cert-no" name="n" placeholder="ՖՎԾ-01/2027/001" className="min-h-12 min-w-0 flex-[1_1_220px] rounded-full border border-white/30 bg-white/5 px-5 font-mono text-white placeholder:text-[#8193ab]" />
             <button type="submit" className="btn-gold">{t.verify.check}</button>
           </form>
+          </div>
         </div>
       </section>
 
