@@ -19,7 +19,7 @@ export async function Header({ locale }: { locale: Locale }) {
   ];
   const userLinks = <UserLinks locale={locale} labels={{ admin: t.nav.admin, account: t.nav.account, login: t.nav.login, register: t.nav.register }} />;
   return (
-    <header className="bg-navy-900 text-white">
+    <header className="sticky top-0 z-50 border-b border-white/[.06] bg-navy-900 text-white shadow-[0_6px_24px_rgba(8,20,38,.25)]">
       <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:rounded-lg focus:bg-gold-500 focus:px-4 focus:py-2 focus:text-navy-950">{t.nav.skip}</a>
       <div className="container-x flex items-center justify-between gap-5 py-4">
         <Logo href={`/${locale}`} name={tr(st.site.name, locale)} tagline={tr(st.site.tagline, locale)} />
@@ -34,7 +34,7 @@ export async function Header({ locale }: { locale: Locale }) {
           <summary className="flex size-11 cursor-pointer list-none items-center justify-center rounded-full ring-1 ring-white/30 [&::-webkit-details-marker]:hidden" aria-label={t.nav.menu}>
             <Icon name="menu" className="group-open:hidden" /><Icon name="close" className="hidden group-open:block" />
           </summary>
-          <div className="absolute right-0 z-40 mt-3 w-[min(86vw,340px)] rounded-2xl border border-white/10 bg-navy-950 p-5 shadow-2xl">
+          <div className="absolute right-0 z-40 mt-3 max-h-[calc(100dvh-96px)] w-[min(86vw,340px)] overflow-y-auto overscroll-contain rounded-2xl border border-white/10 bg-navy-950 p-5 shadow-2xl">
             <nav aria-label={t.nav.menu} className="flex flex-col gap-1">
               {links.map((l) => <Link key={l.href} href={l.href} className="rounded-xl px-3 py-3 text-[15px] text-[#dfe6f0] no-underline hover:bg-white/5">{l.label}</Link>)}
             </nav>

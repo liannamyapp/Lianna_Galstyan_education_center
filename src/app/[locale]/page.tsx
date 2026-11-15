@@ -88,7 +88,7 @@ export default async function Home({ params }: { params: Promise<{ locale: Local
       </section>
 
       {/* DIRECTIONS */}
-      <section id="directions" className="container-x scroll-mt-24 pt-24">
+      <section id="directions" className="container-x pt-24">
         <div className="mb-9 flex flex-wrap items-end justify-between gap-6">
           <div><p className="eyebrow">{t.home.directionsEyebrow}</p><h2 className="h-section mt-2.5">{t.home.directionsTitle}</h2></div>
           <p className="m-0 max-w-[440px] text-muted">{t.home.directionsText}</p>
@@ -167,7 +167,7 @@ export default async function Home({ params }: { params: Promise<{ locale: Local
       </section>
 
       {/* REVIEWS */}
-      <section id="reviews" className="container-x scroll-mt-24 pt-24">
+      <section id="reviews" className="container-x pt-24">
         <div className="mb-9 flex flex-wrap items-end justify-between gap-6">
           <div><p className="eyebrow">{t.home.reviewsEyebrow}</p><h2 className="h-section mt-2.5">{t.home.reviewsTitle}</h2></div>
           <Link href={`/${locale}/account#review`} className="btn-navy">{t.home.leaveReview}</Link>
@@ -188,7 +188,7 @@ export default async function Home({ params }: { params: Promise<{ locale: Local
 
       {/* VERIFY */}
       <section className="container-x pt-24">
-        <div id="certificate" className="flex scroll-mt-24 flex-wrap items-center gap-8 rounded-[22px] bg-navy-900 p-6 text-white sm:gap-11 sm:p-11">
+        <div id="certificate" className="flex flex-wrap items-center gap-8 rounded-[22px] bg-navy-900 p-6 text-white sm:gap-11 sm:p-11">
           <a href="/images/certificate-sample.webp" target="_blank" rel="noopener" className="mx-auto block w-full max-w-[240px] flex-none sm:mx-0" aria-label={t.course.certSample}>
             <Image src="/images/certificate-sample.webp" alt={t.course.certSample} width={240} height={339} sizes="240px" className="h-auto w-full rounded-lg shadow-[0_18px_50px_rgba(0,0,0,.45)] ring-1 ring-gold-500/40" />
             <span className="mt-2 block text-center text-[12.5px] text-[#b9c4d4]">{t.course.certSample}</span>

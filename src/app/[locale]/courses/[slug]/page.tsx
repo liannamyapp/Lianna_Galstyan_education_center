@@ -68,15 +68,15 @@ export default async function CoursePage({ params }: { params: Promise<{ locale:
             </div>
             <aside className="card w-full max-w-[400px] min-w-0 flex-[0_1_380px] p-7 text-ink shadow-[0_30px_70px_rgba(0,0,0,.35)]">
               <p className="m-0 text-[13px] text-muted">{t.course.price}</p>
-              <div className="mt-2 grid grid-cols-2 gap-2.5">
+              <div className="mt-2 grid grid-cols-[repeat(auto-fit,minmax(min(100%,130px),1fr))] gap-2.5">
                 <a href="#format" className="rounded-2xl border-2 border-navy-800 bg-[#f3f6fa] p-3.5 no-underline">
                   <span className="block text-[12.5px] font-semibold text-navy-800">{t.format.group}</span>
-                  <span className="block font-serif text-[22px] font-bold whitespace-nowrap text-navy-900">{money(c.priceMonthly, locale)}</span>
+                  <span className="block font-serif text-[clamp(19px,5.4vw,22px)] font-bold whitespace-nowrap text-navy-900">{money(c.priceMonthly, locale)}</span>
                   <span className="text-[12.5px] text-muted">{t.course.perMonth}</span>
                 </a>
                 <a href="#format" className="rounded-2xl border border-[#e3d3a8] bg-[#fbf7ec] p-3.5 no-underline">
-                  <span className="block text-[12.5px] font-semibold text-gold-700">{t.format.individual}</span>
-                  <span className="block font-serif text-[22px] font-bold whitespace-nowrap text-navy-900">{money(c.priceIndividual, locale)}</span>
+                  <span className="block text-[12.5px] font-semibold break-words text-gold-700">{t.format.individual}</span>
+                  <span className="block font-serif text-[clamp(19px,5.4vw,22px)] font-bold whitespace-nowrap text-navy-900">{money(c.priceIndividual, locale)}</span>
                   <span className="text-[12.5px] text-muted">{t.course.perMonth}</span>
                 </a>
               </div>
@@ -125,7 +125,7 @@ export default async function CoursePage({ params }: { params: Promise<{ locale:
             </>
           )}
 
-          <p id="format" className="eyebrow mt-14 scroll-mt-24">{t.format.title}</p>
+          <p id="format" className="eyebrow mt-14">{t.format.title}</p>
           <h2 className="h-section mt-2 mb-2">{t.format.compareTitle}</h2>
           <p className="mb-6 text-muted">{t.format.compareText}</p>
           <div className="grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(min(280px,100%),1fr))]">
@@ -142,7 +142,7 @@ export default async function CoursePage({ params }: { params: Promise<{ locale:
             ))}
           </div>
 
-          <p id="certificate" className="eyebrow mt-14 scroll-mt-24">{t.course.certEyebrow}</p>
+          <p id="certificate" className="eyebrow mt-14">{t.course.certEyebrow}</p>
           <h2 className="h-section mt-2 mb-6">{t.course.certTitle}</h2>
           <div className="card flex flex-wrap items-center gap-8 p-7">
             <Image src={c.certificateUrl || "/images/certificate-sample.webp"} alt={t.course.certSample} width={300} height={424} sizes="(max-width: 640px) 100vw, 300px"

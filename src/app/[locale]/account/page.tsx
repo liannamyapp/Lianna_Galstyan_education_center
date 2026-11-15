@@ -34,7 +34,7 @@ export default async function Account({ params }: { params: Promise<{ locale: Lo
 
   return (
     <div className="container-x flex flex-wrap items-start gap-7 pt-9">
-      <aside className="card w-full p-4 lg:sticky lg:top-6 lg:w-[250px] lg:flex-none">
+      <aside className="card w-full p-4 lg:sticky lg:top-24 lg:w-[250px] lg:flex-none">
         <div className="mb-2.5 flex items-center gap-3 border-b border-[#eee7d8] px-2 pt-2 pb-4">
           <span className="flex size-11 items-center justify-center rounded-full bg-sand font-bold text-navy-800">{initials(user.name)}</span>
           <div className="min-w-0"><b className="block truncate text-[15px] text-navy-900">{user.name}</b><span className="block truncate text-[12.5px] text-muted">{user.email}</span></div>
@@ -46,7 +46,7 @@ export default async function Account({ params }: { params: Promise<{ locale: Lo
       </aside>
 
       <div className="flex min-w-0 flex-[999_1_600px] flex-col gap-6">
-        <section id="overview" className="scroll-mt-6">
+        <section id="overview">
           <h1 className="font-serif text-[32px] font-bold text-navy-900">{fmt(t.account.welcome, { name: user.name.split(" ")[0] })}</h1>
           {apps.length === 0 ? (
             <div className="card mt-5 p-8"><p className="text-muted">{t.account.noCourses}</p><Link href={`/${locale}/courses`} className="btn-navy mt-3">{t.account.browseCourses}</Link></div>
@@ -137,7 +137,7 @@ export default async function Account({ params }: { params: Promise<{ locale: Lo
           )}
         </section>
 
-        <section id="payments" className="card scroll-mt-6 overflow-x-auto p-7">
+        <section id="payments" className="card overflow-x-auto p-7">
           <h2 className="mb-3 text-[18px] font-semibold text-navy-900">{t.account.payments}</h2>
           {pays.length === 0 ? <p className="text-muted">{t.account.noPayments}</p> : (
             <table className="w-full min-w-[520px] border-collapse text-[14.5px]">
@@ -149,7 +149,7 @@ export default async function Account({ params }: { params: Promise<{ locale: Lo
           )}
         </section>
 
-        <section id="documents" className="card scroll-mt-6 p-7">
+        <section id="documents" className="card p-7">
           <h2 className="mb-2 text-[18px] font-semibold text-navy-900">{t.account.documents}</h2>
           <ul className="m-0 list-none p-0">
             {apps.filter((a) => a.contractNo).map((a) => (
@@ -172,7 +172,7 @@ export default async function Account({ params }: { params: Promise<{ locale: Lo
           </ul>
         </section>
 
-        <section id="review" className="card scroll-mt-6 p-7">
+        <section id="review" className="card p-7">
           <h2 className="mb-1 text-[18px] font-semibold text-navy-900">{t.account.myReview}</h2>
           <p className="mb-4 text-[14px] text-muted">{t.account.reviewHint}</p>
           {myReviews.length > 0 && (
@@ -200,7 +200,7 @@ export default async function Account({ params }: { params: Promise<{ locale: Lo
           </ActionForm>
         </section>
 
-        <section id="profile" className="card scroll-mt-6 p-7">
+        <section id="profile" className="card p-7">
           <h2 className="mb-4 text-[18px] font-semibold text-navy-900">{t.account.profile}</h2>
           <ActionForm action={profileAction} className="flex flex-col gap-4">
             <input type="hidden" name="locale" value={locale} />
