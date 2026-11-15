@@ -111,4 +111,4 @@ export async function sendToLead(
 }
 
 /** Telegram deep link that opens the bot and tags the lead's source, e.g. t.me/bot?start=instagram */
-export const telegramStartLink = (payload = "site") => (env("TELEGRAM_BOT_USERNAME") ? `https://t.me/${env("TELEGRAM_BOT_USERNAME")}?start=${encodeURIComponent(payload)}` : "");
+export const telegramStartLink = (payload = "site", username = env("TELEGRAM_BOT_USERNAME")) => (username ? `https://t.me/${username}?start=${encodeURIComponent(payload)}` : "");

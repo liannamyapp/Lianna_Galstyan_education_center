@@ -1,4 +1,5 @@
 import { upsertLead } from "@/lib/crm/leads";
+import { crmSecret } from "@/lib/crm/setup";
 import { onNewLead } from "@/lib/crm/automations";
 import { notifyAdminWhatsApp } from "@/lib/whatsapp";
 import { siteUrl } from "@/lib/seo";
@@ -8,8 +9,7 @@ export const dynamic = "force-dynamic";
 /**
  * Telegram bot webhook. Every person who writes to the bot becomes a lead.
  * Deep links tag the source: https://t.me/YOUR_BOT?start=instagram  → source "telegram", utm.campaign "instagram".
- * Setup once (replace values):
- *   https://api.telegram.org/bot<TOKEN>/setWebhook?url=https://YOUR-SITE/api/crm/telegram&secret_token=<TELEGRAM_WEBHOOK_SECRET>
+ * Setup: add TELEGRAM_BOT_TOKEN in Vercel; the site registers this webhook itself (lib/crm/setup.ts).
  */
 type Update = {
   message?: {
@@ -21,8 +21,8 @@ type Update = {
 };
 
 export async function POST(req: Request) {
-  const secret = process.env.TELEGRAM_WEBHOOK_SECRET;
-  if (!secret) return new Response("TELEGRAM_WEBHOOK_SECRET is not set", { status: 503 });
+  const secret = crmSecret("TELEGRAM_WEBHOOK_SECRET");
+  if (!secret) return new Response("Not configured", { status: 503 });
   if (req.headers.get("x-telegram-bot-api-secret-token") !== secret) return new Response("Unauthorized", { status: 401 });
 
   const u = (await req.json().catch(() => ({}))) as Update;

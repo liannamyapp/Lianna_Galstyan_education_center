@@ -4,37 +4,39 @@ import { AdminCard, Check, PageHead } from "@/components/admin/fields";
 import { getCrmSettings } from "@/lib/crm/config";
 import { channelStatus, telegramStartLink } from "@/lib/crm/channels";
 import { siteUrl } from "@/lib/seo";
-import { importFromSite, runAutomationsNow, saveCrm } from "../actions";
+import { connectWebhooks, importFromSite, runAutomationsNow, saveCrm } from "../actions";
+import { crmSecret, getCrmState } from "@/lib/crm/setup";
 
 const Status = ({ on }: { on: boolean }) => <span className={`chip font-semibold ${on ? "bg-[#e3f1e6] text-[#1f5f33]" : "bg-[#eef0f3] text-[#4b5563]"}`}>{on ? "Միացված է" : "Միացված չէ"}</span>;
 const Code = ({ children }: { children: React.ReactNode }) => <code className="rounded bg-sand px-1.5 py-0.5 font-mono text-[12.5px] break-all">{children}</code>;
 
 export default async function CrmSettings() {
   const cfg = await getCrmSettings();
+  const state = await getCrmState();
   const on = channelStatus();
   const site = siteUrl();
-  const tg = telegramStartLink("instagram");
+  const tg = telegramStartLink("instagram", process.env.TELEGRAM_BOT_USERNAME || state.telegramUsername);
   const env = (k: string) => Boolean(process.env[k]);
   const channels: { name: string; on: boolean; vars: string[]; hook?: string; steps: React.ReactNode }[] = [
     {
-      name: "WhatsApp (GREEN-API)", on: on.whatsapp && env("GREEN_API_WEBHOOK_TOKEN"), vars: ["GREEN_API_ID_INSTANCE", "GREEN_API_TOKEN", "GREEN_API_ADMIN_PHONE", "GREEN_API_WEBHOOK_TOKEN"], hook: `${site}/api/crm/whatsapp`,
-      steps: <>GREEN-API կաբինետ → Instance → Settings․ <b>Webhook URL</b>՝ վերևի հասցեն, <b>Webhook URL Token</b>՝ <Code>GREEN_API_WEBHOOK_TOKEN</Code>-ի արժեքը, միացրեք «Incoming messages» և «Messages sent from phone» (այդ դեպքում հեռախոսից ձեր պատասխաններն էլ կերևան լիդի պատմության մեջ)։ Ուղարկումն աշխատում է արդեն իսկ, եթե կա ID-ն և token-ը։</>,
+      name: "WhatsApp (GREEN-API)", on: on.whatsapp && state.greenApi === "ok", vars: ["GREEN_API_ID_INSTANCE", "GREEN_API_TOKEN", "GREEN_API_ADMIN_PHONE"], hook: `${site}/api/crm/whatsapp`,
+      steps: <>Ավելացրեք GREEN-API-ի <b>idInstance</b>-ը և <b>apiTokenInstance</b>-ը Vercel-ում, redeploy, ապա սեղմեք «Միացնել webhook-ները»։ Կայքն ինքը կկարգավորի GREEN-API-ն (մուտքային և հեռախոսից ուղարկված հաղորդագրություններ)։ Webhook token՝ <Code>{crmSecret("GREEN_API_WEBHOOK_TOKEN")}</Code></>,
     },
     {
-      name: "Telegram բոտ", on: on.telegram && env("TELEGRAM_WEBHOOK_SECRET"), vars: ["TELEGRAM_BOT_TOKEN", "TELEGRAM_BOT_USERNAME", "TELEGRAM_WEBHOOK_SECRET"], hook: `${site}/api/crm/telegram`,
-      steps: <>@BotFather → /newbot → պատճենեք token-ը։ Հետո մեկ անգամ բացեք բրաուզերում՝ <Code>{`https://api.telegram.org/bot<TOKEN>/setWebhook?url=${site}/api/crm/telegram&secret_token=<TELEGRAM_WEBHOOK_SECRET>`}</Code>։ {tg ? <>Instagram-ի bio-ում դրեք՝ <Code>{tg}</Code> (աղբյուրը կգրանցվի ավտոմատ)։</> : null}</>,
+      name: "Telegram բոտ", on: on.telegram && state.telegram === "ok", vars: ["TELEGRAM_BOT_TOKEN"], hook: `${site}/api/crm/telegram`,
+      steps: <>Telegram-ում գրեք @BotFather-ին → /newbot → պատճենեք token-ը և ավելացրեք Vercel-ում՝ <Code>TELEGRAM_BOT_TOKEN</Code>, redeploy, ապա սեղմեք «Միացնել webhook-ները»։ {tg ? <>Instagram-ի bio-ում դրեք՝ <Code>{tg}</Code> (աղբյուրը կգրանցվի ավտոմատ)։</> : null}</>,
     },
     {
-      name: "Instagram Direct և Facebook Messenger", on: on.instagram && env("META_APP_SECRET") && env("META_VERIFY_TOKEN"), vars: ["META_PAGE_TOKEN", "META_APP_SECRET", "META_VERIFY_TOKEN"], hook: `${site}/api/crm/meta`,
-      steps: <>developers.facebook.com → Create App (Business) → ավելացրեք Messenger և Instagram → միացրեք Facebook էջը և Instagram Business հաշիվը → Webhooks՝ Callback URL՝ վերևի հասցեն, Verify token՝ <Code>META_VERIFY_TOKEN</Code>, բաժանորդագրվեք «messages»-ին։ Page access token-ը դրեք <Code>META_PAGE_TOKEN</Code>-ում։ Իրական օգտատերերի համար պետք է անցնել Meta App Review (pages_messaging, instagram_manage_messages)։</>,
+      name: "Instagram Direct և Facebook Messenger", on: on.instagram && env("META_APP_SECRET"), vars: ["META_PAGE_TOKEN", "META_APP_SECRET"], hook: `${site}/api/crm/meta`,
+      steps: <>developers.facebook.com → Create App (Business) → ավելացրեք Messenger և Instagram → միացրեք Facebook էջը և Instagram Business հաշիվը → Webhooks՝ Callback URL՝ վերևի հասցեն, Verify token՝ <Code>{crmSecret("META_VERIFY_TOKEN")}</Code>, բաժանորդագրվեք «messages»-ին։ Page access token-ը դրեք <Code>META_PAGE_TOKEN</Code>-ում։ Իրական օգտատերերի համար պետք է անցնել Meta App Review (pages_messaging, instagram_manage_messages)։</>,
     },
     {
       name: "Էլ. փոստ (SMTP)", on: on.email, vars: ["SMTP_HOST", "SMTP_PORT", "SMTP_USER", "SMTP_PASS", "MAIL_FROM"],
       steps: <>Gmail-ի դեպքում՝ App Password (տե՛ս README)։ Նույն կարգավորումն օգտագործում է ամբողջ կայքը։</>,
     },
     {
-      name: "Արտաքին ձևեր (Zapier, Make, Lead Ads, Google Forms)", on: env("CRM_API_KEY"), vars: ["CRM_API_KEY"], hook: `${site}/api/crm/lead`,
-      steps: <>POST JSON՝ <Code>{`{"name":"…","phone":"…","email":"…","source":"instagram","course":"ՖՎԾ-01","message":"…"}`}</Code>, header՝ <Code>x-crm-key: CRM_API_KEY</Code>։ Facebook/Instagram Lead Ads-ի հայտերը կարող եք ուղարկել այստեղ Zapier-ի կամ Make-ի միջոցով։</>,
+      name: "Արտաքին ձևեր (Zapier, Make, Lead Ads, Google Forms)", on: true, vars: [], hook: `${site}/api/crm/lead`,
+      steps: <>POST JSON՝ <Code>{`{"name":"…","phone":"…","email":"…","source":"instagram","course":"ՖՎԾ-01","message":"…"}`}</Code>, header՝ <Code>x-crm-key: {crmSecret("CRM_API_KEY")}</Code>։ Facebook/Instagram Lead Ads-ի հայտերը կարող եք ուղարկել այստեղ Zapier-ի կամ Make-ի միջոցով։</>,
     },
   ];
 
@@ -66,6 +68,10 @@ export default async function CrmSettings() {
                 <span className="flex-1 text-[14px]">Ստեղծել լիդեր բոլոր գրանցվածների, հայտերի, «Կապ» նամակների և բաժանորդների համար (կրկնակի չի ստեղծում, ոչ մեկին հաղորդագրություն չի ուղարկում)։</span>
                 <SubmitButton className="btn-soft min-h-11" pendingText="Համաժամեցվում է…">Ներմուծել</SubmitButton>
               </ActionForm>
+              <ActionForm action={connectWebhooks} className="flex flex-wrap items-center justify-between gap-3">
+                <span className="flex-1 text-[14px]">Միացնել WhatsApp-ը և Telegram-ը այս կայքին (երբ բանալիներն ավելացված են Vercel-ում)։<br /><Check name="force" label="Փոխարինել GREEN-API-ի այլ webhook-ը, եթե կա" /></span>
+                <SubmitButton className="btn-soft min-h-11" pendingText="Միացվում է…">Միացնել webhook-ները</SubmitButton>
+              </ActionForm>
               <ActionForm action={runAutomationsNow} className="flex flex-wrap items-center justify-between gap-3">
                 <span className="flex-1 text-[14px]">Գործարկել օրվա ավտոմատացումը հիմա (հետևողական, հիշեցումներ, առաջադրանքներ, գնահատականներ)։</span>
                 <SubmitButton className="btn-soft min-h-11" pendingText="Աշխատում է…">Գործարկել</SubmitButton>
@@ -80,7 +86,7 @@ export default async function CrmSettings() {
                   <div className="mb-2 flex flex-wrap items-center justify-between gap-2"><b className="text-navy-900">{c.name}</b><Status on={c.on} /></div>
                   {c.hook && <p className="m-0 mb-2">Webhook՝ <Code>{c.hook}</Code></p>}
                   <p className="m-0 mb-2 text-[13px] text-[#3d4757]">{c.steps}</p>
-                  <p className="m-0 text-[12.5px] text-muted">Vercel → Settings → Environment Variables՝ {c.vars.map((v) => <span key={v} className={`mr-1.5 inline-block ${env(v) ? "text-[#1f5f33]" : ""}`}><Code>{v}</Code>{env(v) ? " ✓" : ""}</span>)}</p>
+                  {c.vars.length > 0 && <p className="m-0 text-[12.5px] text-muted">Vercel → Settings → Environment Variables՝ {c.vars.map((v) => <span key={v} className={`mr-1.5 inline-block ${env(v) ? "text-[#1f5f33]" : ""}`}><Code>{v}</Code>{env(v) ? " ✓" : ""}</span>)}</p>}
                 </li>
               ))}
             </ul>

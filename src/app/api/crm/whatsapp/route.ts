@@ -1,4 +1,5 @@
 import { logOutbound, upsertLead } from "@/lib/crm/leads";
+import { crmSecret } from "@/lib/crm/setup";
 import { onNewLead } from "@/lib/crm/automations";
 
 export const dynamic = "force-dynamic";
@@ -7,7 +8,8 @@ export const dynamic = "force-dynamic";
  * GREEN-API webhook: incoming WhatsApp messages become leads / timeline entries.
  * Setup (GREEN-API console → instance settings):
  *   Webhook URL:   https://YOUR-SITE/api/crm/whatsapp
- *   Webhook token: the value of GREEN_API_WEBHOOK_TOKEN  (sent as "Authorization: Bearer <token>")
+ *   Webhook token: shown in /admin/crm/settings (sent as "Authorization: Bearer <token>").
+ *   The site sets both automatically when GREEN_API_ID_INSTANCE / GREEN_API_TOKEN are present.
  *   Enable "Receive webhooks on incoming messages" and "...on messages sent from the phone"
  *   (then your replies from the phone also appear in the CRM timeline).
  */
@@ -23,8 +25,8 @@ type Hook = {
 };
 
 export async function POST(req: Request) {
-  const token = process.env.GREEN_API_WEBHOOK_TOKEN;
-  if (!token) return new Response("GREEN_API_WEBHOOK_TOKEN is not set", { status: 503 });
+  const token = crmSecret("GREEN_API_WEBHOOK_TOKEN");
+  if (!token) return new Response("Not configured", { status: 503 });
   if (req.headers.get("authorization") !== `Bearer ${token}`) return new Response("Unauthorized", { status: 401 });
 
   const b = (await req.json().catch(() => ({}))) as Hook;

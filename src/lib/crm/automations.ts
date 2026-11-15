@@ -169,6 +169,7 @@ export async function runCrmDaily() {
   const now = Date.now();
 
   report.synced = (await syncFromSite()).created;
+  try { const { ensureWebhooks } = await import("./setup"); await ensureWebhooks(); } catch (e) { console.error("[crm] webhooks", e); }
 
   // 1. follow-ups to silent new leads (only if they haven't replied since our last message)
   if (cfg.followUps) {

@@ -3,18 +3,19 @@ import { db, s } from "@/db";
 import { upsertLead } from "@/lib/crm/leads";
 import { onNewLead } from "@/lib/crm/automations";
 import { SOURCES } from "@/lib/crm/constants";
+import { crmSecret } from "@/lib/crm/setup";
 
 export const dynamic = "force-dynamic";
 
 /**
  * Universal lead intake for outside tools: Facebook/Instagram Lead Ads (via Zapier / Make),
  * Google Forms, Tilda/Taplink pages, partner sites, etc.
- *   POST /api/crm/lead   Header: x-crm-key: <CRM_API_KEY>
+ *   POST /api/crm/lead   Header: x-crm-key: <key shown in /admin/crm/settings>
  *   JSON: { name, phone?, email?, source?, course?: "ՖՎԾ-01", message?, utm_source?, utm_medium?, utm_campaign?, tags?: [] }
  */
 export async function POST(req: Request) {
-  const key = process.env.CRM_API_KEY;
-  if (!key) return new Response("CRM_API_KEY is not set", { status: 503 });
+  const key = crmSecret("CRM_API_KEY");
+  if (!key) return new Response("Not configured", { status: 503 });
   if (req.headers.get("x-crm-key") !== key) return new Response("Unauthorized", { status: 401 });
 
   const b = (await req.json().catch(() => null)) as Record<string, unknown> | null;

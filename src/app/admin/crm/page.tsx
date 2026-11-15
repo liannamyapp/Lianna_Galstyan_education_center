@@ -7,10 +7,12 @@ import { Bar, LeadLink, ScoreBadge, StageBadge, relTime } from "@/components/adm
 import { OPEN_STAGES, STAGES, sourceHy, stageHy } from "@/lib/crm/constants";
 import { prettyPhone } from "@/lib/crm/leads";
 import { toggleTask } from "./actions";
+import { ensureCrmReady } from "@/lib/crm/setup";
 
 const DAY = 86_400_000;
 
 export default async function CrmDashboard({ searchParams }: { searchParams: Promise<{ days?: string }> }) {
+  await ensureCrmReady(); // first visit: import site data silently + connect webhooks
   const days = Math.min(365, Math.max(7, Number((await searchParams).days) || 30));
   const since = new Date(Date.now() - days * DAY);
   const endOfToday = new Date(Date.now() + DAY);

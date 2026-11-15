@@ -215,21 +215,18 @@ Instagram · TikTok · Facebook · Google · ընկերոջ խորհուրդ · 
 
 ## 7. Միացում (մեկ անգամ)
 
-1. **Տվյալների բազա.** Vercel-ում deploy-ից հետո `npm run db:push`-ը ավտոմատ կստեղծի CRM-ի աղյուսակները (Build Command-ում այն արդեն կա)։
-2. **Ադմին → CRM → Ավտոմատացում և ալիքներ → «Ներմուծել»**. կայքի բոլոր գրանցվածները, հայտերը, նամակներն ու բաժանորդները կդառնան լիդեր, առանց հաղորդագրություն ուղարկելու։
-3. **Միջավայրի փոփոխականներ** (Vercel → Settings → Environment Variables).
+1. **Տվյալների բազա.** Deploy-ի ժամանակ `npm run db:push`-ը ավտոմատ ստեղծում է CRM-ի աղյուսակները։
+2. **Ներմուծում.** Առաջին անգամ **CRM → Վահանակ** բացելիս կայքի բոլոր գրանցվածները, հայտերը, նամակներն ու բաժանորդները ավտոմատ դառնում են լիդեր, առանց որևէ մեկին հաղորդագրություն ուղարկելու։
+3. **Գաղտնի բանալիներ** (webhook token-ներ, `CRM_API_KEY`) ստեղծվում են ավտոմատ և երևում են **Ավտոմատացում և ալիքներ** էջում։ Vercel-ում պետք է ավելացնել միայն ծառայությունների բանալիները.
 
-| Փոփոխական | Ինչի համար |
-|---|---|
-| `GREEN_API_ID_INSTANCE`, `GREEN_API_TOKEN` | WhatsApp ուղարկում (արդեն կար) |
-| `GREEN_API_WEBHOOK_TOKEN` | WhatsApp մուտքային հաղորդագրություններ |
-| `TELEGRAM_BOT_TOKEN`, `TELEGRAM_BOT_USERNAME`, `TELEGRAM_WEBHOOK_SECRET` | Telegram բոտ |
-| `META_PAGE_TOKEN`, `META_APP_SECRET`, `META_VERIFY_TOKEN` | Instagram Direct, Messenger |
-| `CRM_API_KEY` | Արտաքին ձևեր, Zapier, Make, Lead Ads |
-| `SMTP_*` | Էլ. նամակներ (արդեն կար) |
+| Փոփոխական | Որտեղից վերցնել | Ինչի համար |
+|---|---|---|
+| `GREEN_API_ID_INSTANCE`, `GREEN_API_TOKEN`, `GREEN_API_ADMIN_PHONE` | console.green-api.com → Instance | WhatsApp (ուղարկում և մուտքային) |
+| `TELEGRAM_BOT_TOKEN` | Telegram → @BotFather → /newbot | Telegram բոտ |
+| `META_PAGE_TOKEN`, `META_APP_SECRET` | developers.facebook.com → ձեր App | Instagram Direct, Messenger |
 
-4. Յուրաքանչյուր ալիքի webhook-ի հասցեն և քայլերը ցույց են տրված **Ավտոմատացում և ալիքներ** էջում։
-5. **Ամենօրյա ավտոմատացում.** `vercel.json`-ում ավելացված է `/api/cron/crm`՝ ամեն օր 10:30-ին (Երևանի ժամով)։
+4. Բանալիներն ավելացնելուց և redeploy-ից հետո **Ավտոմատացում և ալիքներ → «Միացնել webhook-ները»**. կայքն ինքը կկարգավորի GREEN-API-ն և Telegram բոտը։ Ամենօրյա ավտոմատացումն էլ է ստուգում և վերականգնում դրանք։
+5. **Ամենօրյա ավտոմատացում.** `vercel.json`-ում `/api/cron/crm`՝ ամեն օր 10:30-ին (Երևանի ժամով)։
 
 ---
 

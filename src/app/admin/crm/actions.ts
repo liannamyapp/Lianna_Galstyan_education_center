@@ -13,6 +13,7 @@ import { addTask, logActivity, normEmail, normPhone, recalcScore, render, setSta
 import { sendToLead } from "@/lib/crm/channels";
 import { onNewLead, runCrmDaily, sendTemplate, syncFromSite, templateVars } from "@/lib/crm/automations";
 import { getCrmSettings, saveCrmSettings } from "@/lib/crm/config";
+import { ensureWebhooks } from "@/lib/crm/setup";
 
 const ok = (message = "Պահպանված է"): ActionResult => ({ ok: true, message });
 const fail = (e: unknown): ActionResult => ({ error: e instanceof Error ? e.message : "Սխալ" });
@@ -231,5 +232,18 @@ export async function runAutomationsNow(_: ActionResult): Promise<ActionResult> 
     const r = await runCrmDaily();
     refresh();
     return ok(`Պատրաստ է․ հետևողական՝ ${r.followUps}, հիշեցումներ՝ ${r.reminders}, վերաակտիվացում՝ ${r.reengaged}, կարծիքի խնդրանք՝ ${r.reviews}, փակված՝ ${r.lost}, նոր առաջադրանքներ՝ ${r.tasks}`);
+  } catch (e) { return fail(e); }
+}
+
+export async function connectWebhooks(_: ActionResult, fd: FormData): Promise<ActionResult> {
+  await requireAdmin();
+  try {
+    const r = await ensureWebhooks(bool(fd, "force"));
+    refresh();
+    const parts = [
+      r.greenApi ? `WhatsApp՝ ${r.greenApi === "ok" ? "միացված է" : r.greenApi.startsWith("conflict") ? `GREEN-API-ում արդեն կա այլ webhook (${r.greenApi.slice(9)}). նշեք «Փոխարինել» և կրկնեք` : r.greenApi}` : "WhatsApp՝ GREEN-API բանալիները դեռ չկան",
+      r.telegram ? `Telegram՝ ${r.telegram === "ok" ? `միացված է (@${r.telegramUsername ?? ""})` : r.telegram}` : "Telegram՝ բոտի token-ը դեռ չկա",
+    ];
+    return ok(parts.join(" · "));
   } catch (e) { return fail(e); }
 }

@@ -1,5 +1,6 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { upsertLead } from "@/lib/crm/leads";
+import { crmSecret } from "@/lib/crm/setup";
 import { onNewLead } from "@/lib/crm/automations";
 import { notifyAdminWhatsApp } from "@/lib/whatsapp";
 import { siteUrl } from "@/lib/seo";
@@ -15,7 +16,7 @@ export const dynamic = "force-dynamic";
  */
 export async function GET(req: Request) {
   const q = new URL(req.url).searchParams;
-  const token = process.env.META_VERIFY_TOKEN;
+  const token = crmSecret("META_VERIFY_TOKEN");
   if (token && q.get("hub.mode") === "subscribe" && q.get("hub.verify_token") === token) return new Response(q.get("hub.challenge") ?? "");
   return new Response("Forbidden", { status: 403 });
 }
