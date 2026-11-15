@@ -250,7 +250,8 @@
     "emailConfirmText": "Click the button to make {email} your login.",
     "emailConfirmBtn": "Confirm new email",
     "emailLinkInvalid": "The link is invalid or expired. Request the change again in Profile.",
-    "emailChanged": "Done. From now on, sign in with {email}."
+    "emailChanged": "Done. From now on, sign in with {email}.",
+    "replyFrom": "ALTA Academy replied:"
   },
   "verify": {
     "eyebrow": "Certificate verification",

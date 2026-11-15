@@ -23,7 +23,7 @@ export default async function Reviews({ searchParams }: { searchParams: Promise<
             <input type="hidden" name="id" value={r.id} />
             <div className="flex flex-wrap items-center gap-3"><b>{r.user.name}</b><span className="text-[13px] text-muted">{r.user.email} · {r.course?.code ?? "—"} · {dateShort(r.createdAt)} · {r.locale.toUpperCase()}</span><Stars value={r.rating} label={`${r.rating}/5`} /></div>
             <label className="label">Տեքստ (կարող եք խմբագրել)<textarea name="text" defaultValue={r.text} rows={3} className="input py-2.5 font-normal" /></label>
-            <label className="label">Պատասխան կայքում (ոչ պարտադիր)<input name="reply" defaultValue={r.reply ?? ""} className="input font-normal" /></label>
+            <label className="label">Պատասխան կայքում (ոչ պարտադիր)<textarea name="reply" defaultValue={r.reply ?? ""} rows={3} className="input py-2.5 font-normal" /></label>
             <div className="flex flex-wrap gap-2">
               {st !== "APPROVED" && <ValueButton name="status" value="APPROVED" className="btn-navy min-h-10">Հաստատել և հրապարակել</ValueButton>}
               {st !== "REJECTED" && <ValueButton name="status" value="REJECTED" className="btn-soft min-h-10 text-[#8a2f1d]">Մերժել</ValueButton>}

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ValueButton } from "@/components/ValueButton";
+import { LiveRefresh } from "@/components/LiveRefresh";
 import { and, desc, eq, inArray } from "drizzle-orm";
 import { db, s } from "@/db";
 import { requireUser } from "@/lib/auth";
@@ -34,6 +35,7 @@ export default async function Account({ params }: { params: Promise<{ locale: Lo
 
   return (
     <div className="container-x flex flex-wrap items-start gap-7 pt-9">
+      <LiveRefresh poll={myReviews.some((r) => r.status === "PENDING") || pays.some((p) => p.status === "PENDING" && Date.now() - new Date(p.createdAt).getTime() < 3_600_000)} />
       <aside className="card w-full p-4 lg:sticky lg:top-24 lg:w-[250px] lg:flex-none">
         <div className="mb-2.5 flex items-center gap-3 border-b border-[#eee7d8] px-2 pt-2 pb-4">
           <span className="flex size-11 items-center justify-center rounded-full bg-sand font-bold text-navy-800">{initials(user.name)}</span>
@@ -187,7 +189,7 @@ export default async function Account({ params }: { params: Promise<{ locale: Lo
           <p className="mb-4 text-[14px] text-muted">{t.account.reviewHint}</p>
           {myReviews.length > 0 && (
             <ul className="mb-5 flex list-none flex-col gap-2 p-0">{myReviews.map((r) => (
-              <li key={r.id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-ivory px-4 py-3 text-[14px]"><span className="min-w-0 basis-full text-gold-700 sm:basis-auto">{"★".repeat(r.rating)}</span><span className="min-w-0 flex-1 basis-[180px] text-ink [overflow-wrap:anywhere] line-clamp-2">{r.text}</span><span className={`chip flex-none font-semibold ${r.status === "APPROVED" ? tone.PAID : r.status === "REJECTED" ? tone.REJECTED : tone.PENDING}`}>{t.account.reviewStatus[r.status]}</span></li>
+              <li key={r.id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-ivory px-4 py-3 text-[14px]"><span className="min-w-0 basis-full text-gold-700 sm:basis-auto">{"★".repeat(r.rating)}</span><span className="min-w-0 flex-1 basis-[180px] text-ink [overflow-wrap:anywhere] line-clamp-2">{r.text}</span><span className={`chip flex-none font-semibold ${r.status === "APPROVED" ? tone.PAID : r.status === "REJECTED" ? tone.REJECTED : tone.PENDING}`}>{t.account.reviewStatus[r.status]}</span>{r.reply && r.status === "APPROVED" && <p className="m-0 basis-full border-l-2 border-gold-500 pl-3 text-[13.5px] text-muted [overflow-wrap:anywhere]"><b className="text-navy-900">{t.account.replyFrom}</b> {r.reply}</p>}</li>
             ))}</ul>
           )}
           <ActionForm action={reviewAction} resetOnSuccess className="flex flex-col gap-3.5">

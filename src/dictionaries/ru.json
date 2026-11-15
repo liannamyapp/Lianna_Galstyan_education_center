@@ -250,7 +250,8 @@
     "emailConfirmText": "Нажмите кнопку, чтобы вашим логином стал {email}.",
     "emailConfirmBtn": "Подтвердить новый e-mail",
     "emailLinkInvalid": "Ссылка недействительна или устарела. Запросите смену заново в разделе «Профиль».",
-    "emailChanged": "Готово. Теперь входите с адресом {email}."
+    "emailChanged": "Готово. Теперь входите с адресом {email}.",
+    "replyFrom": "Ответ ALTA Academy:"
   },
   "verify": {
     "eyebrow": "Проверка сертификата",
