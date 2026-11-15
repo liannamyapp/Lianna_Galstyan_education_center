@@ -1,7 +1,7 @@
 "use server";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
-import { eq, like, sql } from "drizzle-orm";
+import { and, eq, inArray, like, or, sql } from "drizzle-orm";
 import { db, s } from "@/db";
 import { requireAdmin } from "@/lib/auth";
 import { l10n, l10nList } from "@/lib/admin";
@@ -375,6 +375,41 @@ export async function setUserRole(fd: FormData) {
   if (id === me.id) return;
   await db.update(s.users).set({ role: str(fd, "role") === "ADMIN" ? "ADMIN" : "STUDENT" }).where(eq(s.users.id, id));
   revalidatePath("/admin/students");
+}
+
+/** Permanently removes the selected students and everything tied to them (applications, payments, reviews, CRM lead). Admin accounts are never touched. */
+export async function deleteUsers(_: ActionResult, fd: FormData): Promise<ActionResult> {
+  const me = await requireAdmin();
+  try {
+    const ids = fd.getAll("ids").map(String).filter((x) => x && x !== me.id);
+    if (!ids.length) return { error: "Ընտրեք ունկնդիրներին" };
+    if (fd.get("confirm") !== "1") return { error: "Նշեք «Հաստատում եմ» դաշտը" };
+    const list = await db.select({ id: s.users.id, email: s.users.email }).from(s.users).where(and(inArray(s.users.id, ids), eq(s.users.role, "STUDENT")));
+    if (!list.length) return { error: "Ադմինի հաշիվները չեն ջնջվում" };
+    const uids = list.map((u) => u.id), emails = list.map((u) => u.email);
+    await db.delete(s.leads).where(or(inArray(s.leads.userId, uids), inArray(s.leads.email, emails)));
+    await db.delete(s.messages).where(inArray(s.messages.email, emails));
+    await db.delete(s.certificates).where(inArray(s.certificates.userId, uids));
+    await db.delete(s.users).where(inArray(s.users.id, uids)); // applications, payments, reviews, tokens cascade
+    refresh("reviews");
+    for (const path of ["/admin/students", "/admin/payments", "/admin/applications", "/admin/reviews", "/admin/crm/leads", "/admin"]) revalidatePath(path);
+    return ok(`Ջնջված է՝ ${list.length} ունկնդիր`);
+  } catch (e) { return fail(e); }
+}
+
+/** Removes the admin's own test enrollments, payments and reviews; the account itself stays. */
+export async function clearMyTestData(_: ActionResult, fd: FormData): Promise<ActionResult> {
+  const me = await requireAdmin();
+  try {
+    if (fd.get("confirm") !== "1") return { error: "Նշեք «Հաստատում եմ» դաշտը" };
+    await db.delete(s.payments).where(eq(s.payments.userId, me.id));
+    await db.delete(s.reviews).where(eq(s.reviews.userId, me.id));
+    await db.delete(s.applications).where(eq(s.applications.userId, me.id));
+    await db.delete(s.leads).where(eq(s.leads.userId, me.id));
+    refresh("reviews");
+    for (const path of ["/admin/students", "/admin/payments", "/admin/applications", "/admin/reviews", "/admin"]) revalidatePath(path);
+    return ok("Ձեր փորձնական հայտերը, վճարումները և կարծիքները ջնջված են");
+  } catch (e) { return fail(e); }
 }
 
 export async function deleteSubscriber(fd: FormData) {
