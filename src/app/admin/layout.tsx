@@ -33,21 +33,24 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     <html lang="hy">
       <body className="bg-[#f3f1ec]">
         <div className="flex min-h-screen flex-wrap">
-          <aside className="w-full bg-navy-950 p-4 lg:sticky lg:top-0 lg:h-screen lg:w-[260px] lg:flex-none lg:overflow-y-auto">
-            <Link href="/admin" className="mb-4 flex items-center gap-3 px-2 py-2 text-white no-underline">
-              <span className="flex size-10 items-center justify-center rounded-full border-[1.5px] border-gold-500 font-serif font-bold text-gold-300">ԼԳ</span>
-              <span><span className="block font-serif font-bold">Ադմին</span><span className="block text-[12px] text-[#8193ab]">{me.name}</span></span>
-            </Link>
-            <nav aria-label="Ադմին" className="flex gap-1 overflow-x-auto lg:flex-col">
+          <aside className="w-full bg-navy-950 p-4 lg:sticky lg:top-0 lg:flex lg:h-screen lg:w-[260px] lg:flex-none lg:flex-col">
+            <div className="flex items-center justify-between gap-3">
+              <Link href="/admin" className="flex min-w-0 items-center gap-3 px-2 py-2 text-white no-underline">
+                <span className="flex size-10 flex-none items-center justify-center rounded-full border-[1.5px] border-gold-500 font-serif font-bold text-gold-300">ԼԳ</span>
+                <span className="min-w-0"><span className="block font-serif font-bold">Ադմին</span><span className="block truncate text-[12px] text-[#8193ab]">{me.name}</span></span>
+              </Link>
+            </div>
+            {/* Always visible, whatever the screen height */}
+            <div className="mt-2 mb-3 grid grid-cols-2 gap-2 lg:grid-cols-1">
+              <Link href="/hy" target="_blank" rel="noopener" className="flex min-h-10 items-center justify-center gap-2 rounded-xl bg-gold-500 px-3 whitespace-nowrap lg:justify-start text-[13.5px] font-semibold text-navy-950 no-underline hover:bg-gold-400"><Icon name="globe" size={16} />Բացել կայքը</Link>
+              <Link href="/hy/account#profile" className="flex min-h-10 items-center justify-center gap-2 rounded-xl border border-white/20 px-3 whitespace-nowrap lg:justify-start text-[13.5px] text-white no-underline hover:bg-white/5"><Icon name="lock" size={16} />Մուտքի տվյալներ</Link>
+            </div>
+            <nav aria-label="Ադմին" className="-mx-1 flex min-h-0 gap-1 overflow-x-auto px-1 pb-1 [scrollbar-color:#3a4a62_transparent] [scrollbar-width:thin] lg:flex-1 lg:flex-col lg:overflow-x-visible lg:overflow-y-auto">
               {nav.map(([href, label, icon]) => (
-                <Link key={href} href={href} className="flex min-h-10 flex-none items-center gap-3 rounded-xl px-3 text-[14px] text-[#b9c4d4] no-underline hover:bg-white/5 hover:text-white"><Icon name={icon} size={17} />{label}</Link>
+                <Link key={href} href={href} className="flex min-h-9 flex-none items-center gap-3 rounded-xl px-3 text-[14px] whitespace-nowrap text-[#b9c4d4] no-underline hover:bg-white/5 hover:text-white"><Icon name={icon} size={17} />{label}</Link>
               ))}
             </nav>
-            <div className="mt-4 flex flex-col gap-1 border-t border-white/10 pt-3">
-              <Link href="/hy" target="_blank" className="flex min-h-10 items-center gap-3 rounded-xl px-3 text-[14px] text-gold-300 no-underline hover:bg-white/5"><Icon name="globe" size={17} />Բացել կայքը</Link>
-              <Link href="/hy/account#profile" className="flex min-h-10 items-center gap-3 rounded-xl px-3 text-[14px] text-[#b9c4d4] no-underline hover:bg-white/5 hover:text-white"><Icon name="lock" size={17} />Փոխել գաղտնաբառը</Link>
-              <form action={logoutAction}><input type="hidden" name="locale" value="hy" /><button className="flex min-h-10 w-full items-center gap-3 rounded-xl px-3 text-[14px] text-[#b9c4d4] hover:bg-white/5"><Icon name="logout" size={17} />Դուրս գալ</button></form>
-            </div>
+            <form action={logoutAction} className="mt-2 border-t border-white/10 pt-2"><input type="hidden" name="locale" value="hy" /><button className="flex min-h-10 w-full items-center gap-3 rounded-xl px-3 text-[14px] text-[#b9c4d4] hover:bg-white/5 hover:text-white"><Icon name="logout" size={17} />Դուրս գալ</button></form>
           </aside>
           <main id="main" className="min-w-0 flex-1 p-5 sm:p-8">{children}</main>
         </div>

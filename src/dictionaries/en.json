@@ -236,7 +236,21 @@
     "course": "Course",
     "statusCol": "Status",
     "newPassword": "New password",
-    "newPasswordHint": "At least 8 characters. Leave empty to keep the current one."
+    "newPasswordHint": "At least 8 characters. Leave empty to keep the current one.",
+    "loginEmail": "Login (email)",
+    "currentEmail": "Current",
+    "newEmail": "New email",
+    "currentPassword": "Current password",
+    "changeEmail": "Change email",
+    "emailChangeHint": "We'll send a confirmation link to the new address. Until you click it, you sign in with the old one.",
+    "wrongPassword": "The current password is incorrect.",
+    "sameEmail": "This is already your current email.",
+    "emailChangeSent": "A confirmation link was sent to {email}. Open the email and click the link (valid for 24 hours).",
+    "emailConfirmTitle": "Change of email",
+    "emailConfirmText": "Click the button to make {email} your login.",
+    "emailConfirmBtn": "Confirm new email",
+    "emailLinkInvalid": "The link is invalid or expired. Request the change again in Profile.",
+    "emailChanged": "Done. From now on, sign in with {email}."
   },
   "verify": {
     "eyebrow": "Certificate verification",
@@ -307,7 +321,12 @@
     "contactAutoSubject": "We have received your message",
     "contactAutoBody": "Thank you for getting in touch. We'll reply within one working day.",
     "contactReplySubject": "Reply to your message",
-    "yourMessage": "Your message:"
+    "yourMessage": "Your message:",
+    "emailChangeSubject": "Confirm your new email",
+    "emailChangeBody": "We received a request to change your account login to {email}. Click the button to confirm. If you didn't request this, just ignore this email.",
+    "emailChangeBtn": "Confirm",
+    "emailChangeNoticeSubject": "Email change requested for your account",
+    "emailChangeNoticeBody": "A change of your login to {email} was requested. If it wasn't you, change your password right away and contact us."
   },
   "format": {
     "title": "Learning format",

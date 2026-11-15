@@ -10,12 +10,14 @@ async function main() {
   const email = (process.env.ADMIN_EMAIL || "").toLowerCase().trim();
   const password = process.env.ADMIN_PASSWORD || "";
   if (email && password) {
-    const ex = await db.select().from(s.users).where(eq(s.users.email, email)).limit(1);
-    if (!ex.length) {
-      await db.insert(s.users).values({ email, name: "Լիաննա Գալստյան", passwordHash: await bcrypt.hash(password, 11), role: "ADMIN" });
+    const admins = await db.select({ id: s.users.id }).from(s.users).where(eq(s.users.role, "ADMIN")).limit(1);
+    // Only bootstrap the first admin. Once an admin exists (even if they later change their email
+    // or password in the profile), the env values are never used again.
+    if (!admins.length) {
+      const ex = await db.select().from(s.users).where(eq(s.users.email, email)).limit(1);
+      if (!ex.length) await db.insert(s.users).values({ email, name: "Լիաննա Գալստյան", passwordHash: await bcrypt.hash(password, 11), role: "ADMIN" });
+      else await db.update(s.users).set({ role: "ADMIN" }).where(eq(s.users.id, ex[0].id));
       console.log("✓ admin", email);
-    } else if (ex[0].role !== "ADMIN") {
-      await db.update(s.users).set({ role: "ADMIN" }).where(eq(s.users.id, ex[0].id));
     }
   } else console.warn("! ADMIN_EMAIL / ADMIN_PASSWORD not set — admin not created");
 

@@ -11,7 +11,7 @@ import { getSettings } from "@/lib/settings";
 import { ActionForm } from "@/components/ActionForm";
 import { SubmitButton } from "@/components/SubmitButton";
 import { Icon } from "@/components/Icon";
-import { logoutAction, payNextAction, profileAction, reviewAction } from "../actions";
+import { emailChangeAction, logoutAction, payNextAction, profileAction, reviewAction } from "../actions";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { robots: { index: false } };
@@ -211,6 +211,19 @@ export default async function Account({ params }: { params: Promise<{ locale: Lo
             <label className="label">{t.account.newPassword}<input name="password" type="password" minLength={8} autoComplete="new-password" placeholder="••••••••" className="input" /><span className="font-normal text-muted">{t.account.newPasswordHint}</span></label>
             <SubmitButton className="btn-navy self-start" pendingText={t.common.sending}>{t.account.save}</SubmitButton>
           </ActionForm>
+          <div className="mt-8 border-t border-[#eee7d8] pt-6">
+            <h3 className="mb-1 text-[16px] font-semibold text-navy-900">{t.account.loginEmail}</h3>
+            <p className="mt-0 mb-4 text-[14px] text-muted">{t.account.currentEmail}: <b className="text-ink">{user.email}</b></p>
+            <ActionForm action={emailChangeAction} resetOnSuccess className="flex flex-col gap-4">
+              <input type="hidden" name="locale" value={locale} />
+              <div className="flex flex-wrap gap-4">
+                <label className="label flex-[1_1_240px]">{t.account.newEmail}<input name="email" type="email" required autoComplete="email" className="input" /></label>
+                <label className="label flex-[1_1_240px]">{t.account.currentPassword}<input name="currentPassword" type="password" required autoComplete="current-password" className="input" /></label>
+              </div>
+              <p className="m-0 text-[13px] text-muted">{t.account.emailChangeHint}</p>
+              <SubmitButton className="btn-soft self-start" pendingText={t.common.sending}>{t.account.changeEmail}</SubmitButton>
+            </ActionForm>
+          </div>
         </section>
       </div>
     </div>

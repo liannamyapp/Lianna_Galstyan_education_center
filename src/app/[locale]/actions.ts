@@ -1,7 +1,7 @@
 "use server";
 import { redirect } from "next/navigation";
 import { revalidateTag } from "next/cache";
-import { and, eq, gt } from "drizzle-orm";
+import { and, eq, gt, like } from "drizzle-orm";
 import { randomBytes } from "node:crypto";
 import { db, s } from "@/db";
 import { checkPassword, createSession, destroySession, getSession, hashPassword } from "@/lib/auth";
@@ -124,6 +124,42 @@ export async function profileAction(_: ActionResult, fd: FormData): Promise<Acti
   if (pw) { if (pw.length < 8) return { error: t.auth.errForm }; patch.passwordHash = await hashPassword(pw); }
   await db.update(s.users).set(patch).where(eq(s.users.id, sess.uid));
   return { ok: true, message: t.account.saved };
+}
+
+/** Step 1 of changing the login email: verify password, email a confirmation link to the new address. */
+export async function emailChangeAction(_: ActionResult, fd: FormData): Promise<ActionResult> {
+  const l = loc(fd); const t = getDict(l);
+  const sess = await getSession();
+  if (!sess) return { error: t.auth.loginTitle };
+  const parsed = emailSchema.safeParse(fd.get("email"));
+  if (!parsed.success) return { error: t.auth.errForm };
+  const newEmail = parsed.data;
+  const [u] = await db.select().from(s.users).where(eq(s.users.id, sess.uid)).limit(1);
+  if (!u) return { error: t.common.error };
+  if (!(await checkPassword(String(fd.get("currentPassword") ?? ""), u.passwordHash))) return { error: t.account.wrongPassword };
+  if (newEmail === u.email) return { error: t.account.sameEmail };
+  const [taken] = await db.select({ id: s.users.id }).from(s.users).where(eq(s.users.email, newEmail)).limit(1);
+  if (taken) return { error: t.auth.errExists };
+  await db.delete(s.tokens).where(and(eq(s.tokens.userId, u.id), like(s.tokens.type, "email:%")));
+  const token = randomBytes(32).toString("hex");
+  await db.insert(s.tokens).values({ userId: u.id, type: `email:${newEmail}`, token, expiresAt: new Date(Date.now() + 24 * 3600_000) });
+  await sendMail(newEmail, t.mail.emailChangeSubject, emailHtml(t.mail.emailChangeSubject, [fmt(t.mail.emailChangeBody, { email: newEmail })], { label: t.mail.emailChangeBtn, url: `${siteUrl()}/${l}/confirm-email?token=${token}` }));
+  await sendMail(u.email, t.mail.emailChangeNoticeSubject, emailHtml(t.mail.emailChangeNoticeSubject, [fmt(t.mail.emailChangeNoticeBody, { email: newEmail })]));
+  return { ok: true, message: fmt(t.account.emailChangeSent, { email: newEmail }) };
+}
+
+/** Step 2: the owner of the new address confirms the change. */
+export async function confirmEmailAction(_: ActionResult, fd: FormData): Promise<ActionResult> {
+  const l = loc(fd); const t = getDict(l);
+  const token = str(fd, "token");
+  const [tk] = token ? await db.select().from(s.tokens).where(and(eq(s.tokens.token, token), like(s.tokens.type, "email:%"), gt(s.tokens.expiresAt, new Date()))).limit(1) : [];
+  if (!tk) return { error: t.account.emailLinkInvalid };
+  const newEmail = tk.type.slice("email:".length);
+  const [taken] = await db.select({ id: s.users.id }).from(s.users).where(eq(s.users.email, newEmail)).limit(1);
+  if (taken && taken.id !== tk.userId) return { error: t.auth.errExists };
+  await db.update(s.users).set({ email: newEmail }).where(eq(s.users.id, tk.userId));
+  await db.delete(s.tokens).where(and(eq(s.tokens.userId, tk.userId), like(s.tokens.type, "email:%")));
+  return { ok: true, message: fmt(t.account.emailChanged, { email: newEmail }) };
 }
 
 /** Creates an application (and optionally starts a payment). */
