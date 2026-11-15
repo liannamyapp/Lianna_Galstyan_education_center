@@ -236,6 +236,105 @@ export const messages = pgTable("messages", {
   createdAt: created(),
 });
 
+/* ---------------- CRM ---------------- */
+export const leadStageEnum = pgEnum("lead_stage", ["NEW", "CONTACTED", "CONSULTATION", "TRIAL", "NEGOTIATION", "WON", "LOST"]);
+export type LeadStage = (typeof leadStageEnum.enumValues)[number];
+/** First-touch attribution captured from the URL / referrer */
+export type Utm = { source?: string; medium?: string; campaign?: string; content?: string; term?: string; referrer?: string; landing?: string; clid?: string };
+
+export const leads = pgTable("leads", {
+  id: id(),
+  name: text("name").notNull(),
+  phone: text("phone"), // normalized digits, e.g. 37477123456
+  email: text("email"),
+  telegramChatId: text("telegram_chat_id"),
+  telegramUsername: text("telegram_username"),
+  instagramId: text("instagram_id"), // Instagram-scoped id (messaging)
+  facebookId: text("facebook_id"), // Page-scoped id (Messenger)
+  locale: text("locale").notNull().default("hy"),
+  stage: leadStageEnum("stage").notNull().default("NEW"),
+  source: text("source").notNull().default("other"),
+  utm: jsonb("utm").$type<Utm>().notNull().default({}),
+  courseId: text("course_id").references(() => courses.id, { onDelete: "set null" }),
+  format: text("format"), // group | individual
+  userId: text("user_id").references(() => users.id, { onDelete: "set null" }),
+  score: integer("score").notNull().default(0),
+  tags: jsonb("tags").$type<string[]>().notNull().default([]),
+  note: text("note"),
+  lostReason: text("lost_reason"),
+  nextActionAt: timestamp("next_action_at", { withTimezone: true }),
+  nextAction: text("next_action"),
+  lastContactAt: timestamp("last_contact_at", { withTimezone: true }), // our last outbound touch
+  lastInboundAt: timestamp("last_inbound_at", { withTimezone: true }), // their last message
+  firstResponseAt: timestamp("first_response_at", { withTimezone: true }),
+  marketingOptIn: boolean("marketing_opt_in").notNull().default(true),
+  unsubscribed: boolean("unsubscribed").notNull().default(false),
+  sent: jsonb("sent").$type<string[]>().notNull().default([]), // automation steps already sent (idempotency keys)
+  stageChangedAt: timestamp("stage_changed_at", { withTimezone: true }).notNull().defaultNow(),
+  wonAt: timestamp("won_at", { withTimezone: true }),
+  createdAt: created(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
+}, (t) => [
+  index("leads_stage_idx").on(t.stage), index("leads_phone_idx").on(t.phone), index("leads_email_idx").on(t.email),
+  index("leads_user_idx").on(t.userId), index("leads_next_idx").on(t.nextActionAt),
+]);
+
+export const leadActivities = pgTable("lead_activities", {
+  id: id(),
+  leadId: text("lead_id").notNull().references(() => leads.id, { onDelete: "cascade" }),
+  /** note | call | message_in | message_out | stage | task | system */
+  type: text("type").notNull(),
+  channel: text("channel"), // whatsapp | telegram | email | instagram | facebook | site | phone
+  body: text("body").notNull().default(""),
+  meta: jsonb("meta").$type<Record<string, unknown>>().notNull().default({}),
+  createdAt: created(),
+}, (t) => [index("lead_activities_lead_idx").on(t.leadId, t.createdAt)]);
+
+export const crmTasks = pgTable("crm_tasks", {
+  id: id(),
+  leadId: text("lead_id").references(() => leads.id, { onDelete: "cascade" }),
+  title: text("title").notNull(),
+  dueAt: timestamp("due_at", { withTimezone: true }).notNull(),
+  done: boolean("done").notNull().default(false),
+  doneAt: timestamp("done_at", { withTimezone: true }),
+  auto: boolean("auto").notNull().default(false),
+  createdAt: created(),
+}, (t) => [index("crm_tasks_due_idx").on(t.done, t.dueAt)]);
+
+export const crmTemplates = pgTable("crm_templates", {
+  id: id(),
+  key: text("key").notNull().unique(), // used by automations, e.g. "welcome"
+  name: text("name").notNull(),
+  subject: jsonb("subject").$type<L10n>().notNull(),
+  body: jsonb("body").$type<L10n>().notNull(),
+  createdAt: created(),
+});
+
+export const crmCampaigns = pgTable("crm_campaigns", {
+  id: id(),
+  name: text("name").notNull(),
+  channel: text("channel").notNull(),
+  templateKey: text("template_key"),
+  segment: jsonb("segment").$type<Record<string, string>>().notNull().default({}),
+  total: integer("total").notNull().default(0),
+  sent: integer("sent").notNull().default(0),
+  failed: integer("failed").notNull().default(0),
+  createdAt: created(),
+});
+
+export const leadsRel = relations(leads, ({ one, many }) => ({
+  course: one(courses, { fields: [leads.courseId], references: [courses.id] }),
+  user: one(users, { fields: [leads.userId], references: [users.id] }),
+  activities: many(leadActivities),
+  tasks: many(crmTasks),
+}));
+export const leadActivitiesRel = relations(leadActivities, ({ one }) => ({
+  lead: one(leads, { fields: [leadActivities.leadId], references: [leads.id] }),
+}));
+export const crmTasksRel = relations(crmTasks, ({ one }) => ({
+  lead: one(leads, { fields: [crmTasks.leadId], references: [leads.id] }),
+}));
+
 /* relations */
 export const directionsRel = relations(directions, ({ many }) => ({ courses: many(courses) }));
 export const coursesRel = relations(courses, ({ one, many }) => ({

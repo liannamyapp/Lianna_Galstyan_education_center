@@ -10,6 +10,7 @@ export const dynamic = "force-dynamic";
 
 const nav: [string, string, string][] = [
   ["/admin", "Վահանակ", "chart"],
+  ["/admin/crm", "CRM · Վաճառքներ", "send"],
   ["/admin/applications", "Հայտեր", "file"],
   ["/admin/students", "Ունկնդիրներ", "users"],
   ["/admin/payments", "Վճարումներ", "card"],

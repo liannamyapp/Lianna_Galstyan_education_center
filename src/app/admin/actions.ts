@@ -13,6 +13,8 @@ import { getDict, fmt, tr } from "@/lib/i18n";
 import { markPaid } from "@/lib/payments";
 import { siteUrl } from "@/lib/seo";
 import type { ActionResult } from "@/components/ActionForm";
+import { syncLeadForUser } from "@/lib/crm/automations";
+import { logOutbound } from "@/lib/crm/leads";
 
 const ok = (message = "Պահպանված է"): ActionResult => ({ ok: true, message });
 const fail = (e: unknown): ActionResult => ({ error: e instanceof Error ? e.message : "Սխալ" });
@@ -146,6 +148,7 @@ export async function updateApplication(_: ActionResult, fd: FormData): Promise<
         `${app.user.name},`, fmt(t.mail.statusBody, { course: tr(app.course.title, app.user.locale), status: t.account.status[status] }), ...(custom ? [custom] : []),
       ], { label: t.mail.openAccount, url: `${siteUrl()}/${app.user.locale}/account` }));
     }
+    if (status !== app.status) await syncLeadForUser(app.userId); // CRM stage follows the application
     revalidatePath("/admin/applications");
     return ok(status !== app.status && bool(fd, "notify") ? "Պահպանված է, նամակն ուղարկված է" : undefined);
   } catch (e) { return fail(e); }
@@ -205,6 +208,7 @@ export async function replyMessage(_: ActionResult, fd: FormData): Promise<Actio
     const t = getDict(m.locale);
     await sendMail(m.email, t.mail.contactReplySubject, emailHtml(t.mail.contactReplySubject, [`${m.name},`, ...reply.split("\n").filter(Boolean), "—", t.mail.yourMessage, m.message]));
     await db.update(s.messages).set({ reply, repliedAt: new Date(), handled: true }).where(eq(s.messages.id, id));
+    await logOutbound({ email: m.email }, reply, "email"); // CRM timeline + response time
     revalidatePath("/admin/messages");
     return ok("Պատասխանն ուղարկված է");
   } catch (e) { return fail(e); }

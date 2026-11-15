@@ -13,6 +13,8 @@ import { getSettings } from "@/lib/settings";
 import { billing, priceFor } from "@/lib/billing";
 import type { ActionResult } from "@/components/ActionForm";
 import { siteUrl } from "@/lib/seo";
+import { after } from "next/server";
+import { captureLead, readUtm, syncLeadForUser } from "@/lib/crm/automations";
 
 const loc = (fd: FormData) => { const l = str(fd, "locale"); return isLocale(l) ? l : "hy"; };
 const safeNext = (n: string, l: string) => (n.startsWith("/") && !n.startsWith("//") ? n : `/${l}/account`);
@@ -23,6 +25,8 @@ export async function subscribeAction(_: ActionResult, fd: FormData): Promise<Ac
   const e = emailSchema.safeParse(str(fd, "email"));
   if (!e.success) return { error: t.auth.errForm };
   await db.insert(s.subscribers).values({ email: e.data, locale: l }).onConflictDoNothing();
+  const utm = await readUtm();
+  after(() => captureLead({ email: e.data, locale: l, source: "site_subscribe", tags: ["բաժանորդ"], utm, imported: true }, { notify: false, silent: true }));
   return { ok: true, message: t.home.subscribed };
 }
 
@@ -37,6 +41,8 @@ export async function contactAction(_: ActionResult, fd: FormData): Promise<Acti
   await sendMail(e.data, t.mail.contactAutoSubject, emailHtml(t.mail.contactAutoSubject, [`${name},`, t.mail.contactAutoBody, t.mail.yourMessage, message]));
   await sendMail(st.adminEmail, `Նոր հաղորդագրություն՝ ${name}`, emailHtml("Նոր հաղորդագրություն կայքից", [`${name} · ${e.data} · ${str(fd, "phone")}`, message], { label: "Պատասխանել", url: `${siteUrl()}/admin/messages` }));
   await notifyAdminWhatsApp(`Նոր հաղորդագրություն կայքից՝ ${name} (${e.data}): ${message.slice(0, 300)}`);
+  const utm = await readUtm();
+  after(() => captureLead({ name, email: e.data, phone: str(fd, "phone") || null, locale: l, source: "site_contact", message, utm }, { notify: false }));
   return { ok: true, message: t.contact.sent };
 }
 
@@ -51,6 +57,8 @@ export async function registerAction(_: ActionResult, fd: FormData): Promise<Act
   const [u] = await db.insert(s.users).values({ email: e.data, name, phone: phone || null, passwordHash: await hashPassword(password), locale: l }).returning();
   await createSession(u);
   await sendMail(u.email, t.mail.welcomeSubject, emailHtml(t.mail.welcomeSubject, [`${name},`, t.mail.welcomeBody], { label: t.mail.openAccount, url: `${siteUrl()}/${l}/account` }));
+  const utm = await readUtm();
+  after(() => captureLead({ userId: u.id, name, email: u.email, phone: phone || null, locale: l, source: "site_register", utm }));
   redirect(safeNext(str(fd, "next"), l));
 }
 
@@ -188,6 +196,8 @@ export async function enrollAction(_: ActionResult, fd: FormData): Promise<Actio
     await sendMail(u.email, t.mail.appSubject, emailHtml(t.mail.appSubject, [`${u.name},`, fmt(t.mail.appBody, { course: title })], { label: t.mail.openAccount, url: `${siteUrl()}/${l}/account` }));
     await sendMail(st.adminEmail, `Նոր հայտ՝ ${course.code}`, emailHtml("Նոր հայտ", [`${u.name} · ${u.email} · ${u.phone ?? ""}`, `${course.code} · ${tr(course.title, "hy")} · ${format === "individual" ? "ԱՆՀԱՏԱԿԱՆ" : "խմբակային"} · ${plan === "full" ? "ամբողջությամբ" : "ամսական"}`], { label: "Բացել հայտերը", url: `${siteUrl()}/admin/applications` }));
     await notifyAdminWhatsApp(`Նոր հայտ՝ ${course.code} · ${u.name} · ${u.phone ?? u.email}`);
+    const utm = await readUtm();
+    after(() => captureLead({ userId: u.id, name: u.name, email: u.email, phone: u.phone, locale: l, source: "site_enroll", courseId: course.id, format, message: str(fd, "note") || null, utm }, { notify: false }).then(() => syncLeadForUser(u.id)));
   } else if (!app.contractNo) {
     // not paid yet: the learner may still change format, plan or group at today's prices
     [app] = await db.update(s.applications).set({ groupId: format === "group" ? groupId ?? app.groupId : null, ...locked }).where(eq(s.applications.id, app.id)).returning();

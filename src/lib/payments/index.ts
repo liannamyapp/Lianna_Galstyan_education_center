@@ -6,6 +6,7 @@ import { notifyAdminWhatsApp } from "@/lib/whatsapp";
 import { getSettings } from "@/lib/settings";
 import { money } from "@/lib/format";
 import { getDict, tr } from "@/lib/i18n";
+import { syncLeadForUser } from "@/lib/crm/automations";
 
 export { idramEnabled } from "./idram";
 export { ameriaEnabled } from "./ameria";
@@ -39,6 +40,7 @@ export async function markPaid(paymentId: string, providerRef?: string, provider
   }
   await sendMail(st.adminEmail, `Վճարում՝ ${money(p.amount)}`, emailHtml("Ստացվել է վճարում", [`${u?.name ?? ""} · ${u?.email ?? ""}`, p.description, `Եղանակ՝ ${p.method}`], { label: "Ադմին", url: `${site}/admin/payments` }));
   await notifyAdminWhatsApp(`Նոր վճարում՝ ${money(p.amount)} · ${u?.name ?? ""} · ${p.description} · ${tr(st.site.name, "hy")}`);
+  await syncLeadForUser(p.userId); // CRM: lead → WON + welcome message
   return p;
 }
 

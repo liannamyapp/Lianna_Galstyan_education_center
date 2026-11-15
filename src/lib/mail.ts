@@ -28,15 +28,20 @@ ${cta ? `<p style="margin:22px 0 0"><a href="${cta.url}" style="background:#1636
 </td></tr></table></td></tr></table></body></html>`;
 }
 
-export async function sendMail(to: string, subject: string, html: string) {
+export const mailEnabled = () => Boolean(process.env.SMTP_HOST && process.env.SMTP_USER);
+
+/** Sends an e-mail. Never throws. Returns true when it was handed to the SMTP server. */
+export async function sendMail(to: string, subject: string, html: string): Promise<boolean> {
   const t = getTransport();
   if (!t) {
     console.info(`[mail:dev] to=${to} subject=${subject}`);
-    return;
+    return false;
   }
   try {
     await t.sendMail({ from: process.env.MAIL_FROM || process.env.SMTP_USER, to, subject, html });
+    return true;
   } catch (e) {
     console.error("[mail] failed", e);
+    return false;
   }
 }

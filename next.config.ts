@@ -17,6 +17,8 @@ const config: NextConfig = {
     remotePatterns: [{ protocol: "https", hostname: "*.public.blob.vercel-storage.com" }],
   },
   experimental: { serverActions: { bodySizeLimit: "8mb" } },
+  // the CRM guide page reads docs/CRM.md at runtime
+  outputFileTracingIncludes: { "/admin/crm/guide": ["./docs/CRM.md"] },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },
