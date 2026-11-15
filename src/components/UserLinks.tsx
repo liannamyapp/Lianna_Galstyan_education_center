@@ -1,10 +1,13 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 
 export function UserLinks({ locale, labels }: { locale: string; labels: { admin: string; account: string; login: string; register: string } }) {
   const [ui, setUi] = useState<string | null>(null);
-  useEffect(() => { setUi(document.cookie.match(/(?:^|; )lg_ui=([as])/)?.[1] ?? null); }, []);
+  const pathname = usePathname();
+  // re-read after every navigation, so the header switches right after sign-up, sign-in or sign-out
+  useEffect(() => { setUi(document.cookie.match(/(?:^|; )lg_ui=([as])/)?.[1] ?? null); }, [pathname]);
   if (ui) return (
     <>
       {ui === "a" && <Link href="/admin" className="whitespace-nowrap text-[14.5px] text-white/90 no-underline hover:text-white">{labels.admin}</Link>}

@@ -39,7 +39,7 @@ export function AdminCard({ title, children, actions }: { title?: string; childr
 }
 
 export function PageHead({ title, children }: { title: string; children?: React.ReactNode }) {
-  return <div className="mb-6 flex flex-wrap items-center justify-between gap-4"><h1 className="font-serif text-[28px] font-bold text-navy-900">{title}</h1><div className="flex flex-wrap gap-2.5">{children}</div></div>;
+  return <div className="mb-6 flex flex-wrap items-center justify-between gap-4"><h1 className="min-w-0 font-serif text-[clamp(22px,6vw,28px)] font-bold break-words text-navy-900">{title}</h1><div className="flex max-w-full flex-wrap gap-2.5">{children}</div></div>;
 }
 
 export const th = "px-3 py-2.5 text-left text-[12.5px] font-semibold text-muted";

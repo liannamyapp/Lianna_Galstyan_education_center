@@ -50,8 +50,8 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
 
       <form action={moveLead} className="card mb-6 flex flex-wrap items-end gap-3 p-4">
         <input type="hidden" name="id" value={lead.id} />
-        <label className="label min-w-[200px] flex-1">Տեղափոխել փուլ<select name="stage" defaultValue={lead.stage} className="input">{STAGES.map((x) => <option key={x} value={x}>{stageHy[x]}</option>)}</select></label>
-        <label className="label min-w-[200px] flex-[2]">Պատճառ / մեկնաբանություն (կորցրածի դեպքում՝ ինչու)<input name="reason" className="input" placeholder="օր.՝ գինը, ժամանակը, ընտրեց այլ կենտրոն" /></label>
+        <label className="label min-w-0 flex-1 basis-[200px]">Տեղափոխել փուլ<select name="stage" defaultValue={lead.stage} className="input">{STAGES.map((x) => <option key={x} value={x}>{stageHy[x]}</option>)}</select></label>
+        <label className="label min-w-0 flex-[2] basis-[200px]">Պատճառ / մեկնաբանություն (կորցրածի դեպքում՝ ինչու)<input name="reason" className="input" placeholder="օր.՝ գինը, ժամանակը, ընտրեց այլ կենտրոն" /></label>
         <button className="btn-navy min-h-12">Տեղափոխել</button>
       </form>
 

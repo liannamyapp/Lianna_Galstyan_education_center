@@ -15,7 +15,7 @@ export default async function Students({ searchParams }: { searchParams: Promise
   return (
     <>
       <PageHead title={`Ունկնդիրներ (${users.length})`}>
-        <form className="flex gap-2"><label htmlFor="q" className="sr-only">Որոնում</label><input id="q" name="q" defaultValue={q} placeholder="Անուն, էլ. փոստ, հեռախոս" className="input min-h-11 w-[260px]" /><button className="btn-navy min-h-11">Որոնել</button></form>
+        <form className="flex w-full flex-wrap gap-2 sm:w-auto"><label htmlFor="q" className="sr-only">Որոնում</label><input id="q" name="q" defaultValue={q} placeholder="Անուն, էլ. փոստ, հեռախոս" className="input min-h-11 min-w-0 flex-1 sm:w-[260px] sm:flex-none" /><button className="btn-navy min-h-11">Որոնել</button></form>
       </PageHead>
       <div className="card overflow-x-auto p-2">
         <table className="w-full min-w-[720px] border-collapse">

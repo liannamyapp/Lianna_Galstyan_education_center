@@ -16,7 +16,7 @@ export default async function Reviews({ searchParams }: { searchParams: Promise<
   return (
     <>
       <PageHead title="Կարծիքներ" />
-      <nav className="mb-5 flex gap-2">{TABS.map(([k, l]) => <Link key={k} href={`/admin/reviews?tab=${k}`} className={`chip min-h-10 px-4 no-underline ${st === k ? "bg-navy-800 text-white" : "bg-white text-navy-800"}`}>{l}</Link>)}</nav>
+      <nav className="mb-5 flex flex-wrap gap-2">{TABS.map(([k, l]) => <Link key={k} href={`/admin/reviews?tab=${k}`} className={`chip min-h-10 px-4 no-underline ${st === k ? "bg-navy-800 text-white" : "bg-white text-navy-800"}`}>{l}</Link>)}</nav>
       <div className="flex flex-col gap-3">
         {list.map((r) => (
           <form key={r.id} action={moderateReview} className="card flex flex-col gap-3 p-5">

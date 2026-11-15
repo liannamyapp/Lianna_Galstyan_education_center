@@ -29,7 +29,7 @@ function LessonForm({ l, courseId, audiences, modules, blob }: { l?: L; courseId
         hint="YouTube (Unlisted), Vimeo, Google Drive կամ վերբեռնված ֆայլ։ Google Drive-ի և վերբեռնված ֆայլերի դեպքում ունկնդիրը կկարողանա նաև ներբեռնել տեսանյութը։" />
       <UploadField name="materialsUrl" label="Նյութեր (PDF, ZIP, կոդ, ոչ պարտադիր)" defaultValue={l?.materialsUrl} accept=".pdf,.zip,image/*" blob={blob} />
       <div className="flex flex-wrap items-end gap-5">
-        <label className="label w-[130px]">Հերթականություն<input name="order" type="number" defaultValue={l?.order ?? 0} className="input" /></label>
+        <label className="label w-full sm:w-[130px]">Հերթականություն<input name="order" type="number" defaultValue={l?.order ?? 0} className="input" /></label>
         <Check name="published" label="Հրապարակված" defaultChecked={l?.published ?? true} />
         {!l && <Check name="notify" label="Էլ. նամակով ծանուցել ունկնդիրներին" defaultChecked />}
         <SubmitButton className="btn-navy" pendingText="…">{l ? "Պահպանել" : "Ավելացնել դաս"}</SubmitButton>
@@ -69,7 +69,7 @@ export default async function Lessons({ searchParams }: { searchParams: Promise<
           <details key={l.id} className="card">
             <summary className="flex cursor-pointer list-none flex-wrap items-center gap-4 p-5 [&::-webkit-details-marker]:hidden">
               <span className="w-10 font-mono text-[13px] text-gold-700">{l.moduleCode ?? "—"}</span>
-              <b className="min-w-[200px] flex-1 text-navy-900">{tr(l.title, "hy")}</b>
+              <b className="min-w-0 flex-1 basis-[200px] text-navy-900">{tr(l.title, "hy")}</b>
               <span className="text-[13px] text-muted">{l.user ? `Անհատական՝ ${l.user.name}` : l.group ? l.group.name : "Բոլորը"}</span>
               <span className="text-[13px] text-muted">{dateShort(l.lessonDate)}</span>
               {!l.published && <span className="chip bg-[#eef0f3] text-[#4b5563]">Թաքցված</span>}

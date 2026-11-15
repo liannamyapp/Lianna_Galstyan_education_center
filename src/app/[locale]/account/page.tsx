@@ -39,15 +39,15 @@ export default async function Account({ params }: { params: Promise<{ locale: Lo
           <span className="flex size-11 items-center justify-center rounded-full bg-sand font-bold text-navy-800">{initials(user.name)}</span>
           <div className="min-w-0"><b className="block truncate text-[15px] text-navy-900">{user.name}</b><span className="block truncate text-[12.5px] text-muted">{user.email}</span></div>
         </div>
-        <nav aria-label={t.nav.account} className="flex gap-1 overflow-x-auto lg:flex-col">
-          {nav.map(([id, label, icon]) => <a key={id} href={`#${id}`} className="flex min-h-11 flex-none items-center gap-3 rounded-xl px-3.5 text-[14.5px] text-[#3d4757] no-underline hover:bg-ivory"><Icon name={icon} size={18} />{label}</a>)}
+        <nav aria-label={t.nav.account} className="grid grid-cols-2 gap-1 sm:grid-cols-3 lg:flex lg:flex-col">
+          {nav.map(([id, label, icon]) => <a key={id} href={`#${id}`} className="flex min-h-11 min-w-0 items-center gap-2 rounded-xl px-2 text-[13.5px] text-[#3d4757] sm:gap-2.5 sm:px-3 sm:text-[14px] no-underline hover:bg-ivory lg:px-3.5 lg:text-[14.5px]"><Icon name={icon} size={18} className="flex-none" /><span className="min-w-0 leading-tight break-words">{label}</span></a>)}
         </nav>
         <form action={logoutAction} className="mt-2 border-t border-[#eee7d8] pt-2"><input type="hidden" name="locale" value={locale} /><button className="flex min-h-11 w-full items-center gap-3 rounded-xl px-3.5 text-[14px] text-[#8a5a2b] hover:bg-ivory"><Icon name="logout" size={18} />{t.nav.logout}</button></form>
       </aside>
 
       <div className="flex min-w-0 flex-[999_1_600px] flex-col gap-6">
         <section id="overview">
-          <h1 className="font-serif text-[32px] font-bold text-navy-900">{fmt(t.account.welcome, { name: user.name.split(" ")[0] })}</h1>
+          <h1 className="font-serif text-[clamp(26px,7vw,32px)] font-bold break-words text-navy-900">{fmt(t.account.welcome, { name: user.name.split(" ")[0] })}</h1>
           {apps.length === 0 ? (
             <div className="card mt-5 p-8"><p className="text-muted">{t.account.noCourses}</p><Link href={`/${locale}/courses`} className="btn-navy mt-3">{t.account.browseCourses}</Link></div>
           ) : (
@@ -101,7 +101,7 @@ export default async function Account({ params }: { params: Promise<{ locale: Lo
                   )}
                 </div>
                 {(active || a.status === "APPROVED") && (
-                  <div className="card flex flex-col gap-2 p-7">
+                  <div className="card flex flex-col gap-2 p-5 sm:p-7">
                     <p className="eyebrow">{t.billing.schedule}</p>
                     {b.next ? (
                       <>
@@ -137,19 +137,29 @@ export default async function Account({ params }: { params: Promise<{ locale: Lo
           )}
         </section>
 
-        <section id="payments" className="card overflow-x-auto p-7">
+        <section id="payments" className="card p-5 sm:p-7">
           <h2 className="mb-3 text-[18px] font-semibold text-navy-900">{t.account.payments}</h2>
           {pays.length === 0 ? <p className="text-muted">{t.account.noPayments}</p> : (
-            <table className="w-full min-w-[520px] border-collapse text-[14.5px]">
-              <thead><tr className="text-left text-[13px] text-muted"><th className="py-2 pr-3 font-semibold">{t.account.date}</th><th className="py-2 pr-3 font-semibold">{t.account.description}</th><th className="py-2 pr-3 font-semibold">{t.account.amount}</th><th className="py-2 font-semibold">{t.account.statusCol}</th></tr></thead>
-              <tbody>{pays.map((p) => (
-                <tr key={p.id} className="border-t border-[#eee7d8]"><td className="py-3 pr-3 whitespace-nowrap">{dateShort(p.paidAt ?? p.createdAt)}</td><td className="py-3 pr-3">{p.description}</td><td className="py-3 pr-3 whitespace-nowrap">{money(p.amount, locale)}</td><td className="py-3"><span className={`chip font-semibold ${tone[p.status]}`}>{t.account.payStatus[p.status]}</span></td></tr>
-              ))}</tbody>
-            </table>
+            <>
+              <ul className="m-0 flex list-none flex-col p-0 sm:hidden">{pays.map((p) => (
+                <li key={p.id} className="border-t border-[#eee7d8] py-3 first:border-t-0 first:pt-0">
+                  <div className="flex items-center justify-between gap-3"><b className="text-[15px] text-navy-900">{money(p.amount, locale)}</b><span className={`chip font-semibold ${tone[p.status]}`}>{t.account.payStatus[p.status]}</span></div>
+                  <p className="mt-1 mb-0 text-[13.5px] text-muted">{dateShort(p.paidAt ?? p.createdAt)} · {p.description}</p>
+                </li>
+              ))}</ul>
+              <div className="hidden overflow-x-auto sm:block">
+                <table className="w-full border-collapse text-[14.5px]">
+                  <thead><tr className="text-left text-[13px] text-muted"><th className="py-2 pr-3 font-semibold">{t.account.date}</th><th className="py-2 pr-3 font-semibold">{t.account.description}</th><th className="py-2 pr-3 font-semibold">{t.account.amount}</th><th className="py-2 font-semibold">{t.account.statusCol}</th></tr></thead>
+                  <tbody>{pays.map((p) => (
+                    <tr key={p.id} className="border-t border-[#eee7d8]"><td className="py-3 pr-3 whitespace-nowrap">{dateShort(p.paidAt ?? p.createdAt)}</td><td className="py-3 pr-3">{p.description}</td><td className="py-3 pr-3 whitespace-nowrap">{money(p.amount, locale)}</td><td className="py-3"><span className={`chip font-semibold ${tone[p.status]}`}>{t.account.payStatus[p.status]}</span></td></tr>
+                  ))}</tbody>
+                </table>
+              </div>
+            </>
           )}
         </section>
 
-        <section id="documents" className="card p-7">
+        <section id="documents" className="card p-5 sm:p-7">
           <h2 className="mb-2 text-[18px] font-semibold text-navy-900">{t.account.documents}</h2>
           <ul className="m-0 list-none p-0">
             {apps.filter((a) => a.contractNo).map((a) => (
@@ -172,12 +182,12 @@ export default async function Account({ params }: { params: Promise<{ locale: Lo
           </ul>
         </section>
 
-        <section id="review" className="card p-7">
+        <section id="review" className="card p-5 sm:p-7">
           <h2 className="mb-1 text-[18px] font-semibold text-navy-900">{t.account.myReview}</h2>
           <p className="mb-4 text-[14px] text-muted">{t.account.reviewHint}</p>
           {myReviews.length > 0 && (
             <ul className="mb-5 flex list-none flex-col gap-2 p-0">{myReviews.map((r) => (
-              <li key={r.id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-ivory px-4 py-3 text-[14px]"><span className="min-w-0 flex-1 truncate">{"★".repeat(r.rating)} {r.text}</span><span className={`chip font-semibold ${r.status === "APPROVED" ? tone.PAID : r.status === "REJECTED" ? tone.REJECTED : tone.PENDING}`}>{t.account.reviewStatus[r.status]}</span></li>
+              <li key={r.id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-ivory px-4 py-3 text-[14px]"><span className="min-w-0 basis-full text-gold-700 sm:basis-auto">{"★".repeat(r.rating)}</span><span className="min-w-0 flex-1 basis-[180px] text-ink [overflow-wrap:anywhere] line-clamp-2">{r.text}</span><span className={`chip flex-none font-semibold ${r.status === "APPROVED" ? tone.PAID : r.status === "REJECTED" ? tone.REJECTED : tone.PENDING}`}>{t.account.reviewStatus[r.status]}</span></li>
             ))}</ul>
           )}
           <ActionForm action={reviewAction} resetOnSuccess className="flex flex-col gap-3.5">
@@ -200,7 +210,7 @@ export default async function Account({ params }: { params: Promise<{ locale: Lo
           </ActionForm>
         </section>
 
-        <section id="profile" className="card p-7">
+        <section id="profile" className="card p-5 sm:p-7">
           <h2 className="mb-4 text-[18px] font-semibold text-navy-900">{t.account.profile}</h2>
           <ActionForm action={profileAction} className="flex flex-col gap-4">
             <input type="hidden" name="locale" value={locale} />

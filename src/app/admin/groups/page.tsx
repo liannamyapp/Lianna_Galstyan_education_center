@@ -42,7 +42,7 @@ export default async function Groups() {
         {list.map((g) => (
           <details key={g.id} className="card">
             <summary className="flex cursor-pointer list-none flex-wrap items-center gap-4 p-5 [&::-webkit-details-marker]:hidden">
-              <b className="flex-1">{g.name}</b><span className="font-mono text-[13px]">{g.course.code}</span><span className="text-[14px]">{dateShort(g.startDate)}</span>
+              <b className="min-w-0 flex-1 break-words">{g.name}</b><span className="font-mono text-[13px]">{g.course.code}</span><span className="text-[14px]">{dateShort(g.startDate)}</span>
               <span className="text-[13px] text-muted">{g.applications.filter((a) => ["APPROVED", "PAID"].includes(a.status)).length} / {g.seats}</span>
               <span className={`chip font-semibold ${badge[g.status]}`}>{statusHy[g.status]}</span>
             </summary>

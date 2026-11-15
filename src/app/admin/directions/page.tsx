@@ -36,9 +36,9 @@ export default async function Directions() {
       <div className="flex flex-col gap-4">
         {list.map((d) => (
           <details key={d.id} className="card">
-            <summary className="flex cursor-pointer list-none items-center gap-4 p-5 [&::-webkit-details-marker]:hidden">
+            <summary className="flex flex-wrap gap-y-2 cursor-pointer list-none items-center gap-4 p-5 [&::-webkit-details-marker]:hidden">
               <span className="flex size-10 items-center justify-center rounded-xl bg-navy-800 text-gold-300"><Icon name={d.icon} /></span>
-              <b className="flex-1">{tr(d.title, "hy")}</b>
+              <b className="min-w-0 flex-1 break-words">{tr(d.title, "hy")}</b>
               <span className={`chip font-semibold ${d.published ? "bg-[#e3f1e6] text-[#1f5f33]" : "bg-[#eef0f3] text-[#4b5563]"}`}>{d.published ? "Հրապարակված" : "Թաքցված"}</span>
             </summary>
             <div className="border-t border-[#eee7d8] p-5">
