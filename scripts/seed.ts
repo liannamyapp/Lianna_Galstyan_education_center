@@ -5,6 +5,11 @@ import bcrypt from "bcryptjs";
 import { db, s } from "../src/db";
 
 const L = (hy: string, ru: string, en: string) => ({ hy, ru, en });
+const LEGACY_TITLES: Record<string, string> = {
+  "frontend:Մ2": "CSS, Flexbox, Grid և ադապտիվ դիզայն", "frontend:Մ5": "Git, GitHub և մշակողի գործիքներ", "frontend:Մ6": "React",
+  "backend-nodejs:Մ1": "Node.js-ի հիմունքներ", "backend-nodejs:Մ2": "Express և REST API", "backend-nodejs:Մ3": "Տվյալների բազաներ՝ SQL և PostgreSQL",
+  "backend-nodejs:Մ4": "Նույնականացում և անվտանգություն", "backend-nodejs:Մ5": "Ինտեգրացիաներ և WhatsApp API", "backend-nodejs:Մ6": "Թեստավորում և տեղակայում",
+};
 
 async function main() {
   const email = (process.env.ADMIN_EMAIL || "").toLowerCase().trim();
@@ -30,7 +35,7 @@ async function main() {
 
   const courses = [
     {
-      slug: "frontend", code: "ՖՎԾ-01", order: 1, hours: 84, theoryHours: 24, practiceHours: 60, weeks: 14, lessonsPerWeek: 3, priceMonthly: 50000, priceFull: 175000, priceIndividual: 125000, months: 4, minAge: 14,
+      slug: "frontend", code: "ՖՎԾ-01", order: 1, hours: 84, theoryHours: 24, practiceHours: 60, weeks: 14, lessonsPerWeek: 3, priceMonthly: 50000, priceFull: 175000, priceIndividual: 125000, months: 4, minAge: 16,
       title: L("Ֆրոնթենդ վեբ ծրագրավորում", "Фронтенд веб-разработка", "Frontend Web Development"),
       summary: L("HTML, CSS, JavaScript և React՝ զրոյից մինչև սեփական ադապտիվ վեբ հավելված։", "HTML, CSS, JavaScript и React — с нуля до собственного адаптивного веб-приложения.", "HTML, CSS, JavaScript and React — from zero to your own responsive web app."),
       description: L(
@@ -47,37 +52,37 @@ async function main() {
       },
       modules: [
         ["Մ1", 10, L("Վեբի հիմունքներ և HTML", "Основы веба и HTML", "Web basics and HTML")],
-        ["Մ2", 14, L("CSS, Flexbox, Grid և ադապտիվ դիզայն", "CSS, Flexbox, Grid и адаптивный дизайн", "CSS, Flexbox, Grid and responsive design")],
+        ["Մ2", 14, L("CSS և հարմարվող ձևավորում", "CSS и адаптивная вёрстка", "CSS and responsive design")],
         ["Մ3", 16, L("JavaScript-ի հիմունքներ", "Основы JavaScript", "JavaScript fundamentals")],
         ["Մ4", 12, L("DOM, իրադարձություններ և ասինխրոն JavaScript", "DOM, события и асинхронный JavaScript", "DOM, events and asynchronous JavaScript")],
-        ["Մ5", 4, L("Git, GitHub և մշակողի գործիքներ", "Git, GitHub и инструменты разработчика", "Git, GitHub and developer tools")],
-        ["Մ6", 16, L("React", "React", "React")],
+        ["Մ5", 4, L("Git, GitHub և կայքի հրապարակում", "Git, GitHub и публикация сайта", "Git, GitHub and publishing a site")],
+        ["Մ6", 16, L("React-ի հիմունքներ", "Основы React", "React fundamentals")],
         ["Մ7", 12, L("Ավարտական նախագիծ", "Выпускной проект", "Final project")],
       ] as const,
     },
     {
       slug: "backend-nodejs", code: "ԲՎԾ-01", order: 2, hours: 60, theoryHours: 18, practiceHours: 42, weeks: 10, lessonsPerWeek: 3, priceMonthly: 50000, priceFull: 125000, priceIndividual: 125000, months: 3, minAge: 16,
       title: L("Բեքենդ ծրագրավորում Node.js-ով", "Бэкенд-разработка на Node.js", "Backend Development with Node.js"),
-      summary: L("Node.js, Express, REST API, PostgreSQL և ինտեգրացիաներ՝ աշխատող սերվերային հավելված։", "Node.js, Express, REST API, PostgreSQL и интеграции — рабочее серверное приложение.", "Node.js, Express, REST APIs, PostgreSQL and integrations — a working server application."),
+      summary: L("Node.js, Express, REST API, PostgreSQL, Prisma և անվտանգություն՝ աշխատող սերվերային հավելված։", "Node.js, Express, REST API, PostgreSQL, Prisma и безопасность — рабочее серверное приложение.", "Node.js, Express, REST APIs, PostgreSQL, Prisma and security — a working server application."),
       description: L(
-        "Դասընթացը նրանց համար է, ովքեր արդեն տիրապետում են JavaScript-ի հիմունքներին և ցանկանում են ստեղծել սերվերային հավելվածներ։ Կսովորեք կառուցել REST API, աշխատել տվյալների բազաների հետ, ապահովել նույնականացում և ինտեգրել արտաքին ծառայություններ, այդ թվում WhatsApp-ը։\n\nԱվարտին ներկայացնում եք ամբողջական բեքենդ նախագիծ։",
-        "Курс для тех, кто уже знает основы JavaScript и хочет создавать серверные приложения. Вы научитесь строить REST API, работать с базами данных, делать аутентификацию и интегрировать внешние сервисы, включая WhatsApp.\n\nВ конце вы защищаете полноценный бэкенд-проект.",
-        "For those who already know JavaScript basics and want to build server applications. You will learn to build REST APIs, work with databases, implement authentication and integrate external services, including WhatsApp.\n\nYou finish by presenting a complete backend project."
+        "Դասընթացը նրանց համար է, ովքեր արդեն տիրապետում են JavaScript-ի հիմունքներին և ցանկանում են ստեղծել սերվերային հավելվածներ։ Կսովորեք կառուցել REST API, աշխատել տվյալների բազաների հետ, ապահովել նույնականացում և անվտանգություն, թեստավորել և հրապարակել սերվերային հավելվածը։\n\nԱվարտին ներկայացնում եք ամբողջական բեքենդ նախագիծ։",
+        "Курс для тех, кто уже знает основы JavaScript и хочет создавать серверные приложения. Вы научитесь строить REST API, работать с базами данных, делать аутентификацию и защиту, тестировать и публиковать серверное приложение.\n\nВ конце вы защищаете полноценный бэкенд-проект.",
+        "For those who already know JavaScript basics and want to build server applications. You will learn to build REST APIs, work with databases, implement authentication and security, then test and deploy a server application.\n\nYou finish by presenting a complete backend project."
       ),
       level: L("Միջին", "Средний", "Intermediate"),
       requirements: L("JavaScript-ի հիմունքների իմացություն (օր.՝ ՖՎԾ-01 դասընթացի Մ3–Մ4 մոդուլների մակարդակով)։", "Знание основ JavaScript (например, на уровне модулей М3–М4 курса ФВЦ-01).", "Knowledge of JavaScript basics (e.g. modules M3–M4 of the Frontend course)."),
       outcomes: {
-        hy: ["Գրել սերվերային կոդ Node.js-ով", "Կառուցել REST API Express-ով", "Աշխատել PostgreSQL-ի և SQL-ի հետ", "Իրականացնել նույնականացում և անվտանգություն", "Ինտեգրել արտաքին API-ներ, այդ թվում WhatsApp", "Տեղակայել նախագիծը սերվերում"],
-        ru: ["Писать серверный код на Node.js", "Строить REST API на Express", "Работать с PostgreSQL и SQL", "Реализовать аутентификацию и безопасность", "Интегрировать внешние API, включая WhatsApp", "Развернуть проект на сервере"],
-        en: ["Write server code with Node.js", "Build REST APIs with Express", "Work with PostgreSQL and SQL", "Implement authentication and security", "Integrate external APIs, including WhatsApp", "Deploy a project to a server"],
+        hy: ["Գրել սերվերային կոդ Node.js-ով", "Կառուցել REST API Express-ով", "Աշխատել PostgreSQL-ի և SQL-ի հետ", "Իրականացնել նույնականացում և անվտանգություն", "Աշխատել Prisma ORM-ի և MongoDB-ի հետ", "Տեղակայել նախագիծը սերվերում"],
+        ru: ["Писать серверный код на Node.js", "Строить REST API на Express", "Работать с PostgreSQL и SQL", "Реализовать аутентификацию и безопасность", "Работать с Prisma ORM и MongoDB", "Развернуть проект на сервере"],
+        en: ["Write server code with Node.js", "Build REST APIs with Express", "Work with PostgreSQL and SQL", "Implement authentication and security", "Work with Prisma ORM and MongoDB", "Deploy a project to a server"],
       },
       modules: [
-        ["Մ1", 8, L("Node.js-ի հիմունքներ", "Основы Node.js", "Node.js fundamentals")],
-        ["Մ2", 14, L("Express և REST API", "Express и REST API", "Express and REST APIs")],
-        ["Մ3", 12, L("Տվյալների բազաներ՝ SQL և PostgreSQL", "Базы данных: SQL и PostgreSQL", "Databases: SQL and PostgreSQL")],
-        ["Մ4", 6, L("Նույնականացում և անվտանգություն", "Аутентификация и безопасность", "Authentication and security")],
-        ["Մ5", 8, L("Ինտեգրացիաներ և WhatsApp API", "Интеграции и WhatsApp API", "Integrations and the WhatsApp API")],
-        ["Մ6", 4, L("Թեստավորում և տեղակայում", "Тестирование и деплой", "Testing and deployment")],
+        ["Մ1", 8, L("Node.js-ի հիմունքներ և npm", "Основы Node.js и npm", "Node.js fundamentals and npm")],
+        ["Մ2", 14, L("HTTP, REST և Express", "HTTP, REST и Express", "HTTP, REST and Express")],
+        ["Մ3", 12, L("Տվյալների բազաներ և SQL (PostgreSQL)", "Базы данных и SQL (PostgreSQL)", "Databases and SQL (PostgreSQL)")],
+        ["Մ4", 6, L("ORM (Prisma) և MongoDB-ի հիմունքներ", "ORM (Prisma) и основы MongoDB", "ORM (Prisma) and MongoDB basics")],
+        ["Մ5", 8, L("Նույնականացում և անվտանգություն", "Аутентификация и безопасность", "Authentication and security")],
+        ["Մ6", 4, L("Թեստավորում և հրապարակում", "Тестирование и публикация", "Testing and deployment")],
         ["Մ7", 8, L("Ավարտական նախագիծ", "Выпускной проект", "Final project")],
       ] as const,
     },
@@ -88,6 +93,24 @@ async function main() {
     if (ins.length) {
       await db.insert(s.courseModules).values(modules.map(([code, hours, title], i) => ({ courseId: ins[0].id, code, hours, title, order: i })));
       console.log("✓ course", c.code);
+    }
+  }
+
+  // Align existing courses with the programs submitted to the Ministry,
+  // touching only values that still equal the original defaults (admin edits are kept).
+  for (const c of courses) {
+    const [row] = await db.select().from(s.courses).where(eq(s.courses.slug, c.slug)).limit(1);
+    if (!row) continue;
+    if (c.slug === "frontend" && row.minAge === 14) await db.update(s.courses).set({ minAge: 16 }).where(eq(s.courses.id, row.id));
+    const old = (row.outcomes as { hy: string[] }).hy;
+    if (old?.includes("Ինտեգրել արտաքին API-ներ, այդ թվում WhatsApp")) await db.update(s.courses).set({ outcomes: c.outcomes }).where(eq(s.courses.id, row.id));
+    if ((row.description as { hy: string }).hy?.includes("այդ թվում WhatsApp-ը")) await db.update(s.courses).set({ description: c.description }).where(eq(s.courses.id, row.id));
+    if ((row.summary as { hy: string }).hy?.includes("PostgreSQL և ինտեգրացիաներ")) await db.update(s.courses).set({ summary: c.summary }).where(eq(s.courses.id, row.id));
+    const mods = await db.select().from(s.courseModules).where(eq(s.courseModules.courseId, row.id));
+    for (const [code, , title] of c.modules) {
+      const m = mods.find((x) => x.code === code);
+      const legacy = LEGACY_TITLES[`${c.slug}:${code}`];
+      if (m && legacy && (m.title as { hy: string }).hy === legacy) await db.update(s.courseModules).set({ title }).where(eq(s.courseModules.id, m.id));
     }
   }
 
