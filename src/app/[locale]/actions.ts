@@ -73,6 +73,7 @@ export async function loginAction(_: ActionResult, fd: FormData): Promise<Action
     await new Promise((r) => setTimeout(r, 400));
     return { error: t.auth.errInvalid };
   }
+  if (u.blockedAt) return { error: t.auth.errBlocked };
   await createSession(u);
   const next = str(fd, "next");
   redirect(next ? safeNext(next, l) : u.role === "ADMIN" ? "/admin" : `/${l}/account`);

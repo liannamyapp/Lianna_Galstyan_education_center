@@ -184,7 +184,8 @@
     "errExists": "An account with this e-mail already exists.",
     "errForm": "Please check the highlighted fields.",
     "errToken": "The link is invalid or has expired.",
-    "consent": "By signing up you agree to the privacy policy."
+    "consent": "By signing up you agree to the privacy policy.",
+    "errBlocked": "Your account has been blocked. Please contact us for details."
   },
   "account": {
     "welcome": "Hello, {name}",

@@ -34,6 +34,7 @@ export async function GET(req: Request) {
   });
 
   for (const a of apps) {
+    if (a.user.blockedAt) continue; // blocked accounts get no reminders
     const b = billing(a, a.course, a.group?.startDate, a.payments, st.payments);
     if (!b.next || !["soon", "due", "overdue"].includes(b.state)) continue;
     const kind = b.state === "soon" ? "pre" : b.state === "due" ? "due" : "lock";

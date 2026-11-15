@@ -23,15 +23,19 @@ export async function destroySession() {
   (await cookies()).delete("lg_ui");
 }
 
+/** Verified session of an existing, not-blocked account (a blocked account loses access immediately). */
 export async function getSession(): Promise<SessionPayload | null> {
-  return verifySession((await cookies()).get(SESSION_COOKIE)?.value);
+  const sess = await verifySession((await cookies()).get(SESSION_COOKIE)?.value);
+  if (!sess) return null;
+  const [u] = await db.select({ blockedAt: s.users.blockedAt }).from(s.users).where(eq(s.users.id, sess.uid)).limit(1);
+  return u && !u.blockedAt ? sess : null;
 }
 
 export async function getCurrentUser() {
-  const sess = await getSession();
+  const sess = await verifySession((await cookies()).get(SESSION_COOKIE)?.value);
   if (!sess) return null;
   const [u] = await db.select().from(s.users).where(eq(s.users.id, sess.uid)).limit(1);
-  return u ?? null;
+  return u && !u.blockedAt ? u : null;
 }
 
 export async function requireUser(locale = "hy") {

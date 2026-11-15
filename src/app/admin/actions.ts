@@ -412,6 +412,16 @@ export async function clearMyTestData(_: ActionResult, fd: FormData): Promise<Ac
   } catch (e) { return fail(e); }
 }
 
+/** Blocks or unblocks a student account. Blocking ends access at once (sessions, lessons, reviews, reminders). */
+export async function setUserBlocked(fd: FormData) {
+  const me = await requireAdmin();
+  const id = str(fd, "id");
+  if (!id || id === me.id) return;
+  const block = str(fd, "block") === "1";
+  await db.update(s.users).set({ blockedAt: block ? new Date() : null }).where(and(eq(s.users.id, id), eq(s.users.role, "STUDENT")));
+  revalidatePath("/admin/students");
+}
+
 export async function deleteSubscriber(fd: FormData) {
   await requireAdmin();
   await db.delete(s.subscribers).where(eq(s.subscribers.id, str(fd, "id")));

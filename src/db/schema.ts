@@ -25,6 +25,8 @@ export const users = pgTable("users", {
   phone: text("phone"),
   role: roleEnum("role").notNull().default("STUDENT"),
   locale: text("locale").notNull().default("hy"),
+  /** set when an admin blocks the account: no sign-in, no lessons, no reminders */
+  blockedAt: timestamp("blocked_at", { withTimezone: true }),
   createdAt: created(),
 });
 

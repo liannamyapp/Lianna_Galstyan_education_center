@@ -2,7 +2,8 @@ import { desc, ilike, or, sql, eq } from "drizzle-orm";
 import { db, s } from "@/db";
 import { dateShort } from "@/lib/format";
 import { PageHead, th, td } from "@/components/admin/fields";
-import { clearMyTestData, deleteUsers, setUserRole } from "../actions";
+import { clearMyTestData, deleteUsers, setUserBlocked, setUserRole } from "../actions";
+import { ValueButton } from "@/components/ValueButton";
 import { ActionForm } from "@/components/ActionForm";
 import { requireAdmin } from "@/lib/auth";
 
@@ -11,7 +12,7 @@ export default async function Students({ searchParams }: { searchParams: Promise
   const me = await requireAdmin();
   const where = q ? or(ilike(s.users.name, `%${q}%`), ilike(s.users.email, `%${q}%`), ilike(s.users.phone, `%${q}%`)) : undefined;
   const users = await db.select({
-    id: s.users.id, name: s.users.name, email: s.users.email, phone: s.users.phone, role: s.users.role, createdAt: s.users.createdAt,
+    id: s.users.id, name: s.users.name, email: s.users.email, phone: s.users.phone, role: s.users.role, createdAt: s.users.createdAt, blockedAt: s.users.blockedAt,
     apps: sql<number>`(select count(*)::int from ${s.applications} where ${s.applications.userId} = ${s.users.id})`,
   }).from(s.users).where(where).orderBy(desc(s.users.createdAt)).limit(300);
   void eq;
@@ -28,8 +29,8 @@ export default async function Students({ searchParams }: { searchParams: Promise
         </div>
       </ActionForm>
       <div className="card overflow-x-auto p-2">
-        <table className="w-full min-w-[720px] border-collapse">
-          <thead><tr><th className={th}><span className="sr-only">Ընտրել</span></th><th className={th}>Անուն</th><th className={th}>Կոնտակտ</th><th className={th}>Հայտեր</th><th className={th}>Գրանցվել է</th><th className={th}>Դեր</th></tr></thead>
+        <table className="w-full min-w-[860px] border-collapse">
+          <thead><tr><th className={th}><span className="sr-only">Ընտրել</span></th><th className={th}>Անուն</th><th className={th}>Կոնտակտ</th><th className={th}>Հայտեր</th><th className={th}>Գրանցվել է</th><th className={th}>Մուտք</th><th className={th}>Դեր</th></tr></thead>
           <tbody>{users.map((u) => (
             <tr key={u.id}>
               <td className={td}>{u.role === "STUDENT" ? <input type="checkbox" name="ids" value={u.id} form="bulk" aria-label={`Ընտրել ${u.name}`} className="size-4" /> : null}</td>
@@ -37,6 +38,16 @@ export default async function Students({ searchParams }: { searchParams: Promise
               <td className={td}><a href={`mailto:${u.email}`}>{u.email}</a><br /><span className="text-muted">{u.phone ?? "—"}</span></td>
               <td className={td}>{u.apps}</td>
               <td className={td}>{dateShort(u.createdAt)}</td>
+              <td className={td}>
+                {u.role === "STUDENT" ? (
+                  <form action={setUserBlocked} className="flex flex-col items-start gap-1.5">
+                    <input type="hidden" name="id" value={u.id} />
+                    {u.blockedAt
+                      ? <><span className="chip bg-[#fbefeb] font-semibold text-[#8a2f1d]">Արգելափակված է {dateShort(u.blockedAt)}</span><ValueButton name="block" value="0" className="text-[13px] font-semibold text-[#1f5f33]">Արգելաբացել</ValueButton></>
+                      : <><span className="chip bg-[#e3f1e6] font-semibold text-[#1f5f33]">Ակտիվ</span><ValueButton name="block" value="1" className="text-[13px] font-semibold text-[#8a2f1d]">Արգելափակել</ValueButton></>}
+                  </form>
+                ) : <span className="text-[13px] text-muted">—</span>}
+              </td>
               <td className={td}>
                 <form action={setUserRole} className="flex items-center gap-2">
                   <input type="hidden" name="id" value={u.id} />
