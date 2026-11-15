@@ -221,7 +221,7 @@ Instagram · TikTok · Facebook · Google · ընկերոջ խորհուրդ · 
 
 | Փոփոխական | Որտեղից վերցնել | Ինչի համար |
 |---|---|---|
-| `GREEN_API_ID_INSTANCE`, `GREEN_API_TOKEN`, `GREEN_API_ADMIN_PHONE` | console.green-api.com → Instance | WhatsApp (ուղարկում և մուտքային) |
+| `GREEN_API_ID_INSTANCE`, `GREEN_API_TOKEN`, `GREEN_API_URL`, `GREEN_API_ADMIN_PHONE` | console.green-api.com → Instance (`apiUrl`) | WhatsApp (ուղարկում և մուտքային). հեռախոսում պահված կոնտակտները լիդ չեն դառնում |
 | `TELEGRAM_BOT_TOKEN` | Telegram → @BotFather → /newbot | Telegram բոտ |
 | `META_PAGE_TOKEN`, `META_APP_SECRET` | developers.facebook.com → ձեր App | Instagram Direct, Messenger |
 

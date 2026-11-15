@@ -3,6 +3,7 @@ import { createHmac } from "node:crypto";
 import { eq } from "drizzle-orm";
 import { db, s } from "@/db";
 import { siteUrl } from "@/lib/seo";
+import { greenApiUrl } from "@/lib/whatsapp";
 
 /**
  * Webhook secrets. If the env variable is not set, a stable secret is derived from AUTH_SECRET,
@@ -39,7 +40,7 @@ export async function ensureWebhooks(force = false) {
   const id = process.env.GREEN_API_ID_INSTANCE, token = process.env.GREEN_API_TOKEN;
   if (id && token && site.startsWith("https://")) {
     try {
-      const base = `https://api.green-api.com/waInstance${id}`;
+      const base = `${greenApiUrl()}/waInstance${id}`;
       const cur = (await fetch(`${base}/getSettings/${token}`, { signal: AbortSignal.timeout(8000) }).then((r) => r.json())) as { webhookUrl?: string };
       const ours = `${site}/api/crm/whatsapp`;
       if (cur.webhookUrl && cur.webhookUrl !== ours && !force) out.greenApi = `conflict:${cur.webhookUrl}`;

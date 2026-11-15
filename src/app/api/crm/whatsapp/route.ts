@@ -1,4 +1,4 @@
-import { logOutbound, upsertLead } from "@/lib/crm/leads";
+import { findLead, logOutbound, upsertLead } from "@/lib/crm/leads";
 import { crmSecret } from "@/lib/crm/setup";
 import { onNewLead } from "@/lib/crm/automations";
 
@@ -15,7 +15,7 @@ export const dynamic = "force-dynamic";
  */
 type Hook = {
   typeWebhook?: string;
-  senderData?: { chatId?: string; sender?: string; senderName?: string; chatName?: string };
+  senderData?: { chatId?: string; sender?: string; senderName?: string; chatName?: string; senderContactName?: string };
   messageData?: {
     typeMessage?: string;
     textMessageData?: { textMessage?: string };
@@ -45,6 +45,11 @@ export async function POST(req: Request) {
     const lead = await logOutbound({ phone: chatId.replace("@c.us", "") }, text, "whatsapp");
     return Response.json({ ok: true, logged: Boolean(lead) });
   }
+  // The instance is the owner's personal number: people saved in the phone's contacts (family, friends)
+  // never become leads. Existing leads are always updated.
+  const phone = chatId.replace("@c.us", "");
+  if (b.senderData?.senderContactName && !(await findLead({ phone }))) return Response.json({ ok: true, skipped: "personal contact" });
+
   const { lead, created } = await upsertLead({
     phone: chatId.replace("@c.us", ""), name: b.senderData?.senderName || b.senderData?.chatName || null,
     source: "whatsapp", message: text, channel: "whatsapp",

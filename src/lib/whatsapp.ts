@@ -1,5 +1,7 @@
 import "server-only";
 
+/** Newer instances have their own host (console → apiUrl), e.g. https://7107.api.greenapi.com */
+export const greenApiUrl = () => (process.env.GREEN_API_URL || "https://api.green-api.com").replace(/\/$/, "");
 const cfg = () => ({ id: process.env.GREEN_API_ID_INSTANCE, token: process.env.GREEN_API_TOKEN });
 export const whatsappEnabled = () => Boolean(cfg().id && cfg().token);
 
@@ -10,7 +12,7 @@ export async function sendWhatsApp(phone: string | null | undefined, text: strin
   if (digits.startsWith("0") && digits.length === 9) digits = "374" + digits.slice(1); // 077123456 → 37477123456
   if (!id || !token || digits.length < 10) return false;
   try {
-    const r = await fetch(`https://api.green-api.com/waInstance${id}/sendMessage/${token}`, {
+    const r = await fetch(`${greenApiUrl()}/waInstance${id}/sendMessage/${token}`, {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ chatId: `${digits}@c.us`, message: text }),
       signal: AbortSignal.timeout(8000),
