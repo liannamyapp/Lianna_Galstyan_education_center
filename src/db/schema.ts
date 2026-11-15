@@ -165,6 +165,9 @@ export const reviews = pgTable("reviews", {
   locale: text("locale").notNull().default("hy"),
   status: reviewStatusEnum("status").notNull().default("PENDING"),
   reply: text("reply"),
+  /** the review in each site language (original + translations) */
+  textI18n: jsonb("text_i18n").$type<Partial<L10n>>(),
+  replyI18n: jsonb("reply_i18n").$type<Partial<L10n>>(),
   createdAt: created(),
   moderatedAt: timestamp("moderated_at", { withTimezone: true }),
 }, (t) => [index("reviews_status_idx").on(t.status)]);

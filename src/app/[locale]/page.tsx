@@ -177,8 +177,9 @@ export default async function Home({ params }: { params: Promise<{ locale: Local
             {reviews.map((r) => (
               <figure key={r.id} className="card m-0 flex flex-col gap-4 p-7">
                 <Stars value={r.rating} label={`${r.rating}/5`} />
-                <blockquote className="m-0 text-[#3d4757]">{r.text}</blockquote>
-                {r.reply && <p className="m-0 rounded-xl bg-ivory p-3 text-[14px] text-muted">{r.reply}</p>}
+                <blockquote className="m-0 text-[#3d4757]" lang={r.textI18n?.[locale] ? locale : r.locale}>{r.textI18n?.[locale] || r.text}</blockquote>
+                {r.locale !== locale && r.textI18n?.[locale] && <p className="-mt-2 m-0 text-[12.5px] text-muted italic">{t.home.translatedFrom[r.locale as Locale] ?? ""}</p>}
+                {r.reply && <p className="m-0 rounded-xl bg-ivory p-3 text-[14px] text-muted">{r.replyI18n?.[locale] || r.reply}</p>}
                 <figcaption className="mt-auto text-[14px]"><b className="text-navy-900">{shortName(r.name)}</b>{r.courseCode ? ` · ${r.courseCode}` : ""}</figcaption>
               </figure>
             ))}

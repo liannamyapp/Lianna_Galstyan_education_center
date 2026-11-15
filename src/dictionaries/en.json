@@ -69,7 +69,12 @@
     "blogTitle": "Latest articles",
     "allPosts": "All articles",
     "ctaTitle": "Ready to start?",
-    "ctaText": "Enrol now — we will contact you to arrange an intro call."
+    "ctaText": "Enrol now — we will contact you to arrange an intro call.",
+    "translatedFrom": {
+      "hy": "Translated from Armenian",
+      "ru": "Translated from Russian",
+      "en": ""
+    }
   },
   "course": {
     "perMonth": "/ month",

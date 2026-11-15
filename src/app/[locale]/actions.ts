@@ -1,5 +1,6 @@
 "use server";
 import { redirect } from "next/navigation";
+import { guessLocale, translateAll } from "@/lib/translate";
 import { revalidateTag } from "next/cache";
 import { and, eq, gt, like } from "drizzle-orm";
 import { randomBytes } from "node:crypto";
@@ -115,7 +116,8 @@ export async function reviewAction(_: ActionResult, fd: FormData): Promise<Actio
   const text = str(fd, "text");
   if (rating < 1 || rating > 5 || text.length < 10 || text.length > 2000) return { error: t.auth.errForm };
   const courseId = str(fd, "courseId") || null;
-  await db.insert(s.reviews).values({ userId: sess.uid, courseId, rating, text, locale: l });
+  const textI18n = await translateAll(text, l);
+  await db.insert(s.reviews).values({ userId: sess.uid, courseId, rating, text, locale: guessLocale(text, l), textI18n });
   const st = await getSettings();
   await sendMail(st.adminEmail, "Նոր կարծիք՝ սպասում է հաստատման", emailHtml("Նոր կարծիք", [`${sess.name} · ${rating}/5`, text], { label: "Մոդերացիա", url: `${siteUrl()}/admin/reviews` }));
   revalidateTag("reviews");

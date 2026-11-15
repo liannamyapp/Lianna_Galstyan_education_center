@@ -81,6 +81,7 @@ export const getCourse = guard(_getCourse, null as Awaited<ReturnType<typeof _ge
 const _getApprovedReviews = unstable_cache(
   (limit = 6) => safe(async () => db.select({
     id: s.reviews.id, rating: s.reviews.rating, text: s.reviews.text, reply: s.reviews.reply, createdAt: s.reviews.createdAt,
+    locale: s.reviews.locale, textI18n: s.reviews.textI18n, replyI18n: s.reviews.replyI18n,
     name: s.users.name, courseCode: s.courses.code,
   }).from(s.reviews).innerJoin(s.users, eq(s.users.id, s.reviews.userId)).leftJoin(s.courses, eq(s.courses.id, s.reviews.courseId))
     .where(eq(s.reviews.status, "APPROVED")).orderBy(desc(s.reviews.createdAt)).limit(limit), []),

@@ -9,8 +9,10 @@ import { str, num, bool } from "@/lib/validate";
 import { storeFile } from "@/lib/storage";
 import { slugify } from "@/lib/format";
 import { emailHtml, sendMail } from "@/lib/mail";
-import { getDict, fmt, tr } from "@/lib/i18n";
+import { getDict, fmt, tr, type Locale } from "@/lib/i18n";
+import type { L10n } from "@/db/schema";
 import { markFailed, markPaid, markRefunded } from "@/lib/payments";
+import { autoTranslateEnabled, translateAll } from "@/lib/translate";
 import { siteUrl } from "@/lib/seo";
 import type { ActionResult } from "@/components/ActionForm";
 import { syncLeadForUser } from "@/lib/crm/automations";
@@ -189,8 +191,29 @@ export async function moderateReview(fd: FormData) {
   if (str(fd, "op") === "delete") {
     await db.delete(s.reviews).where(eq(s.reviews.id, id));
   } else {
-    await db.update(s.reviews).set({ status: status || r.status, reply: str(fd, "reply") || r.reply, text: str(fd, "text") || r.text, moderatedAt: new Date() }).where(eq(s.reviews.id, id));
-    if (status === "APPROVED" && r.status !== "APPROVED") {
+    const text = str(fd, "text") || r.text;
+    const reply = str(fd, "reply");
+    const src = (["hy", "ru", "en"].includes(r.locale) ? r.locale : "hy") as Locale;
+    // translations typed by the admin; the original language always mirrors the main text
+    const pick = (prefix: string) => Object.fromEntries((["hy", "ru", "en"] as const).map((l) => [l, str(fd, `${prefix}_${l}`)]).filter(([, v]) => v)) as Partial<L10n>;
+    let textI18n: Partial<L10n> = { ...pick("text"), [src]: text };
+    let replyI18n: Partial<L10n> = reply ? { ...pick("reply") } : {};
+    const forceAuto = str(fd, "op") === "translate";
+    const textChanged = text !== r.text;
+    const missing = (v: Partial<L10n>) => (["hy", "ru", "en"] as const).some((l) => !v[l]);
+    if (autoTranslateEnabled() && (forceAuto || textChanged || ((status === "APPROVED" || forceAuto) && missing(textI18n)))) {
+      const auto = await translateAll(text, src);
+      textI18n = forceAuto || textChanged ? { ...textI18n, ...auto, [src]: text } : { ...auto, ...textI18n };
+    }
+    if (reply && (forceAuto || missing(replyI18n) || reply !== r.reply)) {
+      const auto = await translateAll(reply, "hy");
+      replyI18n = forceAuto || reply !== r.reply ? { ...replyI18n, ...auto } : { ...auto, ...replyI18n };
+    }
+    await db.update(s.reviews).set({
+      status: forceAuto ? r.status : status || r.status, text, reply: reply || null,
+      textI18n, replyI18n: reply ? replyI18n : null, moderatedAt: new Date(),
+    }).where(eq(s.reviews.id, id));
+    if (!forceAuto && status === "APPROVED" && r.status !== "APPROVED") {
       const t = getDict(r.user.locale);
       await sendMail(r.user.email, t.mail.reviewSubject, emailHtml(t.mail.reviewSubject, [`${r.user.name},`, t.mail.reviewBody], { label: tr({ hy: "Կայք", ru: "Сайт", en: "Website" }, r.user.locale), url: `${siteUrl()}/${r.user.locale}#reviews` }));
     }
