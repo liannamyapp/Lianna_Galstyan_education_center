@@ -18,7 +18,7 @@ const L = (hy: string, ru: string, en: string): L10n => ({ hy, ru, en });
 
 export const defaultSettings: SiteSettings = {
   site: {
-    name: L("Լիաննա Գալստյան", "Лианна Галстян", "Lianna Galstyan"),
+    name: L("ALTA Academy", "ALTA Academy", "ALTA Academy"),
     tagline: L("Կրթական կենտրոն", "Образовательный центр", "Education Centre"),
     description: L(
       "Ծրագրավորման առցանց դասընթացներ Երևանում՝ կենդանի դասեր փոքր խմբերով, գործնական նախագծեր և վկայական։ Ֆրոնթենդ (HTML, CSS, JavaScript, React) և բեքենդ (Node.js)։",
@@ -87,7 +87,13 @@ const cachedSettings = unstable_cache(
   async (): Promise<SiteSettings> => {
     const rows = await db.select().from(s.settings);
     const stored = Object.fromEntries(rows.map((r) => [r.key, r.value]));
-    return merge(defaultSettings, stored);
+    const out = merge(defaultSettings, stored);
+    // The centre was renamed to ALTA Academy: an old stored name must not bring the previous brand back.
+    const oldNames = ["Լիաննա Գալստյան", "Лианна Галстян", "Lianna Galstyan"];
+    for (const k of Object.keys(out.site.name) as (keyof L10n)[]) {
+      if (oldNames.includes(String(out.site.name[k]).trim())) out.site.name[k] = defaultSettings.site.name[k];
+    }
+    return out;
   },
   ["site-settings"],
   { tags: ["settings"], revalidate: 3600 }

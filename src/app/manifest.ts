@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Լիաննա Գալստյան · Կրթական կենտրոն",
-    short_name: "ԼԳ Academy",
+    name: "ALTA Academy · Կրթական կենտրոն",
+    short_name: "ALTA Academy",
     description: "Ծրագրավորման առցանց դասընթացներ",
     start_url: "/",
     display: "standalone",

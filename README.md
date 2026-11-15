@@ -1,4 +1,4 @@
-# Լիաննա Գալստյան · Կրթական կենտրոն — կայք
+# ALTA Academy · Կրթական կենտրոն — կայք
 
 Եռալեզու (ՀԱՅ / РУС / ENG) կայք՝ ադմին վահանակով, անձնական էջերով, առցանց վճարումներով (Idram, բանկային քարտ), վկայականների ստուգմամբ և բլոգով։
 
@@ -85,7 +85,7 @@ Vercel → Project → **Storage → Create → Blob** → Connect։ `BLOB_READ_
 3. Vercel-ում ավելացրեք․
    - `SMTP_HOST=smtp.gmail.com`, `SMTP_PORT=465`
    - `SMTP_USER=ձեր@gmail.com`, `SMTP_PASS=16-նիշանոց app password`
-   - `MAIL_FROM=Լիաննա Գալստյան <ձեր@gmail.com>`
+   - `MAIL_FROM=ALTA Academy <ձեր@gmail.com>`
 
 Առանց SMTP-ի կայքն աշխատում է, բայց նամակները չեն ուղարկվում։
 

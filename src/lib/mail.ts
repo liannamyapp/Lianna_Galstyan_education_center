@@ -21,7 +21,7 @@ export function emailHtml(title: string, lines: string[], cta?: { label: string;
   return `<!doctype html><html><body style="margin:0;background:#f6f4ef;font-family:Arial,'Noto Sans Armenian',sans-serif;color:#1c2433">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:32px 16px">
 <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px;background:#fff;border-radius:16px;overflow:hidden;border:1px solid #e6e0d3">
-<tr><td style="background:#0f2440;padding:22px 28px;color:#e3c47c;font-size:18px;font-weight:bold">Լիաննա Գալստյան · Education</td></tr>
+<tr><td style="background:#0f2440;padding:22px 28px;color:#e3c47c;font-size:18px;font-weight:bold">ALTA Academy · Education Center</td></tr>
 <tr><td style="padding:28px"><h1 style="font-size:20px;margin:0 0 14px;color:#0f2440">${esc(title)}</h1>
 ${lines.map((l) => `<p style="margin:0 0 12px;line-height:1.6">${esc(l)}</p>`).join("")}
 ${cta ? `<p style="margin:22px 0 0"><a href="${cta.url}" style="background:#16365c;color:#fff;text-decoration:none;padding:12px 22px;border-radius:999px;display:inline-block;font-weight:bold">${esc(cta.label)}</a></p>` : ""}

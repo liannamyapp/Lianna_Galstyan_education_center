@@ -17,7 +17,9 @@ export async function Footer({ locale }: { locale: Locale }) {
     <footer className="mt-24 bg-navy-950 text-[#b9c4d4]">
       <div className="container-x grid gap-10 py-16 sm:grid-cols-2 lg:grid-cols-4">
         <div>
-          <p className="font-serif text-[22px] font-bold text-white">{tr(st.site.name, locale)}</p>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo-emblem.svg" alt="" width={110} height={60} className="mb-3 h-[60px] w-auto" />
+          <p className="font-serif text-[22px] font-bold tracking-[0.06em] text-white">{tr(st.site.name, locale)}</p>
           <p className="mt-2 text-[14px]">{tr(st.site.tagline, locale)} · {tr(c.city, locale)}</p>
           {social.length > 0 && (
             <div className="mt-5 flex gap-2.5">

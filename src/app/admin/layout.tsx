@@ -5,7 +5,7 @@ import { requireAdmin } from "@/lib/auth";
 import { Icon } from "@/components/Icon";
 import { logoutAction } from "../[locale]/actions";
 
-export const metadata: Metadata = { title: "Ադմին · Լիաննա Գալստյան", robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: "Ադմին · ALTA Academy", robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
 
 const nav: [string, string, string][] = [
@@ -37,7 +37,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <aside className="w-full bg-navy-950 p-4 lg:sticky lg:top-0 lg:flex lg:h-screen lg:w-[260px] lg:flex-none lg:flex-col">
             <div className="flex items-center justify-between gap-3">
               <Link href="/admin" className="flex min-w-0 items-center gap-3 px-2 py-2 text-white no-underline">
-                <span className="flex size-10 flex-none items-center justify-center rounded-full border-[1.5px] border-gold-500 font-serif font-bold text-gold-300">ԼԳ</span>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/logo-emblem.svg" alt="ALTA Academy" width={73} height={40} className="h-10 w-auto flex-none" />
                 <span className="min-w-0"><span className="block font-serif font-bold">Ադմին</span><span className="block truncate text-[12px] text-[#8193ab]">{me.name}</span></span>
               </Link>
             </div>
