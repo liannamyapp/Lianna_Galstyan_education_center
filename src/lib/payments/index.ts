@@ -44,6 +44,29 @@ export async function markPaid(paymentId: string, providerRef?: string, provider
   return p;
 }
 
-export async function markFailed(paymentId: string, providerData?: unknown) {
-  await db.update(s.payments).set({ status: "FAILED", providerData: providerData ?? null }).where(eq(s.payments.id, paymentId));
+export async function markFailed(paymentId: string, providerData?: unknown, notify = true) {
+  const [p] = await db.select().from(s.payments).where(eq(s.payments.id, paymentId)).limit(1);
+  if (!p || p.status === "FAILED" || p.status === "PAID" || p.status === "REFUNDED") return p;
+  await db.update(s.payments).set({ status: "FAILED", providerData: providerData ?? p.providerData }).where(eq(s.payments.id, p.id));
+  if (notify) await notifyStudent(p, "failed");
+  return p;
+}
+
+/** Marks a paid payment as refunded and tells the student. */
+export async function markRefunded(paymentId: string) {
+  const [p] = await db.select().from(s.payments).where(eq(s.payments.id, paymentId)).limit(1);
+  if (!p || p.status !== "PAID") return p;
+  await db.update(s.payments).set({ status: "REFUNDED" }).where(eq(s.payments.id, p.id));
+  await notifyStudent(p, "refund");
+  return p;
+}
+
+async function notifyStudent(p: typeof s.payments.$inferSelect, kind: "failed" | "refund") {
+  const [u] = await db.select().from(s.users).where(eq(s.users.id, p.userId)).limit(1);
+  if (!u) return;
+  const t = getDict(u.locale).mail;
+  const subject = kind === "failed" ? t.failedSubject : t.refundSubject;
+  const body = (kind === "failed" ? t.failedBody : t.refundBody).replace("{amount}", money(p.amount, u.locale as "hy" | "ru" | "en"));
+  const site = process.env.NEXT_PUBLIC_SITE_URL || "";
+  await sendMail(u.email, subject, emailHtml(subject, [`${u.name},`, body, p.description], { label: t.openAccount, url: `${site}/${u.locale}/account#payments` })).catch(() => {});
 }

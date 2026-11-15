@@ -4,7 +4,10 @@ import { ValueButton } from "@/components/ValueButton";
 import { money, dateShort } from "@/lib/format";
 import { ActionForm } from "@/components/ActionForm";
 import { SubmitButton } from "@/components/SubmitButton";
-import { AdminCard, PageHead, badge, statusHy, th, td } from "@/components/admin/fields";
+import { AdminCard, PageHead, badge, th, td } from "@/components/admin/fields";
+import { LiveRefresh } from "@/components/LiveRefresh";
+
+const payStatusHy: Record<string, string> = { PENDING: "Սպասում է հաստատման", PAID: "Հաստատված", FAILED: "Մերժված", REFUNDED: "Վերադարձված" };
 import { addManualPayment, setPaymentStatus } from "../actions";
 
 export default async function Payments() {
@@ -13,6 +16,7 @@ export default async function Payments() {
   const total = list.filter((p) => p.status === "PAID").reduce((n, p) => n + p.amount, 0);
   return (
     <>
+      <LiveRefresh poll={list.some((p) => p.status === "PENDING")} every={30000} />
       <PageHead title="Վճարումներ"><span className="chip bg-white font-semibold">Ընդամենը վճարված՝ {money(total)}</span></PageHead>
       <AdminCard title="Ավելացնել կանխիկ / բանկային փոխանցում">
         <ActionForm action={addManualPayment} resetOnSuccess className="grid gap-3 md:grid-cols-[2fr_1fr_2fr_auto] md:items-end">
@@ -30,11 +34,12 @@ export default async function Payments() {
               <td className={td}>{p.orderNo}</td><td className={td}>{dateShort(p.paidAt ?? p.createdAt)}</td>
               <td className={td}>{p.user.name}<br /><span className="text-muted">{p.user.email}</span></td>
               <td className={td}>{p.description}</td><td className={`${td} whitespace-nowrap font-semibold`}>{money(p.amount)}</td><td className={td}>{p.method}</td>
-              <td className={td}><span className={`chip font-semibold ${badge[p.status]}`}>{statusHy[p.status]}</span></td>
+              <td className={td}><span className={`chip font-semibold ${badge[p.status]}`}>{payStatusHy[p.status]}</span></td>
               <td className={td}>
-                <form action={setPaymentStatus} className="flex gap-1.5">
+                <form action={setPaymentStatus} className="flex flex-wrap gap-x-3 gap-y-1.5">
                   <input type="hidden" name="id" value={p.id} />
-                  {p.status !== "PAID" && <ValueButton name="status" value="PAID" className="text-[13px] font-semibold text-[#1f5f33]">Վճարված</ValueButton>}
+                  {p.status !== "PAID" && p.status !== "REFUNDED" && <ValueButton name="status" value="PAID" className="text-[13px] font-semibold text-[#1f5f33]">Հաստատել</ValueButton>}
+                  {p.status === "PENDING" && <ValueButton name="status" value="FAILED" className="text-[13px] font-semibold text-[#8a2f1d]">Մերժել</ValueButton>}
                   {p.status === "PAID" && <ValueButton name="status" value="REFUNDED" className="text-[13px] font-semibold text-[#8a2f1d]">Վերադարձ</ValueButton>}
                 </form>
               </td>

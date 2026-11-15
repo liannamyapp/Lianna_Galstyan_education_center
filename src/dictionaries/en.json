@@ -147,7 +147,7 @@
     "failTitle": "Payment failed",
     "failText": "You have not been charged. Try again or choose another method.",
     "pendingTitle": "Payment is processing",
-    "pendingText": "Refresh the page in a few seconds.",
+    "pendingText": "Waiting for the bank to confirm. This page updates by itself.",
     "toAccount": "My account",
     "tryAgain": "Try again",
     "testTitle": "Test payment",
@@ -207,9 +207,9 @@
       "CANCELLED": "Cancelled"
     },
     "payStatus": {
-      "PENDING": "Pending",
-      "PAID": "Paid",
-      "FAILED": "Failed",
+      "PENDING": "Awaiting confirmation",
+      "PAID": "Confirmed",
+      "FAILED": "Declined",
       "REFUNDED": "Refunded"
     },
     "contract": "Contract No. {no}",
@@ -327,7 +327,11 @@
     "emailChangeBody": "We received a request to change your account login to {email}. Click the button to confirm. If you didn't request this, just ignore this email.",
     "emailChangeBtn": "Confirm",
     "emailChangeNoticeSubject": "Email change requested for your account",
-    "emailChangeNoticeBody": "A change of your login to {email} was requested. If it wasn't you, change your password right away and contact us."
+    "emailChangeNoticeBody": "A change of your login to {email} was requested. If it wasn't you, change your password right away and contact us.",
+    "failedSubject": "Payment not confirmed",
+    "failedBody": "Your payment of {amount} was not confirmed and nothing was charged. You can try again from your account or contact us.",
+    "refundSubject": "Payment refunded",
+    "refundBody": "Your payment of {amount} has been refunded. The money will reach your account within your bank's usual time."
   },
   "format": {
     "title": "Learning format",

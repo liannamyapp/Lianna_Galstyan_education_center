@@ -10,7 +10,7 @@ import { storeFile } from "@/lib/storage";
 import { slugify } from "@/lib/format";
 import { emailHtml, sendMail } from "@/lib/mail";
 import { getDict, fmt, tr } from "@/lib/i18n";
-import { markPaid } from "@/lib/payments";
+import { markFailed, markPaid, markRefunded } from "@/lib/payments";
 import { siteUrl } from "@/lib/seo";
 import type { ActionResult } from "@/components/ActionForm";
 import { syncLeadForUser } from "@/lib/crm/automations";
@@ -174,7 +174,8 @@ export async function setPaymentStatus(fd: FormData) {
   const status = str(fd, "status") as "PAID" | "REFUNDED" | "FAILED";
   const id = str(fd, "id");
   if (status === "PAID") await markPaid(id, "MANUAL");
-  else await db.update(s.payments).set({ status }).where(eq(s.payments.id, id));
+  else if (status === "FAILED") await markFailed(id);
+  else if (status === "REFUNDED") await markRefunded(id);
   revalidatePath("/admin/payments");
 }
 

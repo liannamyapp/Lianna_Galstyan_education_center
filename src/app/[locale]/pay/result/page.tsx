@@ -6,6 +6,7 @@ import { requireUser } from "@/lib/auth";
 import { getDict, type Locale } from "@/lib/i18n";
 import { money } from "@/lib/format";
 import { Icon } from "@/components/Icon";
+import { LiveRefresh } from "@/components/LiveRefresh";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { robots: { index: false } };
@@ -26,6 +27,7 @@ export default async function Result({ params, searchParams }: { params: Promise
   }[state];
   return (
     <div className="container-x max-w-[620px] py-20">
+      {state === "pending" && <LiveRefresh poll every={4000} />}
       <div className="card p-9 text-center" role="status">
         <span className={`mx-auto flex size-16 items-center justify-center rounded-full ${view.tone}`}><Icon name={view.icon} size={30} strokeWidth={2.4} /></span>
         <h1 className="mt-5 font-serif text-[28px] font-bold text-navy-900">{view.title}</h1>
