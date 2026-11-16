@@ -107,7 +107,7 @@ async function main() {
   const aiCourses = [
     {
       slug: "ai-for-everyone", code: "ԱԲՀ-01", order: 3, hours: 36, theoryHours: 12, practiceHours: 24, weeks: 6, lessonsPerWeek: 2, priceMonthly: 35000, priceFull: 65000, priceIndividual: 125000, months: 2, minAge: 16,
-      title: L("AI գործիքներ բոլորի համար", "AI-инструменты для всех", "AI Tools for Everyone"),
+      title: L("Արհեստական բանականության գործիքներ բոլորի համար", "AI-инструменты для всех", "AI Tools for Everyone"),
       summary: L("ChatGPT, Claude, Gemini և այլ AI գործիքներ աշխատանքի, ուսման և առօրյայի համար՝ առանց ծրագրավորման։", "ChatGPT, Claude, Gemini и другие AI-инструменты для работы, учёбы и жизни — без программирования.", "ChatGPT, Claude, Gemini and other AI tools for work, study and everyday life — no coding needed."),
       description: L(
         "Դասընթացը նախատեսված է բոլոր նրանց համար, ովքեր ցանկանում են արհեստական բանականության գործիքներն օգտագործել ամեն օր՝ արդյունավետ, քննադատաբար և անվտանգ։ Կսովորեք ճիշտ հարցումներ (prompt) կազմել, AI-ով գրել նամակներ և փաստաթղթեր, աշխատել աղյուսակների ու ներկայացումների հետ, ստեղծել պատկերներ, ձայն և կարճ վիդեոներ, ինչպես նաև ստուգել AI-ի տված տեղեկատվությունը։\n\nԴասերն անցնում են կենդանի առցանց ձևաչափով՝ մինչև 12 հոգանոց խմբերով, շաբաթը 2 անգամ, բոլոր դասերը ձայնագրվում են։",
@@ -117,14 +117,14 @@ async function main() {
       level: L("Սկսնակ", "Начальный", "Beginner"),
       requirements: L("Համակարգչի կամ սմարթֆոնի և համացանցի հետ աշխատելու հիմնական հմտություններ։ Ծրագրավորման կամ AI-ի նախնական գիտելիքներ պետք չեն։", "Базовые навыки работы с компьютером или смартфоном и интернетом. Знания программирования или AI не нужны.", "Basic computer or smartphone and internet skills. No programming or AI knowledge needed."),
       outcomes: {
-        hy: ["Կազմել հստակ հարցումներ և ստանալ որակյալ արդյունք", "AI-ով գրել նամակներ, փաստաթղթեր և ամփոփումներ", "AI-ով աշխատել աղյուսակների և ներկայացումների հետ", "Ստուգել AI-ի տված տեղեկատվությունը", "Ստեղծել պատկերներ, ձայն և կարճ վիդեոներ", "Պաշտպանել անձնական տվյալները և պահպանել էթիկական կանոնները"],
+        hy: ["Կազմել հստակ հարցումներ (prompt) և ստանալ որակյալ արդյունք", "AI-ով գրել նամակներ, փաստաթղթեր և ամփոփումներ", "AI-ով աշխատել աղյուսակների և ներկայացումների հետ", "Ստուգել AI-ի տված տեղեկատվությունը և գտնել սխալները", "Ստեղծել պատկերներ, ձայնային ուղեկցում և կարճ վիդեոներ", "Պաշտպանել անձնական տվյալները և պահպանել էթիկական կանոնները"],
         ru: ["Составлять чёткие запросы и получать качественный результат", "Писать с AI письма, документы и резюме текстов", "Работать с AI в таблицах и презентациях", "Проверять информацию, которую даёт AI", "Создавать изображения, озвучку и короткие видео", "Защищать личные данные и соблюдать этические нормы"],
         en: ["Write clear prompts and get quality results", "Draft emails, documents and summaries with AI", "Use AI with spreadsheets and presentations", "Fact-check information from AI", "Create images, voice-overs and short videos", "Protect personal data and use AI ethically"],
       },
       modules: [
         ["Մ-01", 3, L("Ներածություն արհեստական բանականությանը", "Введение в искусственный интеллект", "Introduction to artificial intelligence")],
         ["Մ-02", 6, L("Հարցումների (prompt) կազմման հիմունքներ", "Основы составления запросов (промптов)", "Prompting fundamentals")],
-        ["Մ-03", 6, L("AI-ը աշխատանքում և ուսման մեջ", "AI в работе и учёбе", "AI for work and study")],
+        ["Մ-03", 6, L("AI-ն աշխատանքում և ուսման մեջ", "AI в работе и учёбе", "AI for work and study")],
         ["Մ-04", 3, L("Տեղեկատվության որոնում և ստուգում", "Поиск и проверка информации", "Searching and fact-checking")],
         ["Մ-05", 6, L("Պատկերների, ձայնի և վիդեոյի ստեղծում", "Создание изображений, звука и видео", "Creating images, audio and video")],
         ["Մ-06", 3, L("Անձնական արտադրողականություն", "Личная продуктивность", "Personal productivity")],
@@ -134,7 +134,7 @@ async function main() {
     },
     {
       slug: "ai-for-business", code: "ԱԲՄ-01", order: 4, hours: 36, theoryHours: 12, practiceHours: 24, weeks: 6, lessonsPerWeek: 2, priceMonthly: 50000, priceFull: 95000, priceIndividual: 125000, months: 2, minAge: 18,
-      title: L("AI բիզնեսում և մարքեթինգում", "AI в бизнесе и маркетинге", "AI for Business and Marketing"),
+      title: L("Արհեստական բանականությունը բիզնեսում և մարքեթինգում", "AI в бизнесе и маркетинге", "AI for Business and Marketing"),
       summary: L("Կոնտենտ, reels, չաթբոտներ և ավտոմատացում AI-ով՝ ձեր բիզնեսի համար, առանց ծրագրավորման։", "Контент, reels, чат-боты и автоматизация с AI — для вашего бизнеса, без программирования.", "Content, reels, chatbots and automation with AI — for your business, no coding needed."),
       description: L(
         "Դասընթացը նախատեսված է անհատ ձեռնարկատերերի, փոքր և միջին բիզնեսի աշխատողների, SMM և մարքեթինգի մասնագետների համար։ Կսովորեք AI-ով կազմել կոնտենտ պլան, գրել գրառումներ և սցենարներ, ստեղծել բրենդային պատկերներ ու կարճ վիդեոներ, կարգավորել չաթբոտ հաճախորդների հարցերի համար և ավտոմատացնել կրկնվող աշխատանքը no-code գործիքներով։\n\nԲոլոր առաջադրանքները կատարվում են ձեր իրական բիզնեսի վրա, ուստի դասընթացի ավարտին ունենում եք օգտագործման պատրաստ նյութեր։ Դասերն անցնում են կենդանի առցանց ձևաչափով՝ շաբաթը 2 անգամ, բոլոր դասերը ձայնագրվում են։",
@@ -144,12 +144,12 @@ async function main() {
       level: L("Սկսնակ", "Начальный", "Beginner"),
       requirements: L("Համակարգչի և սոցիալական ցանցերի հետ աշխատելու հիմնական հմտություններ։ Ցանկալի է գործող բիզնես կամ բիզնես գաղափար։ Ծրագրավորում պետք չէ։", "Базовые навыки работы с компьютером и соцсетями. Желательно действующий бизнес или бизнес-идея. Программирование не нужно.", "Basic computer and social media skills. An existing business or business idea is recommended. No coding needed."),
       outcomes: {
-        hy: ["Գտնել բիզնեսի այն գործընթացները, որտեղ AI-ը կխնայի ժամանակ", "AI-ով կազմել ամսական կոնտենտ պլան", "Գրել գրառումներ, սցենարներ և գովազդային տեքստեր", "Ստեղծել բրենդային պատկերներ և կարճ վիդեոներ", "Կարգավորել չաթբոտ հաճախորդների հարցերի համար", "Ավտոմատացնել կրկնվող աշխատանքը no-code գործիքներով"],
+        hy: ["Գտնել բիզնեսի այն գործընթացները, որտեղ AI-ն կխնայի ժամանակ", "AI-ով կազմել ամսական կոնտենտ պլան", "Գրել գրառումներ, սցենարներ և գովազդային տեքստեր", "Ստեղծել բրենդային պատկերներ և կարճ վիդեոներ", "Կարգավորել չաթբոտ հաճախորդների հարցերի համար", "Ավտոմատացնել կրկնվող աշխատանքը no-code գործիքներով"],
         ru: ["Находить процессы бизнеса, где AI сэкономит время", "Составлять месячный контент-план с AI", "Писать посты, сценарии и рекламные тексты", "Создавать брендовые изображения и короткие видео", "Настраивать чат-бота для вопросов клиентов", "Автоматизировать рутину no-code инструментами"],
         en: ["Spot business processes where AI saves time", "Build a monthly content plan with AI", "Write posts, scripts and ad copy", "Create on-brand images and short videos", "Set up a chatbot for customer questions", "Automate routine work with no-code tools"],
       },
       modules: [
-        ["Մ-01", 3, L("AI-ը բիզնեսում՝ հնարավորություններ և սահմանափակումներ", "AI в бизнесе: возможности и ограничения", "AI in business: possibilities and limits")],
+        ["Մ-01", 3, L("AI-ն բիզնեսում՝ հնարավորություններ և սահմանափակումներ", "AI в бизнесе: возможности и ограничения", "AI in business: possibilities and limits")],
         ["Մ-02", 3, L("Հարցումներ բիզնես խնդիրների համար", "Запросы для бизнес-задач", "Prompts for business tasks")],
         ["Մ-03", 3, L("Բրենդ և կոնտենտ ռազմավարություն", "Бренд и контент-стратегия", "Brand and content strategy")],
         ["Մ-04", 3, L("Տեքստային կոնտենտ", "Текстовый контент", "Written content")],
@@ -163,7 +163,7 @@ async function main() {
     },
     {
       slug: "ai-for-developers", code: "ԱԲԾ-01", order: 5, hours: 72, theoryHours: 22, practiceHours: 50, weeks: 12, lessonsPerWeek: 2, priceMonthly: 70000, priceFull: 195000, priceIndividual: 125000, months: 3, minAge: 16,
-      title: L("AI-ի կիրառումը վեբ ծրագրավորման մեջ", "AI в веб-разработке", "AI for Web Developers"),
+      title: L("Արհեստական բանականության կիրառումը վեբ ծրագրավորման մեջ", "AI в веб-разработке", "AI for Web Developers"),
       summary: L("LLM API-ներ, չաթբոտներ (Telegram, WhatsApp), RAG և AI գործակալներ Node.js-ով՝ մինչև հրապարակված AI հավելված։", "LLM API, чат-боты (Telegram, WhatsApp), RAG и AI-агенты на Node.js — до опубликованного AI-приложения.", "LLM APIs, chatbots (Telegram, WhatsApp), RAG and AI agents with Node.js — up to a deployed AI app."),
       description: L(
         "Դասընթացը նախատեսված է JavaScript-ին տիրապետող ծրագրավորողների համար, ովքեր ցանկանում են AI-ով արագացնել իրենց աշխատանքը և ստեղծել AI-ով աշխատող վեբ հավելվածներ։ Կսովորեք աշխատել Cursor-ի, Claude Code-ի և Copilot-ի հետ, միացնել OpenAI և Anthropic API-ները Node.js-ով, ստանալ կառուցվածքային պատասխաններ, մշակել չաթբոտներ կայքի, Telegram-ի և WhatsApp-ի (GREEN-API) համար, կառուցել փաստաթղթերից պատասխանող RAG համակարգ և AI գործակալներ (agents, MCP), ապա անվտանգ հրապարակել հավելվածը։\n\nԱվարտին ներկայացնում եք սեփական AI հավելվածը՝ հրապարակված համացանցում և GitHub-ում։ Դասերն անցնում են կենդանի առցանց ձևաչափով՝ մինչև 10 հոգանոց խմբերով, բոլոր դասերը ձայնագրվում են։",
@@ -173,7 +173,7 @@ async function main() {
       level: L("Միջին", "Средний", "Intermediate"),
       requirements: L("JavaScript-ի հիմունքներ (ֆունկցիաներ, զանգվածներ, օբյեկտներ, async/await), Node.js-ի և Git-ի հիմնական գիտելիքներ (օր.՝ ՖՎԾ-01 կամ ԲՎԾ-01 դասընթացի մակարդակով)։", "Основы JavaScript (функции, массивы, объекты, async/await), базовые знания Node.js и Git (например, на уровне курса ФВЦ-01 или БВЦ-01).", "JavaScript basics (functions, arrays, objects, async/await) and basic Node.js and Git (e.g. the level of the Frontend or Backend course)."),
       outcomes: {
-        hy: ["Արդյունավետ և անվտանգ ծրագրավորել AI օգնականներով", "Միացնել LLM API-ներ Node.js հավելվածներին", "Ստանալ կառուցվածքային պատասխաններ և օգտագործել tool calling", "Մշակել չաթբոտներ կայքի, Telegram-ի և WhatsApp-ի համար", "Կառուցել RAG համակարգ և AI գործակալներ", "Հրապարակել AI հավելվածը՝ անվտանգության և ծախսերի վերահսկմամբ"],
+        hy: ["Արդյունավետ և անվտանգ ծրագրավորել AI օգնականներով", "Միացնել LLM API-ներ Node.js հավելվածներին", "Ստանալ կառուցվածքային պատասխաններ և օգտագործել գործիքների կանչ (tool calling)", "Մշակել չաթբոտներ կայքի, Telegram-ի և WhatsApp-ի համար", "Կառուցել RAG համակարգ և AI գործակալներ", "Հրապարակել AI հավելվածը՝ անվտանգության և ծախսերի վերահսկմամբ"],
         ru: ["Эффективно и безопасно программировать с AI-ассистентами", "Подключать LLM API к приложениям на Node.js", "Получать структурированные ответы и использовать tool calling", "Разрабатывать чат-ботов для сайта, Telegram и WhatsApp", "Строить RAG-систему и AI-агентов", "Публиковать AI-приложение с контролем безопасности и расходов"],
         en: ["Code effectively and safely with AI assistants", "Connect LLM APIs to Node.js apps", "Get structured outputs and use tool calling", "Build chatbots for the web, Telegram and WhatsApp", "Build a RAG system and AI agents", "Deploy an AI app with security and cost control"],
       },
@@ -197,6 +197,24 @@ async function main() {
     if (ins.length) {
       await db.insert(s.courseModules).values(modules.map(([code, hours, title], i) => ({ courseId: ins[0].id, code, hours, title, order: i })));
       console.log("✓ course", c.code);
+    }
+  }
+
+
+  // Keep AI courses identical to the programmes submitted to the Ministry (only values still equal to earlier defaults are changed).
+  const AI_OLD: Record<string, { title: string; outcomes: string[] }> = {"ai-for-everyone": {"title": "AI գործիքներ բոլորի համար", "outcomes": ["Կազմել հստակ հարցումներ և ստանալ որակյալ արդյունք", "AI-ով գրել նամակներ, փաստաթղթեր և ամփոփումներ", "AI-ով աշխատել աղյուսակների և ներկայացումների հետ", "Ստուգել AI-ի տված տեղեկատվությունը", "Ստեղծել պատկերներ, ձայն և կարճ վիդեոներ", "Պաշտպանել անձնական տվյալները և պահպանել էթիկական կանոնները"]}, "ai-for-business": {"title": "AI բիզնեսում և մարքեթինգում", "outcomes": ["Գտնել բիզնեսի այն գործընթացները, որտեղ AI-ը կխնայի ժամանակ", "AI-ով կազմել ամսական կոնտենտ պլան", "Գրել գրառումներ, սցենարներ և գովազդային տեքստեր", "Ստեղծել բրենդային պատկերներ և կարճ վիդեոներ", "Կարգավորել չաթբոտ հաճախորդների հարցերի համար", "Ավտոմատացնել կրկնվող աշխատանքը no-code գործիքներով"]}, "ai-for-developers": {"title": "AI-ի կիրառումը վեբ ծրագրավորման մեջ", "outcomes": ["Արդյունավետ և անվտանգ ծրագրավորել AI օգնականներով", "Միացնել LLM API-ներ Node.js հավելվածներին", "Ստանալ կառուցվածքային պատասխաններ և օգտագործել tool calling", "Մշակել չաթբոտներ կայքի, Telegram-ի և WhatsApp-ի համար", "Կառուցել RAG համակարգ և AI գործակալներ", "Հրապարակել AI հավելվածը՝ անվտանգության և ծախսերի վերահսկմամբ"]}};
+  const AI_OLD_MODULES: Record<string, string> = { "ai-for-everyone:Մ-03": "AI-ը աշխատանքում և ուսման մեջ", "ai-for-business:Մ-01": "AI-ը բիզնեսում՝ հնարավորություններ և սահմանափակումներ" };
+  for (const c of aiCourses) {
+    const [row] = await db.select().from(s.courses).where(eq(s.courses.slug, c.slug)).limit(1);
+    if (!row) continue;
+    const old = AI_OLD[c.slug];
+    if ((row.title as { hy: string }).hy === old.title) await db.update(s.courses).set({ title: c.title }).where(eq(s.courses.id, row.id));
+    if (JSON.stringify((row.outcomes as { hy: string[] }).hy) === JSON.stringify(old.outcomes)) await db.update(s.courses).set({ outcomes: c.outcomes }).where(eq(s.courses.id, row.id));
+    const mods = await db.select().from(s.courseModules).where(eq(s.courseModules.courseId, row.id));
+    for (const [code, , title] of c.modules) {
+      const m = mods.find((x) => x.code === code);
+      const legacy = AI_OLD_MODULES[`${c.slug}:${code}`];
+      if (m && legacy && (m.title as { hy: string }).hy === legacy) await db.update(s.courseModules).set({ title }).where(eq(s.courseModules.id, m.id));
     }
   }
 
