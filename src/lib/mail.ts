@@ -1,3 +1,4 @@
+import { getSettings } from "@/lib/settings";
 import "server-only";
 import nodemailer from "nodemailer";
 
@@ -38,7 +39,9 @@ export async function sendMail(to: string, subject: string, html: string): Promi
     return false;
   }
   try {
-    await t.sendMail({ from: process.env.MAIL_FROM || process.env.SMTP_USER, to, subject, html });
+    // replies always reach the academy inbox (the address set in Admin → Settings), whatever account sends
+    const replyTo = await getSettings().then((st) => st.contacts.email || st.adminEmail).catch(() => undefined);
+    await t.sendMail({ from: process.env.MAIL_FROM || process.env.SMTP_USER, to, subject, html, replyTo });
     return true;
   } catch (e) {
     console.error("[mail] failed", e);

@@ -54,7 +54,7 @@ export const defaultSettings: SiteSettings = {
   },
   contacts: {
     phone: "+374 77 053446",
-    email: "galstyan.liana.87@gmail.com",
+    email: "altaacademy666@gmail.com",
     telegram: "G_liann",
     whatsapp: "37477053446",
     instagram: "",
@@ -67,7 +67,7 @@ export const defaultSettings: SiteSettings = {
     endorsement: L("", "", ""),
   },
   payments: { card: true, idram: true, reminderDays: 5, graceDays: 7 },
-  adminEmail: "galstyan.liana.87@gmail.com",
+  adminEmail: "altaacademy666@gmail.com",
 };
 
 function merge<T>(base: T, over: unknown): T {

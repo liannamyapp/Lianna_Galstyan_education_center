@@ -1,6 +1,6 @@
 /* Initial content. Safe to re-run: existing records are never overwritten. */
 import "dotenv/config";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { db, s } from "../src/db";
 
@@ -25,6 +25,10 @@ async function main() {
       console.log("✓ admin", email);
     }
   } else console.warn("! ADMIN_EMAIL / ADMIN_PASSWORD not set — admin not created");
+
+  // One-time move of the public/notification e-mail to the academy address (Nov 2026)
+  await db.execute(sql`update settings set value = replace(value::text, 'galstyan.liana.87@gmail.com', 'altaacademy666@gmail.com')::jsonb where value::text like '%galstyan.liana.87@gmail.com%'`);
+  await db.execute(sql`update pages set body = replace(body::text, 'galstyan.liana.87@gmail.com', 'altaacademy666@gmail.com')::jsonb where body::text like '%galstyan.liana.87@gmail.com%'`);
 
   await db.insert(s.directions).values({
     slug: "programming", icon: "code", order: 1,
