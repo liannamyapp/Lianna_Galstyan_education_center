@@ -106,7 +106,7 @@ async function main() {
 
   const aiCourses = [
     {
-      slug: "ai-for-everyone", code: "ԱԲՀ-01", order: 3, hours: 36, theoryHours: 12, practiceHours: 24, weeks: 6, lessonsPerWeek: 2, priceMonthly: 35000, priceFull: 65000, priceIndividual: 125000, months: 2, minAge: 16,
+      slug: "ai-for-everyone", code: "ԱԲՀ-01", order: 3, hours: 36, theoryHours: 12, practiceHours: 24, weeks: 6, lessonsPerWeek: 2, priceMonthly: 32500, priceFull: 65000, priceIndividual: 125000, months: 2, minAge: 16,
       title: L("Արհեստական բանականության գործիքներ բոլորի համար", "AI-инструменты для всех", "AI Tools for Everyone"),
       summary: L("ChatGPT, Claude, Gemini և այլ AI գործիքներ աշխատանքի, ուսման և առօրյայի համար՝ առանց ծրագրավորման։", "ChatGPT, Claude, Gemini и другие AI-инструменты для работы, учёбы и жизни — без программирования.", "ChatGPT, Claude, Gemini and other AI tools for work, study and everyday life — no coding needed."),
       description: L(
@@ -133,7 +133,7 @@ async function main() {
       ] as const,
     },
     {
-      slug: "ai-for-business", code: "ԱԲՄ-01", order: 4, hours: 36, theoryHours: 12, practiceHours: 24, weeks: 6, lessonsPerWeek: 2, priceMonthly: 50000, priceFull: 95000, priceIndividual: 125000, months: 2, minAge: 18,
+      slug: "ai-for-business", code: "ԱԲՄ-01", order: 4, hours: 36, theoryHours: 12, practiceHours: 24, weeks: 6, lessonsPerWeek: 2, priceMonthly: 47500, priceFull: 95000, priceIndividual: 125000, months: 2, minAge: 18,
       title: L("Արհեստական բանականությունը բիզնեսում և մարքեթինգում", "AI в бизнесе и маркетинге", "AI for Business and Marketing"),
       summary: L("Կոնտենտ, reels, չաթբոտներ և ավտոմատացում AI-ով՝ ձեր բիզնեսի համար, առանց ծրագրավորման։", "Контент, reels, чат-боты и автоматизация с AI — для вашего бизнеса, без программирования.", "Content, reels, chatbots and automation with AI — for your business, no coding needed."),
       description: L(
@@ -162,7 +162,7 @@ async function main() {
       ] as const,
     },
     {
-      slug: "ai-for-developers", code: "ԱԲԾ-01", order: 5, hours: 72, theoryHours: 22, practiceHours: 50, weeks: 12, lessonsPerWeek: 2, priceMonthly: 70000, priceFull: 195000, priceIndividual: 125000, months: 3, minAge: 16,
+      slug: "ai-for-developers", code: "ԱԲԾ-01", order: 5, hours: 72, theoryHours: 22, practiceHours: 50, weeks: 12, lessonsPerWeek: 2, priceMonthly: 70000, priceFull: 210000, priceIndividual: 125000, months: 3, minAge: 16,
       title: L("Արհեստական բանականության կիրառումը վեբ ծրագրավորման մեջ", "AI в веб-разработке", "AI for Web Developers"),
       summary: L("LLM API-ներ, չաթբոտներ (Telegram, WhatsApp), RAG և AI գործակալներ Node.js-ով՝ մինչև հրապարակված AI հավելված։", "LLM API, чат-боты (Telegram, WhatsApp), RAG и AI-агенты на Node.js — до опубликованного AI-приложения.", "LLM APIs, chatbots (Telegram, WhatsApp), RAG and AI agents with Node.js — up to a deployed AI app."),
       description: L(
@@ -208,6 +208,10 @@ async function main() {
     const [row] = await db.select().from(s.courses).where(eq(s.courses.slug, c.slug)).limit(1);
     if (!row) continue;
     const old = AI_OLD[c.slug];
+    // Prices: one-time payment equals the sum of monthly payments (no discount). Only earlier defaults are replaced.
+    const AI_OLD_PRICES: Record<string, [number, number]> = { "ai-for-everyone": [35000, 65000], "ai-for-business": [50000, 95000], "ai-for-developers": [70000, 195000] };
+    const [oldMonthly, oldFull] = AI_OLD_PRICES[c.slug];
+    if (row.priceMonthly === oldMonthly && row.priceFull === oldFull) await db.update(s.courses).set({ priceMonthly: c.priceMonthly, priceFull: c.priceFull }).where(eq(s.courses.id, row.id));
     if ((row.title as { hy: string }).hy === old.title) await db.update(s.courses).set({ title: c.title }).where(eq(s.courses.id, row.id));
     if (JSON.stringify((row.outcomes as { hy: string[] }).hy) === JSON.stringify(old.outcomes)) await db.update(s.courses).set({ outcomes: c.outcomes }).where(eq(s.courses.id, row.id));
     const mods = await db.select().from(s.courseModules).where(eq(s.courseModules.courseId, row.id));
