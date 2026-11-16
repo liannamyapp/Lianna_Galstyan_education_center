@@ -1,5 +1,6 @@
 const paths: Record<string, string> = {
   code: "M8 7l-5 5 5 5M16 7l5 5-5 5M14 4l-4 16",
+  sparkles: "M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8zM19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8zM5 15l.6 1.4L7 17l-1.4.6L5 19l-.6-1.4L3 17l1.4-.6z",
   arrow: "M5 12h14M13 6l6 6-6 6",
   check: "M5 12l5 5 9-10",
   plus: "M12 5v14M5 12h14",

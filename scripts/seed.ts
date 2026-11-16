@@ -96,6 +96,110 @@ async function main() {
     }
   }
 
+  // AI direction and courses (programs ԱԲՀ-01, ԱԲՄ-01, ԱԲԾ-01 submitted to the Ministry).
+  await db.insert(s.directions).values({
+    slug: "ai", icon: "sparkles", order: 2,
+    title: L("Արհեստական բանականություն", "Искусственный интеллект", "Artificial Intelligence"),
+    description: L("AI գործիքներ աշխատանքի, բիզնեսի և ծրագրավորման համար՝ գործնական առաջադրանքներով։", "AI-инструменты для работы, бизнеса и программирования — с практическими заданиями.", "AI tools for work, business and programming — with hands-on practice."),
+  }).onConflictDoNothing();
+  const [aiDir] = await db.select().from(s.directions).where(eq(s.directions.slug, "ai"));
+
+  const aiCourses = [
+    {
+      slug: "ai-for-everyone", code: "ԱԲՀ-01", order: 3, hours: 36, theoryHours: 12, practiceHours: 24, weeks: 6, lessonsPerWeek: 2, priceMonthly: 35000, priceFull: 65000, priceIndividual: 125000, months: 2, minAge: 16,
+      title: L("AI գործիքներ բոլորի համար", "AI-инструменты для всех", "AI Tools for Everyone"),
+      summary: L("ChatGPT, Claude, Gemini և այլ AI գործիքներ աշխատանքի, ուսման և առօրյայի համար՝ առանց ծրագրավորման։", "ChatGPT, Claude, Gemini и другие AI-инструменты для работы, учёбы и жизни — без программирования.", "ChatGPT, Claude, Gemini and other AI tools for work, study and everyday life — no coding needed."),
+      description: L(
+        "Դասընթացը նախատեսված է բոլոր նրանց համար, ովքեր ցանկանում են արհեստական բանականության գործիքներն օգտագործել ամեն օր՝ արդյունավետ, քննադատաբար և անվտանգ։ Կսովորեք ճիշտ հարցումներ (prompt) կազմել, AI-ով գրել նամակներ և փաստաթղթեր, աշխատել աղյուսակների ու ներկայացումների հետ, ստեղծել պատկերներ, ձայն և կարճ վիդեոներ, ինչպես նաև ստուգել AI-ի տված տեղեկատվությունը։\n\nԴասերն անցնում են կենդանի առցանց ձևաչափով՝ մինչև 12 հոգանոց խմբերով, շաբաթը 2 անգամ, բոլոր դասերը ձայնագրվում են։",
+        "Курс для всех, кто хочет каждый день пользоваться инструментами искусственного интеллекта — эффективно, критично и безопасно. Вы научитесь составлять запросы (промпты), писать с помощью AI письма и документы, работать с таблицами и презентациями, создавать изображения, озвучку и короткие видео, а также проверять информацию от AI.\n\nЗанятия проходят вживую онлайн в группах до 12 человек 2 раза в неделю, все уроки записываются.",
+        "A course for anyone who wants to use artificial intelligence tools every day — effectively, critically and safely. You will learn to write good prompts, draft emails and documents with AI, work with spreadsheets and presentations, create images, voice-overs and short videos, and fact-check what AI tells you.\n\nLessons are live online in groups of up to 12, twice a week, and every lesson is recorded."
+      ),
+      level: L("Սկսնակ", "Начальный", "Beginner"),
+      requirements: L("Համակարգչի կամ սմարթֆոնի և համացանցի հետ աշխատելու հիմնական հմտություններ։ Ծրագրավորման կամ AI-ի նախնական գիտելիքներ պետք չեն։", "Базовые навыки работы с компьютером или смартфоном и интернетом. Знания программирования или AI не нужны.", "Basic computer or smartphone and internet skills. No programming or AI knowledge needed."),
+      outcomes: {
+        hy: ["Կազմել հստակ հարցումներ և ստանալ որակյալ արդյունք", "AI-ով գրել նամակներ, փաստաթղթեր և ամփոփումներ", "AI-ով աշխատել աղյուսակների և ներկայացումների հետ", "Ստուգել AI-ի տված տեղեկատվությունը", "Ստեղծել պատկերներ, ձայն և կարճ վիդեոներ", "Պաշտպանել անձնական տվյալները և պահպանել էթիկական կանոնները"],
+        ru: ["Составлять чёткие запросы и получать качественный результат", "Писать с AI письма, документы и резюме текстов", "Работать с AI в таблицах и презентациях", "Проверять информацию, которую даёт AI", "Создавать изображения, озвучку и короткие видео", "Защищать личные данные и соблюдать этические нормы"],
+        en: ["Write clear prompts and get quality results", "Draft emails, documents and summaries with AI", "Use AI with spreadsheets and presentations", "Fact-check information from AI", "Create images, voice-overs and short videos", "Protect personal data and use AI ethically"],
+      },
+      modules: [
+        ["Մ-01", 3, L("Ներածություն արհեստական բանականությանը", "Введение в искусственный интеллект", "Introduction to artificial intelligence")],
+        ["Մ-02", 6, L("Հարցումների (prompt) կազմման հիմունքներ", "Основы составления запросов (промптов)", "Prompting fundamentals")],
+        ["Մ-03", 6, L("AI-ը աշխատանքում և ուսման մեջ", "AI в работе и учёбе", "AI for work and study")],
+        ["Մ-04", 3, L("Տեղեկատվության որոնում և ստուգում", "Поиск и проверка информации", "Searching and fact-checking")],
+        ["Մ-05", 6, L("Պատկերների, ձայնի և վիդեոյի ստեղծում", "Создание изображений, звука и видео", "Creating images, audio and video")],
+        ["Մ-06", 3, L("Անձնական արտադրողականություն", "Личная продуктивность", "Personal productivity")],
+        ["Մ-07", 3, L("Անվտանգություն և էթիկա", "Безопасность и этика", "Safety and ethics")],
+        ["Մ-08", 6, L("Ավարտական նախագիծ", "Выпускной проект", "Final project")],
+      ] as const,
+    },
+    {
+      slug: "ai-for-business", code: "ԱԲՄ-01", order: 4, hours: 36, theoryHours: 12, practiceHours: 24, weeks: 6, lessonsPerWeek: 2, priceMonthly: 50000, priceFull: 95000, priceIndividual: 125000, months: 2, minAge: 18,
+      title: L("AI բիզնեսում և մարքեթինգում", "AI в бизнесе и маркетинге", "AI for Business and Marketing"),
+      summary: L("Կոնտենտ, reels, չաթբոտներ և ավտոմատացում AI-ով՝ ձեր բիզնեսի համար, առանց ծրագրավորման։", "Контент, reels, чат-боты и автоматизация с AI — для вашего бизнеса, без программирования.", "Content, reels, chatbots and automation with AI — for your business, no coding needed."),
+      description: L(
+        "Դասընթացը նախատեսված է անհատ ձեռնարկատերերի, փոքր և միջին բիզնեսի աշխատողների, SMM և մարքեթինգի մասնագետների համար։ Կսովորեք AI-ով կազմել կոնտենտ պլան, գրել գրառումներ և սցենարներ, ստեղծել բրենդային պատկերներ ու կարճ վիդեոներ, կարգավորել չաթբոտ հաճախորդների հարցերի համար և ավտոմատացնել կրկնվող աշխատանքը no-code գործիքներով։\n\nԲոլոր առաջադրանքները կատարվում են ձեր իրական բիզնեսի վրա, ուստի դասընթացի ավարտին ունենում եք օգտագործման պատրաստ նյութեր։ Դասերն անցնում են կենդանի առցանց ձևաչափով՝ շաբաթը 2 անգամ, բոլոր դասերը ձայնագրվում են։",
+        "Курс для индивидуальных предпринимателей, сотрудников малого и среднего бизнеса, SMM- и маркетинг-специалистов. Вы научитесь с помощью AI составлять контент-план, писать посты и сценарии, создавать брендовые изображения и короткие видео, настраивать чат-бота для вопросов клиентов и автоматизировать рутину no-code инструментами.\n\nВсе задания выполняются на вашем реальном бизнесе, поэтому к концу курса у вас готовые материалы. Занятия проходят вживую онлайн 2 раза в неделю, все уроки записываются.",
+        "For sole entrepreneurs, small and medium business staff, and SMM and marketing specialists. You will learn to build a content plan with AI, write posts and scripts, create on-brand images and short videos, set up a chatbot for customer questions and automate routine work with no-code tools.\n\nEvery assignment is done on your real business, so you finish the course with ready-to-use materials. Lessons are live online twice a week and every lesson is recorded."
+      ),
+      level: L("Սկսնակ", "Начальный", "Beginner"),
+      requirements: L("Համակարգչի և սոցիալական ցանցերի հետ աշխատելու հիմնական հմտություններ։ Ցանկալի է գործող բիզնես կամ բիզնես գաղափար։ Ծրագրավորում պետք չէ։", "Базовые навыки работы с компьютером и соцсетями. Желательно действующий бизнес или бизнес-идея. Программирование не нужно.", "Basic computer and social media skills. An existing business or business idea is recommended. No coding needed."),
+      outcomes: {
+        hy: ["Գտնել բիզնեսի այն գործընթացները, որտեղ AI-ը կխնայի ժամանակ", "AI-ով կազմել ամսական կոնտենտ պլան", "Գրել գրառումներ, սցենարներ և գովազդային տեքստեր", "Ստեղծել բրենդային պատկերներ և կարճ վիդեոներ", "Կարգավորել չաթբոտ հաճախորդների հարցերի համար", "Ավտոմատացնել կրկնվող աշխատանքը no-code գործիքներով"],
+        ru: ["Находить процессы бизнеса, где AI сэкономит время", "Составлять месячный контент-план с AI", "Писать посты, сценарии и рекламные тексты", "Создавать брендовые изображения и короткие видео", "Настраивать чат-бота для вопросов клиентов", "Автоматизировать рутину no-code инструментами"],
+        en: ["Spot business processes where AI saves time", "Build a monthly content plan with AI", "Write posts, scripts and ad copy", "Create on-brand images and short videos", "Set up a chatbot for customer questions", "Automate routine work with no-code tools"],
+      },
+      modules: [
+        ["Մ-01", 3, L("AI-ը բիզնեսում՝ հնարավորություններ և սահմանափակումներ", "AI в бизнесе: возможности и ограничения", "AI in business: possibilities and limits")],
+        ["Մ-02", 3, L("Հարցումներ բիզնես խնդիրների համար", "Запросы для бизнес-задач", "Prompts for business tasks")],
+        ["Մ-03", 3, L("Բրենդ և կոնտենտ ռազմավարություն", "Бренд и контент-стратегия", "Brand and content strategy")],
+        ["Մ-04", 3, L("Տեքստային կոնտենտ", "Текстовый контент", "Written content")],
+        ["Մ-05", 6, L("Վիզուալ կոնտենտ", "Визуальный контент", "Visual content")],
+        ["Մ-06", 6, L("Վիդեո և կարճ վիդեոներ (reels)", "Видео и короткие ролики (reels)", "Video and short-form reels")],
+        ["Մ-07", 3, L("Հաճախորդների սպասարկում և չաթբոտներ", "Обслуживание клиентов и чат-боты", "Customer service and chatbots")],
+        ["Մ-08", 3, L("Գործընթացների ավտոմատացում", "Автоматизация процессов", "Process automation")],
+        ["Մ-09", 3, L("Վերլուծություն և որոշումների կայացում", "Аналитика и принятие решений", "Analytics and decision-making")],
+        ["Մ-10", 3, L("Ավարտական նախագիծ", "Выпускной проект", "Final project")],
+      ] as const,
+    },
+    {
+      slug: "ai-for-developers", code: "ԱԲԾ-01", order: 5, hours: 72, theoryHours: 22, practiceHours: 50, weeks: 12, lessonsPerWeek: 2, priceMonthly: 70000, priceFull: 195000, priceIndividual: 125000, months: 3, minAge: 16,
+      title: L("AI-ի կիրառումը վեբ ծրագրավորման մեջ", "AI в веб-разработке", "AI for Web Developers"),
+      summary: L("LLM API-ներ, չաթբոտներ (Telegram, WhatsApp), RAG և AI գործակալներ Node.js-ով՝ մինչև հրապարակված AI հավելված։", "LLM API, чат-боты (Telegram, WhatsApp), RAG и AI-агенты на Node.js — до опубликованного AI-приложения.", "LLM APIs, chatbots (Telegram, WhatsApp), RAG and AI agents with Node.js — up to a deployed AI app."),
+      description: L(
+        "Դասընթացը նախատեսված է JavaScript-ին տիրապետող ծրագրավորողների համար, ովքեր ցանկանում են AI-ով արագացնել իրենց աշխատանքը և ստեղծել AI-ով աշխատող վեբ հավելվածներ։ Կսովորեք աշխատել Cursor-ի, Claude Code-ի և Copilot-ի հետ, միացնել OpenAI և Anthropic API-ները Node.js-ով, ստանալ կառուցվածքային պատասխաններ, մշակել չաթբոտներ կայքի, Telegram-ի և WhatsApp-ի (GREEN-API) համար, կառուցել փաստաթղթերից պատասխանող RAG համակարգ և AI գործակալներ (agents, MCP), ապա անվտանգ հրապարակել հավելվածը։\n\nԱվարտին ներկայացնում եք սեփական AI հավելվածը՝ հրապարակված համացանցում և GitHub-ում։ Դասերն անցնում են կենդանի առցանց ձևաչափով՝ մինչև 10 հոգանոց խմբերով, բոլոր դասերը ձայնագրվում են։",
+        "Курс для программистов, владеющих JavaScript, которые хотят ускорить работу с помощью AI и создавать веб-приложения на основе AI. Вы научитесь работать с Cursor, Claude Code и Copilot, подключать API OpenAI и Anthropic на Node.js, получать структурированные ответы, разрабатывать чат-ботов для сайта, Telegram и WhatsApp (GREEN-API), строить RAG-систему, отвечающую по документам, и AI-агентов (agents, MCP), а затем безопасно публиковать приложение.\n\nВ конце вы защищаете собственное AI-приложение, опубликованное в интернете и на GitHub. Занятия проходят вживую онлайн в группах до 10 человек, все уроки записываются.",
+        "For developers who know JavaScript and want to speed up their work with AI and build AI-powered web apps. You will learn to work with Cursor, Claude Code and Copilot, connect the OpenAI and Anthropic APIs from Node.js, get structured outputs, build chatbots for the web, Telegram and WhatsApp (GREEN-API), build a RAG system that answers from documents and AI agents (agents, MCP), then deploy the app securely.\n\nYou finish by presenting your own AI app, live on the web and on GitHub. Lessons are live online in groups of up to 10 and every lesson is recorded."
+      ),
+      level: L("Միջին", "Средний", "Intermediate"),
+      requirements: L("JavaScript-ի հիմունքներ (ֆունկցիաներ, զանգվածներ, օբյեկտներ, async/await), Node.js-ի և Git-ի հիմնական գիտելիքներ (օր.՝ ՖՎԾ-01 կամ ԲՎԾ-01 դասընթացի մակարդակով)։", "Основы JavaScript (функции, массивы, объекты, async/await), базовые знания Node.js и Git (например, на уровне курса ФВЦ-01 или БВЦ-01).", "JavaScript basics (functions, arrays, objects, async/await) and basic Node.js and Git (e.g. the level of the Frontend or Backend course)."),
+      outcomes: {
+        hy: ["Արդյունավետ և անվտանգ ծրագրավորել AI օգնականներով", "Միացնել LLM API-ներ Node.js հավելվածներին", "Ստանալ կառուցվածքային պատասխաններ և օգտագործել tool calling", "Մշակել չաթբոտներ կայքի, Telegram-ի և WhatsApp-ի համար", "Կառուցել RAG համակարգ և AI գործակալներ", "Հրապարակել AI հավելվածը՝ անվտանգության և ծախսերի վերահսկմամբ"],
+        ru: ["Эффективно и безопасно программировать с AI-ассистентами", "Подключать LLM API к приложениям на Node.js", "Получать структурированные ответы и использовать tool calling", "Разрабатывать чат-ботов для сайта, Telegram и WhatsApp", "Строить RAG-систему и AI-агентов", "Публиковать AI-приложение с контролем безопасности и расходов"],
+        en: ["Code effectively and safely with AI assistants", "Connect LLM APIs to Node.js apps", "Get structured outputs and use tool calling", "Build chatbots for the web, Telegram and WhatsApp", "Build a RAG system and AI agents", "Deploy an AI app with security and cost control"],
+      },
+      modules: [
+        ["Մ-01", 3, L("Լեզվական մոդելների աշխատանքի սկզբունքներ", "Как работают языковые модели", "How language models work")],
+        ["Մ-02", 6, L("AI-ով ծրագրավորում", "Программирование с AI", "Coding with AI")],
+        ["Մ-03", 9, L("LLM API-ների ինտեգրում Node.js-ով", "Интеграция LLM API на Node.js", "Integrating LLM APIs with Node.js")],
+        ["Մ-04", 6, L("Կառուցվածքային պատասխաններ և tool calling", "Структурированные ответы и tool calling", "Structured outputs and tool calling")],
+        ["Մ-05", 9, L("Չաթբոտների մշակում", "Разработка чат-ботов", "Building chatbots")],
+        ["Մ-06", 12, L("Embeddings և RAG համակարգեր", "Embeddings и RAG-системы", "Embeddings and RAG systems")],
+        ["Մ-07", 9, L("AI գործակալներ (agents) և ավտոմատացում", "AI-агенты и автоматизация", "AI agents and automation")],
+        ["Մ-08", 3, L("Մուլտիմոդալ AI", "Мультимодальный AI", "Multimodal AI")],
+        ["Մ-09", 6, L("Հրապարակում, անվտանգություն և ծախսերի կառավարում", "Публикация, безопасность и контроль расходов", "Deployment, security and cost control")],
+        ["Մ-10", 9, L("Ավարտական նախագիծ", "Выпускной проект", "Final project")],
+      ] as const,
+    },
+  ];
+
+  for (const { modules, ...c } of aiCourses) {
+    const ins = await db.insert(s.courses).values({ ...c, directionId: aiDir.id, certificateUrl: "/images/certificate-sample.webp" }).onConflictDoNothing().returning();
+    if (ins.length) {
+      await db.insert(s.courseModules).values(modules.map(([code, hours, title], i) => ({ courseId: ins[0].id, code, hours, title, order: i })));
+      console.log("✓ course", c.code);
+    }
+  }
+
   // Align existing courses with the programs submitted to the Ministry,
   // touching only values that still equal the original defaults (admin edits are kept).
   for (const c of courses) {
