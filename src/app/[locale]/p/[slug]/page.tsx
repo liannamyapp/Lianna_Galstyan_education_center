@@ -19,6 +19,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: L
   const { locale, slug } = await params;
   const p = await getPage(slug);
   if (!p) return {};
+  if (slug === "contract") { const c = getDict(locale).contract as Record<string, string>; return pageMeta({ locale, path: `/p/${slug}`, title: c.sampleTitle, description: c.sampleNote }); }
   return pageMeta({ locale, path: `/p/${slug}`, title: tr(p.title, locale), description: tr(p.body, locale).replace(/[#*_>\-]/g, "").slice(0, 155) });
 }
 
