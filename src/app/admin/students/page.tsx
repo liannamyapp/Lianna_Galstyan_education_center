@@ -4,6 +4,7 @@ import { dateShort } from "@/lib/format";
 import { PageHead, th, td } from "@/components/admin/fields";
 import { clearMyTestData, deleteUsers, setUserBlocked, setUserRole } from "../actions";
 import { ValueButton } from "@/components/ValueButton";
+import { SelectAll } from "@/components/admin/SelectAll";
 import { ActionForm } from "@/components/ActionForm";
 import { requireAdmin } from "@/lib/auth";
 
@@ -29,12 +30,24 @@ export default async function Students({ searchParams }: { searchParams: Promise
         </div>
       </ActionForm>
       <div className="card overflow-x-auto p-2">
-        <table className="w-full min-w-[860px] border-collapse">
-          <thead><tr><th className={th}><span className="sr-only">Ընտրել</span></th><th className={th}>Անուն</th><th className={th}>Կոնտակտ</th><th className={th}>Հայտեր</th><th className={th}>Գրանցվել է</th><th className={th}>Մուտք</th><th className={th}>Դեր</th></tr></thead>
+        <table className="w-full min-w-[880px] border-collapse">
+          <thead><tr><th className={th}><SelectAll form="bulk" label="Ընտրել բոլորին" /></th><th className={th}>Անուն</th><th className={th}>Կոնտակտ</th><th className={th}>Հայտեր</th><th className={th}>Գրանցվել է</th><th className={th}>Մուտք</th><th className={th}>Դեր</th></tr></thead>
           <tbody>{users.map((u) => (
             <tr key={u.id}>
               <td className={td}>{u.role === "STUDENT" ? <input type="checkbox" name="ids" value={u.id} form="bulk" aria-label={`Ընտրել ${u.name}`} className="size-4" /> : null}</td>
-              <td className={td}><b>{u.name}</b>{u.id === me.id && <span className="ml-1 text-[12px] text-muted">(դուք)</span>}</td>
+              <td className={td}><b>{u.name}</b>{u.id === me.id && <span className="ml-1 text-[12px] text-muted">(դուք)</span>}
+                {u.role === "STUDENT" ? (
+                  <details className="group relative">
+                    <summary className="flex mt-1 min-h-8 w-fit cursor-pointer list-none items-center rounded-lg px-0 text-[13px] font-semibold text-[#8a2f1d] hover:bg-[#fbefeb] [&::-webkit-details-marker]:hidden">Հեռացնել</summary>
+                    <ActionForm action={deleteUsers} className="mt-1.5 flex w-[230px] flex-col gap-2.5 rounded-xl border border-[#f0cfc6] bg-[#fffaf8] p-3">
+                      <input type="hidden" name="ids" value={u.id} />
+                      <input type="hidden" name="confirm" value="1" />
+                      <p className="m-0 text-[13px] whitespace-normal text-[#3d4757]">Հեռացնե՞լ <b>{u.name}</b>-ին բոլոր հայտերով, վճարումներով և կարծիքներով։ Գործողությունը հետ չի վերադարձվում։</p>
+                      <button className="btn min-h-9 bg-[#8a2f1d] text-[13px] text-white">Այո, հեռացնել</button>
+                    </ActionForm>
+                  </details>
+                ) : null}
+              </td>
               <td className={td}><a href={`mailto:${u.email}`}>{u.email}</a><br /><span className="text-muted">{u.phone ?? "—"}</span></td>
               <td className={td}>{u.apps}</td>
               <td className={td}>{dateShort(u.createdAt)}</td>
