@@ -11,9 +11,7 @@ import { renderMarkdown } from "@/lib/markdown";
 import { contractTemplate, contractValues, fillContract, providerParty } from "@/lib/contract";
 import { esc } from "@/lib/escape";
 import { ContractDocument } from "@/components/ContractDocument";
-import { ActionForm } from "@/components/ActionForm";
-import { SubmitButton } from "@/components/SubmitButton";
-import { signContractAction } from "../../../actions";
+import { SignForm } from "./SignForm";
 import { PrintButton } from "./PrintButton";
 
 export const dynamic = "force-dynamic";
@@ -42,7 +40,11 @@ export default async function ContractView({ params, searchParams }: {
     markdown = snap.body[locale] || snap.body[snap.signedLocale];
     no = snap.no;
     dateText = esc(date(snap.signedAt, locale));
-    client = { name: esc(snap.client.name), lines: [esc([snap.client.email, snap.client.phone].filter(Boolean).join(" · "))] };
+    const born = snap.birthDate ? fmt(t.born, { date: date(snap.birthDate, locale) }) : "";
+    const g = snap.guardian;
+    client = g
+      ? { name: esc(snap.signedName), lines: [esc(fmt(t.clientGuardian, { relation: g.relation === "parent" ? t.relParent : t.relGuardian })), esc(`${t.learner}: ${snap.client.name}${born ? `, ${born}` : ""}`), esc([g.phone, g.email].filter(Boolean).join(" · "))] }
+      : { name: esc(snap.client.name), lines: [esc([snap.client.email, snap.client.phone].filter(Boolean).join(" · ")), ...(born ? [esc(born)] : [])] };
   } else {
     const tpl = await contractTemplate();
     markdown = fillContract(tpl[locale], contractValues(app, app.course, app.group?.startDate, locale), locale);
@@ -72,23 +74,7 @@ export default async function ContractView({ params, searchParams }: {
       />
 
       {!snap && !admin && (
-        <ActionForm action={signContractAction} className="card mt-6 flex flex-col gap-4 border-2 border-gold-500/60 p-5 sm:p-8 print:hidden">
-          <input type="hidden" name="locale" value={locale} />
-          <input type="hidden" name="id" value={app.id} />
-          <input type="hidden" name="method" value={payNext ? method : ""} />
-          <div>
-            <h2 className="m-0 font-serif text-[22px] font-bold text-navy-900">{t.signTitle}</h2>
-            <p className="mt-1.5 mb-0 text-[14.5px] text-muted">{t.signIntro}</p>
-          </div>
-          <label className="flex items-start gap-3 text-[15px] text-[#2b3445]">
-            <input type="checkbox" name="agree" value="1" required className="mt-1 size-[18px] flex-none accent-navy-800" />
-            <span>{t.agree} <Link href={`/${locale}/p/refund`} target="_blank">{t.refundLink}</Link></span>
-          </label>
-          <label className="label">{t.signName}
-            <input name="signature" required minLength={3} defaultValue={app.user.name} autoComplete="name" className="input font-serif text-[18px] italic" />
-          </label>
-          <SubmitButton className="btn-navy min-h-13 self-start px-8" pendingText={t.signing}>{payNext ? t.signBtnPay : t.signBtn}</SubmitButton>
-        </ActionForm>
+        <SignForm locale={locale} appId={app.id} method={payNext ? method : ""} learnerName={app.user.name} birthDate={app.user.birthDate ?? ""} t={t} />
       )}
     </article>
   );

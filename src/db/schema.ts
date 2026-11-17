@@ -23,6 +23,8 @@ export const users = pgTable("users", {
   passwordHash: text("password_hash").notNull(),
   name: text("name").notNull(),
   phone: text("phone"),
+  /** YYYY-MM-DD, given when signing an agreement */
+  birthDate: text("birth_date"),
   role: roleEnum("role").notNull().default("STUDENT"),
   locale: text("locale").notNull().default("hy"),
   /** set when an admin blocks the account: no sign-in, no lessons, no reminders */

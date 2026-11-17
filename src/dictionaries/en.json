@@ -440,6 +440,24 @@
     "sampleLink": "Sample agreement",
     "refundLink": "Payment and refund rules",
     "signedAt": "Date and time of signing",
-    "adminView": "Admin view"
+    "adminView": "Admin view",
+    "birthDate": "Learner's date of birth",
+    "minorDetected": "The learner is under 18. A parent or legal guardian signs the agreement and becomes the Client.",
+    "guardianTitle": "Parent or guardian details",
+    "guardianRelation": "Relationship to the learner",
+    "relParent": "Parent",
+    "relGuardian": "Legal guardian",
+    "guardianPhone": "Parent/guardian phone",
+    "guardianEmail": "Parent/guardian email (optional)",
+    "signNameGuardian": "Parent/guardian full name, as electronic signature",
+    "agreeGuardian": "I am the learner's parent or legal guardian, I have read the whole agreement and agree to all its terms.",
+    "errBirth": "Please enter the learner's correct date of birth.",
+    "errGuardian": "Please give the parent/guardian phone and their relationship to the learner.",
+    "errGuardianSelf": "The parent/guardian name cannot be the learner's name.",
+    "learner": "Learner",
+    "born": "born {date}",
+    "clientGuardian": "{relation}, acting for the learner",
+    "minorBadge": "Minor learner",
+    "adultOk": "The learner is an adult and signs the agreement themselves."
   }
 }

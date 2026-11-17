@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { guessLocale, translateAll } from "@/lib/translate";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { headers } from "next/headers";
+import { ageOn } from "@/lib/age";
 import { contractTemplate, contractValues, fillContract, nextContractNo } from "@/lib/contract";
 import { and, eq, gt, like } from "drizzle-orm";
 import { randomBytes } from "node:crypto";
@@ -256,6 +257,19 @@ export async function signContractAction(_: ActionResult, fd: FormData): Promise
     if (fd.get("agree") !== "1") return { error: c.errAgree };
     const signature = str(fd, "signature").replace(/\s+/g, " ").trim();
     if (signature.length < 3) return { error: c.errName };
+    const birthDate = str(fd, "birthDate");
+    const age = ageOn(birthDate);
+    if (age === null || age < 3 || age > 100) return { error: c.errBirth };
+    let guardian: { name: string; relation: "parent" | "guardian"; phone: string; email: string | null } | null = null;
+    if (age < 18) {
+      const relation = str(fd, "guardianRelation") === "guardian" ? "guardian" : "parent";
+      const phone = str(fd, "guardianPhone").replace(/[^\d+]/g, "");
+      if (phone.replace(/\D/g, "").length < 8 || !["parent", "guardian"].includes(str(fd, "guardianRelation"))) return { error: c.errGuardian };
+      if (signature.toLowerCase() === app.user.name.trim().toLowerCase()) return { error: c.errGuardianSelf };
+      const em = emailSchema.safeParse(str(fd, "guardianEmail"));
+      guardian = { name: signature, relation, phone, email: str(fd, "guardianEmail") && em.success ? em.data : null };
+    }
+    await db.update(s.users).set({ birthDate }).where(eq(s.users.id, app.user.id));
     const tpl = await contractTemplate();
     const body = Object.fromEntries(locales.map((x) => [x, fillContract(tpl[x], contractValues(app, app.course, app.group?.startDate, x), x)])) as Record<Locale, string>;
     const h = await headers();
@@ -264,9 +278,10 @@ export async function signContractAction(_: ActionResult, fd: FormData): Promise
     const no = app.contractNo ?? await nextContractNo();
     await db.update(s.applications).set({
       contractNo: no, contractSignedAt: now,
-      contractSnapshot: { v: 1, no, signedAt: now.toISOString(), signedName: signature, signedLocale: l, ip, client: { name: app.user.name, email: app.user.email, phone: app.user.phone }, body: body as { hy: string; ru: string; en: string } },
+      contractSnapshot: { v: 1, no, signedAt: now.toISOString(), signedName: signature, signedLocale: l, ip, client: { name: app.user.name, email: app.user.email, phone: app.user.phone }, birthDate, guardian, body: body as { hy: string; ru: string; en: string } },
     }).where(eq(s.applications.id, app.id));
     const site = siteUrl();
+    if (guardian?.email) await sendMail(guardian.email, c.mailSubject, emailHtml(c.mailSubject, [`${guardian.name},`, fmt(c.mailBody, { no, course: `${app.course.code} · ${tr(app.course.title, l)}` })], { label: t.account.view, url: `${siteUrl()}/${l}/account/contract/${app.id}` }));
     await sendMail(app.user.email, c.mailSubject, emailHtml(c.mailSubject, [`${app.user.name},`, fmt(c.mailBody, { no, course: `${app.course.code} · ${tr(app.course.title, l)}` })], { label: t.account.view, url: `${site}/${l}/account/contract/${app.id}` }));
     revalidatePath(`/${l}/account`);
   }
