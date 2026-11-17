@@ -27,15 +27,15 @@ export default async function Payments() {
         </ActionForm>
       </AdminCard>
       <div className="card mt-6 overflow-x-auto p-2">
-        <table className="w-full min-w-[820px] border-collapse">
+        <table className="rtable w-full min-w-[820px] border-collapse">
           <thead><tr><th className={th}>№</th><th className={th}>Ամսաթիվ</th><th className={th}>Ունկնդիր</th><th className={th}>Նկարագրություն</th><th className={th}>Գումար</th><th className={th}>Եղանակ</th><th className={th}>Կարգավիճակ</th><th className={th}></th></tr></thead>
           <tbody>{list.map((p) => (
             <tr key={p.id}>
-              <td className={td}>{p.orderNo}</td><td className={td}>{dateShort(p.paidAt ?? p.createdAt)}</td>
-              <td className={td}>{p.user.name}<br /><span className="text-muted">{p.user.email}</span></td>
-              <td className={td}>{p.description}</td><td className={`${td} whitespace-nowrap font-semibold`}>{money(p.amount)}</td><td className={td}>{p.method}</td>
-              <td className={td}><span className={`chip font-semibold ${badge[p.status]}`}>{payStatusHy[p.status]}</span></td>
-              <td className={td}>
+              <td data-label="№" className={td}>{p.orderNo}</td><td data-label="Ամսաթիվ" className={td}>{dateShort(p.paidAt ?? p.createdAt)}</td>
+              <td data-label="Ունկնդիր" className={td}>{p.user.name}<br /><span className="text-muted">{p.user.email}</span></td>
+              <td data-label="Նկարագրություն" className={td}>{p.description}</td><td data-label="Գումար" className={`${td} whitespace-nowrap font-semibold`}>{money(p.amount)}</td><td data-label="Եղանակ" className={td}>{p.method}</td>
+              <td data-label="Կարգավիճակ" className={td}><span className={`chip font-semibold ${badge[p.status]}`}>{payStatusHy[p.status]}</span></td>
+              <td data-label="" className={td}>
                 <form action={setPaymentStatus} className="flex flex-wrap gap-x-3 gap-y-1.5">
                   <input type="hidden" name="id" value={p.id} />
                   {p.status !== "PAID" && p.status !== "REFUNDED" && <ValueButton name="status" value="PAID" className="text-[13px] font-semibold text-[#1f5f33]">Հաստատել</ValueButton>}

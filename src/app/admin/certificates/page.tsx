@@ -27,13 +27,13 @@ export default async function Certificates() {
         </ActionForm>
       </AdminCard>
       <div className="card mt-6 overflow-x-auto p-2">
-        <table className="w-full min-w-[820px] border-collapse">
+        <table className="rtable w-full min-w-[820px] border-collapse">
           <thead><tr><th className={th}>Համար</th><th className={th}>Ունկնդիր</th><th className={th}>Դասընթաց</th><th className={th}>Ժամկետ</th><th className={th}>Տրված</th><th className={th}>Ֆայլ / կարգավիճակ</th></tr></thead>
           <tbody>{list.map((c) => (
             <tr key={c.id} className={c.revoked ? "opacity-60" : ""}>
-              <td className={`${td} font-mono`}>{c.number}</td><td className={td}>{c.holderName}</td><td className={td}>{c.course.code}</td>
-              <td className={td}>{dateShort(c.startDate)} – {dateShort(c.endDate)}</td><td className={td}>{dateShort(c.issuedAt)}</td>
-              <td className={td}>
+              <td data-label="Համար" className={`${td} font-mono`}>{c.number}</td><td data-label="Ունկնդիր" className={td}>{c.holderName}</td><td data-label="Դասընթաց" className={td}>{c.course.code}</td>
+              <td data-label="Ժամկետ" className={td}>{dateShort(c.startDate)} – {dateShort(c.endDate)}</td><td data-label="Տրված" className={td}>{dateShort(c.issuedAt)}</td>
+              <td data-label="Ֆայլ / կարգավիճակ" className={td}>
                 <form action={updateCertificate} className="flex flex-wrap items-center gap-2">
                   <input type="hidden" name="id" value={c.id} />
                   {c.fileUrl && <a href={c.fileUrl} target="_blank" rel="noopener noreferrer" className="text-[13px]">Ֆայլ</a>}

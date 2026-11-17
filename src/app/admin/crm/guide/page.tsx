@@ -11,7 +11,7 @@ export default async function Guide() {
     <>
       <PageHead title="CRM և աճի պլան" />
       <article
-        className="card prose-lg p-6 sm:p-10 [&_pre]:whitespace-pre [&_table]:my-5 [&_table]:block [&_table]:w-full [&_table]:overflow-x-auto [&_table]:border-collapse [&_td]:border [&_td]:border-line [&_td]:px-3 [&_td]:py-2 [&_td]:align-top [&_th]:border [&_th]:border-line [&_th]:bg-ivory [&_th]:px-3 [&_th]:py-2 [&_th]:text-left [&_hr]:my-8 [&_hr]:border-line"
+        className="card prose-lg p-6 sm:p-10 [&_pre]:whitespace-pre-wrap [&_pre]:[overflow-wrap:anywhere] [&_table]:my-5 [&_table]:w-full [&_table]:table-fixed [&_table]:border-collapse [&_table]:text-[14px] [&_td]:[overflow-wrap:anywhere] [&_th]:[overflow-wrap:anywhere] [&_td]:border [&_td]:border-line [&_td]:px-3 [&_td]:py-2 [&_td]:align-top [&_th]:border [&_th]:border-line [&_th]:bg-ivory [&_th]:px-3 [&_th]:py-2 [&_th]:text-left [&_hr]:my-8 [&_hr]:border-line"
         dangerouslySetInnerHTML={{ __html: html }}
       />
     </>

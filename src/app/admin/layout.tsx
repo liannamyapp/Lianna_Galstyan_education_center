@@ -1,3 +1,4 @@
+import { AdminNav } from "@/components/admin/AdminNav";
 import type { Metadata } from "next";
 import Link from "next/link";
 import "../globals.css";
@@ -47,11 +48,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
               <Link href="/hy" target="_blank" rel="noopener" className="flex min-h-10 items-center justify-center gap-2 rounded-xl bg-gold-500 px-3 whitespace-nowrap lg:justify-start text-[13.5px] font-semibold text-navy-950 no-underline hover:bg-gold-400"><Icon name="globe" size={16} />Բացել կայքը</Link>
               <Link href="/hy/account#profile" className="flex min-h-10 items-center justify-center gap-2 rounded-xl border border-white/20 px-3 whitespace-nowrap lg:justify-start text-[13.5px] text-white no-underline hover:bg-white/5"><Icon name="lock" size={16} />Մուտքի տվյալներ</Link>
             </div>
-            <nav aria-label="Ադմին" className="-mx-1 flex min-h-0 gap-1 overflow-x-auto px-1 pb-1 [scrollbar-color:#3a4a62_transparent] [scrollbar-width:thin] lg:flex-1 lg:flex-col lg:overflow-x-visible lg:overflow-y-auto">
-              {nav.map(([href, label, icon]) => (
-                <Link key={href} href={href} className="flex min-h-9 flex-none items-center gap-3 rounded-xl px-3 text-[14px] whitespace-nowrap text-[#b9c4d4] no-underline hover:bg-white/5 hover:text-white"><Icon name={icon} size={17} />{label}</Link>
-              ))}
-            </nav>
+            <AdminNav items={nav as [string, string, string][]} />
             <form action={logoutAction} className="mt-2 border-t border-white/10 pt-2"><input type="hidden" name="locale" value="hy" /><button className="flex min-h-10 w-full items-center gap-3 rounded-xl px-3 text-[14px] text-[#b9c4d4] hover:bg-white/5 hover:text-white"><Icon name="logout" size={17} />Դուրս գալ</button></form>
           </aside>
           <main id="main" className="min-w-0 flex-1 p-5 sm:p-8">{children}</main>

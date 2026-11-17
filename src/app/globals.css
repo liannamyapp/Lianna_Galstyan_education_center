@@ -69,6 +69,21 @@
   .chip { @apply inline-flex items-center rounded-full px-3.5 py-1.5 text-[13px]; }
   .input { @apply min-h-12 w-full max-w-full min-w-0 rounded-xl border border-[#d9d0bd] bg-white px-4 text-[15px] text-ink placeholder:text-[#8a8f99] focus:border-navy-800 focus:outline-none; }
   .label { @apply flex flex-col gap-1.5 text-[13.5px] font-semibold text-[#3d4757]; }
+  /* Admin tables become stacked cards on phones: no sideways scrolling. Each cell shows its column name. */
+  @media (max-width: 1023px) {
+    .rtable { min-width: 0 !important; }
+    .rtable, .rtable tbody, .rtable tr, .rtable td { display: block; width: 100%; }
+    .rtable thead { display: none; }
+    .rtable tr { @apply border-0 border-b border-[#eee7d8] px-1 py-3; }
+    .rtable tr:last-child { border-bottom: 0; }
+    .rtable td { @apply flex min-w-0 items-start justify-between gap-3 border-0 px-2 py-1.5 text-right [overflow-wrap:anywhere]; }
+    .rtable td::before { content: attr(data-label); @apply max-w-[42%] flex-none text-left text-[12.5px] font-semibold text-muted; }
+    .rtable td:not([data-label])::before, .rtable td[data-label=""]::before { display: none; }
+    .rtable td:not([data-label]), .rtable td[data-label=""] { @apply flex-col items-start justify-start gap-1 text-left; }
+    .rtable td:first-child { @apply text-[15px]; }
+    .rtable td > * { min-width: 0; }
+    .rtable td[data-label]:not([data-label=""]) form { @apply ml-auto items-end; }
+  }
   /* ALTA agreement */
   .contract-body { @apply text-[15.5px] leading-[1.75] text-[#2b3445]; }
   .contract-body h3 { @apply mt-8 mb-3 flex items-baseline gap-3 border-b border-[#eadfc8] pb-2 font-serif text-[18px] leading-snug font-bold text-navy-900; }

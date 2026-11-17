@@ -38,7 +38,7 @@ export default async function Dashboard() {
       </div>
       <AdminCard title={`Սպասվող վճարումներ (14 օր) · ${money(expected)}`} actions={<span className="text-[13px] text-muted">Հիշեցումները գնում են ավտոմատ՝ {cfg.reminderDays} օր առաջ, վճարման օրը և ուշացման դեպքում</span>}>
         {dues.length === 0 ? <p className="text-muted">Առաջիկա 14 օրում վճարումներ չկան։</p> : (
-          <div className="overflow-x-auto"><table className="w-full min-w-[600px] border-collapse"><tbody>{dues.map(({ a, b }) => {
+          <div className="overflow-x-auto"><table className="rtable w-full min-w-[600px] border-collapse"><tbody>{dues.map(({ a, b }) => {
             const d = b.daysLeft ?? 0;
             return (
               <tr key={a.id} className="border-t border-[#eee7d8] text-[14px]">
@@ -53,7 +53,7 @@ export default async function Dashboard() {
       </AdminCard>
       <div className="h-6" />
       <AdminCard title="Վերջին հայտեր" actions={<Link href="/admin/applications" className="text-[14px] font-semibold">Բոլորը →</Link>}>
-        <div className="overflow-x-auto"><table className="w-full min-w-[600px] border-collapse">
+        <div className="overflow-x-auto"><table className="rtable w-full min-w-[600px] border-collapse">
           <tbody>{recent.map((a) => (
             <tr key={a.id} className="border-t border-[#eee7d8] text-[14px]">
               <td className="py-3 pr-3"><b>{a.user.name}</b><br /><span className="text-muted">{a.user.email} · {a.user.phone}</span></td>

@@ -15,11 +15,11 @@ export default async function Board() {
   return (
     <>
       <PageHead title="Վաճառքի խողովակ"><span className="text-[13px] text-muted">«Գրանցված» և «Կորցրած» սյունակներում՝ վերջին 30 օրը</span></PageHead>
-      <div className="-mx-1 flex gap-4 overflow-x-auto px-1 pb-4">
+      <div className="grid gap-4 pb-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
         {STAGES.map((st) => {
           const col = leads.filter((l) => l.stage === st);
           return (
-            <section key={st} className="flex w-[290px] flex-none flex-col gap-3 rounded-2xl bg-[#ebe7de] p-3" aria-label={stageHy[st]}>
+            <section key={st} className="flex min-w-0 flex-col gap-3 rounded-2xl bg-[#ebe7de] p-3" aria-label={stageHy[st]}>
               <h2 className="flex items-center justify-between px-1 text-[14px] font-semibold"><span className={`chip ${stageCls[st]}`}>{stageHy[st]}</span><span className="text-muted">{col.length}</span></h2>
               {col.map((l) => (
                 <article key={l.id} className="card flex flex-col gap-2 p-3 text-[13.5px]">

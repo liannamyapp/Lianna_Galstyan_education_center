@@ -23,19 +23,19 @@ export default async function Students({ searchParams }: { searchParams: Promise
         <form className="flex w-full flex-wrap gap-2 sm:w-auto"><label htmlFor="q" className="sr-only">Որոնում</label><input id="q" name="q" defaultValue={q} placeholder="Անուն, էլ. փոստ, հեռախոս" className="input min-h-11 min-w-0 flex-1 sm:w-[260px] sm:flex-none" /><button className="btn-navy min-h-11">Որոնել</button></form>
       </PageHead>
       <ActionForm id="bulk" action={deleteUsers} className="card mb-4 flex flex-col gap-3 border-[#f0cfc6] p-4">
-        <p className="m-0 text-[14px] text-muted">Ջնջելու համար նշեք ունկնդիրներին աղյուսակի ձախ սյունակում։ Կջնջվեն նաև նրանց հայտերը, վճարումները, կարծիքները և CRM-ի քարտերը։ Գործողությունը հետ չի վերադարձվում։ Ադմինի հաշիվները չեն ջնջվում։</p>
+        <p className="m-0 text-[14px] text-muted">Ջնջելու համար նշեք ունկնդիրներին նրանց անվան կողքի վանդակով։ Կջնջվեն նաև նրանց հայտերը, վճարումները, կարծիքները և CRM-ի քարտերը։ Գործողությունը հետ չի վերադարձվում։ Ադմինի հաշիվները չեն ջնջվում։</p>
         <div className="flex flex-wrap items-center gap-4">
+          <label className="flex min-h-10 items-center gap-2 text-[14px]"><SelectAll form="bulk" label="Նշել բոլորին" /> Նշել բոլորին</label>
           <label className="flex min-h-10 items-center gap-2 text-[14px]"><input type="checkbox" name="confirm" value="1" className="size-4" /> Հաստատում եմ</label>
           <button className="btn min-h-10 bg-[#8a2f1d] text-white">Ջնջել նշվածներին</button>
         </div>
       </ActionForm>
       <div className="card overflow-x-auto p-2">
-        <table className="w-full min-w-[880px] border-collapse">
-          <thead><tr><th className={th}><SelectAll form="bulk" label="Ընտրել բոլորին" /></th><th className={th}>Անուն</th><th className={th}>Կոնտակտ</th><th className={th}>Հայտեր</th><th className={th}>Գրանցվել է</th><th className={th}>Մուտք</th><th className={th}>Դեր</th></tr></thead>
+        <table className="rtable w-full min-w-[880px] border-collapse">
+          <thead><tr><th className={th}>Անուն</th><th className={th}>Կոնտակտ</th><th className={th}>Հայտեր</th><th className={th}>Գրանցվել է</th><th className={th}>Մուտք</th><th className={th}>Դեր</th></tr></thead>
           <tbody>{users.map((u) => (
             <tr key={u.id}>
-              <td className={td}>{u.role === "STUDENT" ? <input type="checkbox" name="ids" value={u.id} form="bulk" aria-label={`Ընտրել ${u.name}`} className="size-4" /> : null}</td>
-              <td className={td}><b>{u.name}</b>{u.id === me.id && <span className="ml-1 text-[12px] text-muted">(դուք)</span>}
+              <td data-label="" className={td}><span className="flex items-center gap-2.5">{u.role === "STUDENT" ? <input type="checkbox" name="ids" value={u.id} form="bulk" aria-label={`Ընտրել ${u.name}`} className="size-4 flex-none" /> : null}<b>{u.name}</b></span>{u.id === me.id && <span className="ml-1 text-[12px] text-muted">(դուք)</span>}
                 {u.role === "STUDENT" ? (
                   <details className="group relative">
                     <summary className="flex mt-1 min-h-8 w-fit cursor-pointer list-none items-center rounded-lg px-0 text-[13px] font-semibold text-[#8a2f1d] hover:bg-[#fbefeb] [&::-webkit-details-marker]:hidden">Հեռացնել</summary>
@@ -48,10 +48,10 @@ export default async function Students({ searchParams }: { searchParams: Promise
                   </details>
                 ) : null}
               </td>
-              <td className={td}><a href={`mailto:${u.email}`}>{u.email}</a><br /><span className="text-muted">{u.phone ?? "—"}</span></td>
-              <td className={td}>{u.apps}</td>
-              <td className={td}>{dateShort(u.createdAt)}</td>
-              <td className={td}>
+              <td data-label="Կոնտակտ" className={td}><a href={`mailto:${u.email}`}>{u.email}</a><br /><span className="text-muted">{u.phone ?? "—"}</span></td>
+              <td data-label="Հայտեր" className={td}>{u.apps}</td>
+              <td data-label="Գրանցվել է" className={td}>{dateShort(u.createdAt)}</td>
+              <td data-label="Մուտք" className={td}>
                 {u.role === "STUDENT" ? (
                   <form action={setUserBlocked} className="flex flex-col items-start gap-1.5">
                     <input type="hidden" name="id" value={u.id} />
@@ -61,7 +61,7 @@ export default async function Students({ searchParams }: { searchParams: Promise
                   </form>
                 ) : <span className="text-[13px] text-muted">—</span>}
               </td>
-              <td className={td}>
+              <td data-label="Դեր" className={td}>
                 <form action={setUserRole} className="flex items-center gap-2">
                   <input type="hidden" name="id" value={u.id} />
                   <select name="role" defaultValue={u.role} className="input min-h-9 w-auto py-0 text-[13px]"><option value="STUDENT">Ունկնդիր</option><option value="ADMIN">Ադմին</option></select>

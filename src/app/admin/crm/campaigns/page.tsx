@@ -44,9 +44,9 @@ export default async function Campaigns() {
         </AdminCard>
         <AdminCard title="Պատմություն">
           {history.length === 0 ? <p className="text-muted">Դեռ ուղարկումներ չեն եղել։</p> : (
-            <div className="overflow-x-auto"><table className="w-full border-collapse">
+            <div className="overflow-x-auto"><table className="rtable w-full border-collapse">
               <thead><tr><th className={th}>Անվանում</th><th className={th}>Ալիք</th><th className={th}>Ուղարկված</th><th className={th}>Ամսաթիվ</th></tr></thead>
-              <tbody>{history.map((c) => <tr key={c.id}><td className={td}>{c.name}</td><td className={td}>{channelHy[c.channel] ?? "Ավտոմատ"}</td><td className={td}>{c.sent}/{c.total}{c.failed ? <span className="text-muted"> · {c.failed} ձախողված</span> : null}</td><td className={`${td} text-muted`}>{dateShort(c.createdAt)}</td></tr>)}</tbody>
+              <tbody>{history.map((c) => <tr key={c.id}><td data-label="Անվանում" className={td}>{c.name}</td><td data-label="Ալիք" className={td}>{channelHy[c.channel] ?? "Ավտոմատ"}</td><td data-label="Ուղարկված" className={td}>{c.sent}/{c.total}{c.failed ? <span className="text-muted"> · {c.failed} ձախողված</span> : null}</td><td data-label="Ամսաթիվ" className={`${td} text-muted`}>{dateShort(c.createdAt)}</td></tr>)}</tbody>
             </table></div>
           )}
         </AdminCard>

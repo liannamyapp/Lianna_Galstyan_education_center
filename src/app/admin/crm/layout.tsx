@@ -14,7 +14,7 @@ const tabs: [string, string][] = [
 export default function CrmLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
-      <nav aria-label="CRM" className="-mx-1 mb-6 flex gap-2 overflow-x-auto px-1 pb-1">
+      <nav aria-label="CRM" className="mb-6 flex flex-wrap gap-2">
         {tabs.map(([href, label]) => (
           <Link key={href} href={href} className="chip min-h-10 flex-none bg-white px-4 whitespace-nowrap text-navy-800 no-underline hover:bg-navy-800 hover:text-white">{label}</Link>
         ))}

@@ -58,18 +58,18 @@ export default async function Leads({ searchParams }: { searchParams: Promise<SP
       </form>
 
       <div className="card overflow-x-auto">
-        <table className="w-full min-w-[920px] border-collapse">
+        <table className="rtable w-full min-w-[920px] border-collapse">
           <thead><tr><th className={th}>Լիդ</th><th className={th}>Փուլ</th><th className={th}>Գնահատական</th><th className={th}>Աղբյուր</th><th className={th}>Դասընթաց</th><th className={th}>Հաջորդ քայլ</th><th className={th}>Ստեղծված</th></tr></thead>
           <tbody>
             {list.map((l) => (
               <tr key={l.id}>
-                <td className={td}><LeadLink id={l.id} name={l.name} /><br /><span className="text-[13px] text-muted">{[prettyPhone(l.phone), l.email, l.telegramUsername && `@${l.telegramUsername}`].filter(Boolean).join(" · ") || "—"}</span>{l.tags.length > 0 && <div className="mt-1 flex flex-wrap gap-1">{l.tags.map((t) => <Link key={t} href={qs({ tag: t, page: undefined })} className="chip bg-[#f3f1ec] text-[12px] text-[#4b5563] no-underline">#{t}</Link>)}</div>}</td>
-                <td className={td}><StageBadge stage={l.stage} /></td>
-                <td className={td}><ScoreBadge score={l.score} /></td>
-                <td className={`${td} text-[13px]`}>{sourceLabel(l.source, l.utm)}</td>
-                <td className={`${td} font-mono text-[13px]`}>{l.course?.code ?? "—"}</td>
-                <td className={`${td} text-[13px]`}>{l.nextAction ?? <span className="text-muted">—</span>}{l.nextActionAt && <><br /><span className={l.nextActionAt.getTime() < Date.now() ? "font-semibold text-[#8a2f1d]" : "text-muted"}>{relTime(l.nextActionAt)}</span></>}</td>
-                <td className={`${td} text-[13px] text-muted`}>{dateShort(l.createdAt)}</td>
+                <td data-label="Լիդ" className={td}><LeadLink id={l.id} name={l.name} /><br /><span className="text-[13px] text-muted">{[prettyPhone(l.phone), l.email, l.telegramUsername && `@${l.telegramUsername}`].filter(Boolean).join(" · ") || "—"}</span>{l.tags.length > 0 && <div className="mt-1 flex flex-wrap gap-1">{l.tags.map((t) => <Link key={t} href={qs({ tag: t, page: undefined })} className="chip bg-[#f3f1ec] text-[12px] text-[#4b5563] no-underline">#{t}</Link>)}</div>}</td>
+                <td data-label="Փուլ" className={td}><StageBadge stage={l.stage} /></td>
+                <td data-label="Գնահատական" className={td}><ScoreBadge score={l.score} /></td>
+                <td data-label="Աղբյուր" className={`${td} text-[13px]`}>{sourceLabel(l.source, l.utm)}</td>
+                <td data-label="Դասընթաց" className={`${td} font-mono text-[13px]`}>{l.course?.code ?? "—"}</td>
+                <td data-label="Հաջորդ քայլ" className={`${td} text-[13px]`}>{l.nextAction ?? <span className="text-muted">—</span>}{l.nextActionAt && <><br /><span className={l.nextActionAt.getTime() < Date.now() ? "font-semibold text-[#8a2f1d]" : "text-muted"}>{relTime(l.nextActionAt)}</span></>}</td>
+                <td data-label="Ստեղծված" className={`${td} text-[13px] text-muted`}>{dateShort(l.createdAt)}</td>
               </tr>
             ))}
           </tbody>
