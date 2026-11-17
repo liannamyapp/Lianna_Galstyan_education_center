@@ -9,7 +9,7 @@ export type SiteSettings = {
   stats: { value: string; label: L10n }[];
   instructor: { name: L10n; role: L10n; bio: L10n; photoUrl: string; tags: string[] };
   contacts: { phone: string; email: string; telegram: string; whatsapp: string; instagram: string; facebook: string; city: L10n };
-  legal: { entity: L10n; tin: string; endorsement: L10n };
+  legal: { entity: L10n; tin: string; endorsement: L10n; address: L10n };
   payments: { card: boolean; idram: boolean; reminderDays: number; graceDays: number };
   adminEmail: string;
 };
@@ -65,6 +65,7 @@ export const defaultSettings: SiteSettings = {
     entity: L("ԱՁ Լիաննա Գալստյան", "ИП Лианна Галстян", "IE Lianna Galstyan"),
     tin: "58229843",
     endorsement: L("", "", ""),
+    address: L("ք. Երևան, Արաբկիր, Ադոնցի 7", "г. Ереван, Арабкир, ул. Адонца 7", "7 Adonts St, Arabkir, Yerevan"),
   },
   payments: { card: true, idram: true, reminderDays: 5, graceDays: 7 },
   adminEmail: "altaacademy666@gmail.com",

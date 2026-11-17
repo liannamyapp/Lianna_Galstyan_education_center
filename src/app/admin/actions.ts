@@ -136,7 +136,7 @@ export async function updateApplication(_: ActionResult, fd: FormData): Promise<
     const status = str(fd, "status") as typeof app.status;
     await db.update(s.applications).set({
       status, adminNote: str(fd, "adminNote") || null, groupId: str(fd, "groupId") || null, lessonsDone: num(fd, "lessonsDone", app.lessonsDone),
-      contractNo: str(fd, "contractNo") || app.contractNo,
+      contractNo: app.contractSignedAt ? app.contractNo : str(fd, "contractNo") || app.contractNo,
       format: str(fd, "format") === "individual" ? "individual" : "group",
       startDate: str(fd, "startDate") ? new Date(str(fd, "startDate")) : null,
       monthlyAmount: num(fd, "monthlyAmount") || app.monthlyAmount,

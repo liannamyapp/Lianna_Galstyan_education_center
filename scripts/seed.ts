@@ -3,6 +3,7 @@ import "dotenv/config";
 import { eq, sql } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { db, s } from "../src/db";
+import { CONTRACT_TEMPLATE } from "../src/lib/contract-template";
 
 const L = (hy: string, ru: string, en: string) => ({ hy, ru, en });
 const LEGACY_TITLES: Record<string, string> = {
@@ -259,7 +260,7 @@ async function main() {
   }
 
   const pages = [
-    { slug: "contract", title: L("Պայմանագրի օրինակ", "Образец договора", "Sample contract"), body: L(
+    { slug: "contract", title: L("Պայմանագրի նմուշ", "Образец договора", "Sample agreement"), body: CONTRACT_TEMPLATE ?? L(
       "## Կրթական ծառայությունների մատուցման պայմանագիր\n\n**Կատարող՝** ԱՁ Լիաննա Գալստյան, ՀՎՀՀ 58229843։\n\n**Պատվիրատու՝** ունկնդիրը (կամ անչափահասի դեպքում՝ ծնողը/օրինական ներկայացուցիչը)։\n\n### 1. Պայմանագրի առարկան\nԿատարողը մատուցում է առցանց ուսուցում՝ ընտրված դասընթացի ծրագրով, իսկ Պատվիրատուն վճարում է ծառայության դիմաց։\n\n### 2. Կողմերի պարտավորությունները\n- Կատարողն անցկացնում է դասերը դասացուցակին համապատասխան, տրամադրում ուսումնական նյութեր և դասերի ձայնագրություններ։\n- Պատվիրատուն մասնակցում է դասերին, կատարում առաջադրանքները և ժամանակին վճարում։\n\n### 3. Վճարում\nՎճարումը կատարվում է ամսական կամ միանգամից՝ կայքում նշված գներով, պայմանագիրը կնքելու պահին գործող սակագնով։ Կնքված պայմանագրի գինը միակողմանի չի փոփոխվում։\n\n### 4. Ավարտ և վկայական\nԾրագիրն ամբողջությամբ անցնելուց և ավարտական նախագիծը պաշտպանելուց հետո տրվում է վկայական։\n\n### 5. Լուծում\nԿողմերից յուրաքանչյուրը կարող է լուծել պայմանագիրը՝ գրավոր ծանուցելով, «Վճարման և վերադարձի կանոններին» համապատասխան։",
       "## Договор об оказании образовательных услуг\n\n**Исполнитель:** ИП Лианна Галстян, ИНН 58229843.\n\n**Заказчик:** слушатель (для несовершеннолетних — родитель/законный представитель).\n\n### 1. Предмет\nИсполнитель проводит онлайн-обучение по программе выбранного курса, Заказчик оплачивает услугу.\n\n### 2. Обязанности сторон\n- Исполнитель проводит занятия по расписанию, предоставляет материалы и записи уроков.\n- Заказчик посещает занятия, выполняет задания и своевременно оплачивает.\n\n### 3. Оплата\nПомесячно или единовременно по ценам сайта, действующим на момент заключения договора. Цена заключённого договора в одностороннем порядке не меняется.\n\n### 4. Завершение и сертификат\nПосле прохождения программы и защиты выпускного проекта выдаётся сертификат.\n\n### 5. Расторжение\nЛюбая сторона может расторгнуть договор письменным уведомлением согласно «Правилам оплаты и возврата».",
       "## Educational services agreement\n\n**Provider:** IE Lianna Galstyan, TIN 58229843.\n\n**Client:** the learner (or, for minors, a parent/legal guardian).\n\n### 1. Subject\nThe Provider delivers online training under the chosen course programme; the Client pays for the service.\n\n### 2. Obligations\n- The Provider holds lessons on schedule and provides materials and lesson recordings.\n- The Client attends lessons, completes assignments and pays on time.\n\n### 3. Payment\nMonthly or in full at the prices on the site at the time the agreement is signed. The price of a signed agreement is not changed unilaterally.\n\n### 4. Completion and certificate\nA certificate is issued after completing the programme and defending the final project.\n\n### 5. Termination\nEither party may terminate with written notice under the “Payment and refund rules”.") },
@@ -273,6 +274,19 @@ async function main() {
       "We collect only the data needed to run your training: name, email, phone and payment history.\n\n- Data is used only for training, your agreement, certificate and contacting you.\n- We never store card data: payments are processed on the bank's or Idram's secure page.\n- Data is not shared with third parties except where required by law.\n- The site uses only essential cookies — for sign-in and language choice.\n\nTo delete or change your data, write to us. The RA Law on Personal Data Protection applies.") },
   ];
   for (const p of pages) await db.insert(s.pages).values(p).onConflictDoNothing();
+  // Nov 2026: the agreement became a full template with the learner's data filled in by the site.
+  // Replace it only while it is still the old built-in text (no {{placeholders}}), so admin edits are kept.
+  const [cp] = await db.select().from(s.pages).where(eq(s.pages.slug, "contract")).limit(1);
+  if (cp && !cp.body.hy.includes("{{")) {
+    await db.update(s.pages).set({ title: L("Պայմանագրի նմուշ", "Образец договора", "Sample agreement"), body: CONTRACT_TEMPLATE }).where(eq(s.pages.slug, "contract"));
+    console.log("✓ contract template");
+  }
+  // the one-time-payment discount applies only to some courses
+  await db.execute(sql`update pages set body = replace(replace(replace(body::text,
+    'Ամբողջ դասընթացի միանգամյա վճարման դեպքում գործում է զեղչ։', 'Որոշ դասընթացներում ամբողջ դասընթացի միանգամյա վճարման դեպքում գործում է զեղչ։'),
+    'При оплате всего курса сразу действует скидка.', 'Для некоторых курсов при оплате всего курса сразу действует скидка.'),
+    'Paying for the whole course at once gives a discount.', 'For some courses, paying for the whole course at once gives a discount.')::jsonb
+    where slug = 'refund'`);
   console.log("✓ pages\nDone.");
   process.exit(0);
 }

@@ -105,11 +105,10 @@ export default async function Enroll({ params, searchParams }: { params: Promise
               <p className="mt-3 mb-0 text-[13px] text-muted">{card || idram ? t.enroll.secureNote : t.enroll.noMethods}</p>
             </fieldset>
 
-            <label className="flex items-start gap-3 text-[14.5px] text-[#3d4757]">
-              <input type="checkbox" name="agree" required className="mt-1 size-[18px] accent-navy-800" />
-              <span>{t.enroll.agree} <Link href={`/${locale}/p/contract`} target="_blank">{t.enroll.contract}</Link> · <Link href={`/${locale}/p/refund`} target="_blank">{t.enroll.refund}</Link></span>
-            </label>
-            <SubmitButton className="btn-navy min-h-13 self-start px-8" pendingText={t.common.sending}>{t.course.enrollPay}</SubmitButton>
+            <p className="m-0 rounded-xl border border-[#eadfc8] bg-[#fbf8f1] px-4 py-3.5 text-[14.5px] text-[#3d4757]">
+              {t.contract.enrollNext} <Link href={`/${locale}/p/contract`} target="_blank">{t.contract.sampleLink}</Link> · <Link href={`/${locale}/p/refund`} target="_blank">{t.contract.refundLink}</Link>
+            </p>
+            <SubmitButton className="btn-navy min-h-13 self-start px-8" pendingText={t.common.sending}>{t.contract.continue}</SubmitButton>
           </ActionForm>
 
           <aside className="flex min-w-0 flex-[1_1_320px] flex-col gap-4">

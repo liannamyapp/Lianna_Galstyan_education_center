@@ -1,3 +1,4 @@
+import { nextContractNo } from "@/lib/contract";
 import "server-only";
 import { eq, sql } from "drizzle-orm";
 import { db, s } from "@/db";
@@ -24,8 +25,7 @@ export async function markPaid(paymentId: string, providerRef?: string, provider
       const patch: Partial<typeof s.applications.$inferInsert> = {};
       if (!["PAID", "CANCELLED"].includes(app.status)) patch.status = "PAID";
       if (!app.contractNo) {
-        const [{ n }] = await db.select({ n: sql<number>`count(*)::int` }).from(s.applications).where(sql`${s.applications.contractNo} is not null`);
-        patch.contractNo = `ՊՄ-${new Date().getFullYear()}-${String(n + 1).padStart(3, "0")}`;
+        patch.contractNo = await nextContractNo();
       }
       if (Object.keys(patch).length) await db.update(s.applications).set(patch).where(eq(s.applications.id, app.id));
     }

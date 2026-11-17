@@ -1,12 +1,14 @@
 "use server";
 import { redirect } from "next/navigation";
 import { guessLocale, translateAll } from "@/lib/translate";
-import { revalidateTag } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
+import { headers } from "next/headers";
+import { contractTemplate, contractValues, fillContract, nextContractNo } from "@/lib/contract";
 import { and, eq, gt, like } from "drizzle-orm";
 import { randomBytes } from "node:crypto";
 import { db, s } from "@/db";
 import { checkPassword, createSession, destroySession, getSession, hashPassword } from "@/lib/auth";
-import { getDict, fmt, tr, isLocale } from "@/lib/i18n";
+import { getDict, fmt, tr, isLocale, locales, type Locale } from "@/lib/i18n";
 import { emailSchema, isBot, str, num } from "@/lib/validate";
 import { emailHtml, sendMail } from "@/lib/mail";
 import { notifyAdminWhatsApp } from "@/lib/whatsapp";
@@ -178,7 +180,6 @@ export async function enrollAction(_: ActionResult, fd: FormData): Promise<Actio
   const l = loc(fd); const t = getDict(l);
   const sess = await getSession();
   if (!sess) redirect(`/${l}/login?next=/${l}/enroll/${str(fd, "slug")}`);
-  if (!fd.get("agree")) return { error: t.auth.errForm };
   const [course] = await db.select().from(s.courses).where(and(eq(s.courses.id, str(fd, "courseId")), eq(s.courses.published, true))).limit(1);
   if (!course) return { error: t.common.error };
   const format = str(fd, "format") === "individual" ? "individual" : "group";
@@ -208,6 +209,8 @@ export async function enrollAction(_: ActionResult, fd: FormData): Promise<Actio
 
   const method = str(fd, "method");
   if (method === "none") return { ok: true, message: t.enroll.applied };
+  // the learner reads and signs the agreement before paying (older applications that already have a number may pay)
+  if (!app.contractSignedAt && !app.contractNo) redirect(`/${l}/account/contract/${app.id}?method=${method === "idram" ? "idram" : "card"}`);
   const st = await getSettings();
   const pays = await db.select().from(s.payments).where(eq(s.payments.applicationId, app.id));
   const b = billing(app, course, null, pays, st.payments);
@@ -228,6 +231,7 @@ export async function payNextAction(fd: FormData) {
   if (!sess) redirect(`/${l}/login`);
   const app = await db.query.applications.findFirst({ where: and(eq(s.applications.id, str(fd, "applicationId")), eq(s.applications.userId, sess.uid)), with: { course: true, group: true, payments: true } });
   if (!app) redirect(`/${l}/account`);
+  if (!app.contractSignedAt && !app.contractNo) redirect(`/${l}/account/contract/${app.id}?method=${str(fd, "method") === "idram" ? "idram" : "card"}`);
   const st = await getSettings();
   const b = billing(app, app.course, app.group?.startDate, app.payments, st.payments);
   if (!b.next) redirect(`/${l}/account`);
@@ -238,4 +242,45 @@ export async function payNextAction(fd: FormData) {
     description: `${app.course.code} · ${tr(app.course.title, l)} · ${fmtName} · ${b.plan === "full" ? t.enroll.full : fmt(t.billing.instalment, { i: b.next.index + 1, n: b.months })}`,
   }).returning();
   redirect(`/${l}/pay/${pay.id}`);
+}
+
+/** Electronic signature of the agreement: saves the exact text in all three languages, then goes on to payment. */
+export async function signContractAction(_: ActionResult, fd: FormData): Promise<ActionResult> {
+  const l = loc(fd); const t = getDict(l); const c = t.contract as Record<string, string>;
+  const sess = await getSession();
+  if (!sess) redirect(`/${l}/login`);
+  const app = await db.query.applications.findFirst({ where: and(eq(s.applications.id, str(fd, "id")), eq(s.applications.userId, sess.uid)), with: { course: true, group: true, user: true, payments: true } });
+  if (!app) return { error: t.common.error };
+  const method = str(fd, "method");
+  if (!app.contractSnapshot) {
+    if (fd.get("agree") !== "1") return { error: c.errAgree };
+    const signature = str(fd, "signature").replace(/\s+/g, " ").trim();
+    if (signature.length < 3) return { error: c.errName };
+    const tpl = await contractTemplate();
+    const body = Object.fromEntries(locales.map((x) => [x, fillContract(tpl[x], contractValues(app, app.course, app.group?.startDate, x), x)])) as Record<Locale, string>;
+    const h = await headers();
+    const ip = (h.get("x-forwarded-for") ?? "").split(",")[0].trim() || h.get("x-real-ip") || null;
+    const now = new Date();
+    const no = app.contractNo ?? await nextContractNo();
+    await db.update(s.applications).set({
+      contractNo: no, contractSignedAt: now,
+      contractSnapshot: { v: 1, no, signedAt: now.toISOString(), signedName: signature, signedLocale: l, ip, client: { name: app.user.name, email: app.user.email, phone: app.user.phone }, body: body as { hy: string; ru: string; en: string } },
+    }).where(eq(s.applications.id, app.id));
+    const site = siteUrl();
+    await sendMail(app.user.email, c.mailSubject, emailHtml(c.mailSubject, [`${app.user.name},`, fmt(c.mailBody, { no, course: `${app.course.code} · ${tr(app.course.title, l)}` })], { label: t.account.view, url: `${site}/${l}/account/contract/${app.id}` }));
+    revalidatePath(`/${l}/account`);
+  }
+  if (method === "card" || method === "idram") {
+    const st = await getSettings();
+    const b = billing(app, app.course, app.group?.startDate, app.payments, st.payments);
+    if (b.next) {
+      const fmtName = app.format === "individual" ? t.format.individual : t.format.group;
+      const [pay] = await db.insert(s.payments).values({
+        userId: sess.uid, applicationId: app.id, amount: b.next.amount, method: method === "idram" ? "IDRAM" : "CARD",
+        description: `${app.course.code} · ${tr(app.course.title, l)} · ${fmtName} · ${b.plan === "full" ? t.enroll.full : fmt(t.billing.instalment, { i: b.next.index + 1, n: b.months })}`,
+      }).returning();
+      redirect(`/${l}/pay/${pay.id}`);
+    }
+  }
+  redirect(`/${l}/account/contract/${app.id}`);
 }

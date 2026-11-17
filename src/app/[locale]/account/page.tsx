@@ -164,13 +164,21 @@ export default async function Account({ params }: { params: Promise<{ locale: Lo
         <section id="documents" className="card p-5 sm:p-7">
           <h2 className="mb-2 text-[18px] font-semibold text-navy-900">{t.account.documents}</h2>
           <ul className="m-0 list-none p-0">
-            {apps.filter((a) => a.contractNo).map((a) => (
-              <li key={a.id} className="flex items-center gap-3.5 border-b border-[#eee7d8] py-3.5 last:border-0">
-                <span className="flex size-10 flex-none items-center justify-center rounded-xl bg-sand text-[11px] font-bold text-[#8a5a2b]">PDF</span>
-                <span className="min-w-0 flex-1"><b className="text-[14.5px] text-navy-900">{fmt(t.account.contract, { no: a.contractNo! })}</b><br /><span className="text-[13px] text-muted">{a.course.code} · {tr(a.course.title, locale)}</span></span>
-                <Link href={`/${locale}/account/contract/${a.id}`} className="text-[14px] font-semibold">{t.account.view}</Link>
-              </li>
-            ))}
+            {apps.filter((a) => a.contractNo || !["REJECTED", "CANCELLED"].includes(a.status)).map((a) => {
+              const signedAt = a.contractSignedAt;
+              return (
+                <li key={a.id} className="flex flex-wrap items-center gap-3.5 border-b border-[#eee7d8] py-3.5 last:border-0">
+                  <span className={`flex size-10 flex-none items-center justify-center rounded-xl text-[11px] font-bold ${signedAt ? "bg-[#e3f1e6] text-[#1f5f33]" : "bg-sand text-[#8a5a2b]"}`}>{signedAt ? "✓" : "PDF"}</span>
+                  <span className="min-w-0 flex-1 basis-[180px]">
+                    <b className="text-[14.5px] text-navy-900">{a.contractNo ? fmt(t.account.contract, { no: a.contractNo }) : t.contract.pending}</b><br />
+                    <span className="text-[13px] text-muted">{a.course.code} · {tr(a.course.title, locale)}{signedAt ? ` · ${fmt(t.contract.signedShort, { date: date(signedAt, locale) })}` : ""}</span>
+                  </span>
+                  {signedAt || a.contractNo
+                    ? <Link href={`/${locale}/account/contract/${a.id}`} className="text-[14px] font-semibold">{signedAt ? t.account.view : t.contract.signNow}</Link>
+                    : <Link href={`/${locale}/account/contract/${a.id}`} className="btn-gold min-h-10 px-4 text-[14px]">{t.contract.signNow}</Link>}
+                </li>
+              );
+            })}
             {certs.map((c) => (
               <li key={c.id} className="flex items-center gap-3.5 border-b border-[#eee7d8] py-3.5 last:border-0">
                 <span className="flex size-10 flex-none items-center justify-center rounded-xl bg-[#e3f1e6] text-[#1f5f33]"><Icon name="shield" size={18} /></span>

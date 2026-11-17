@@ -122,6 +122,9 @@ export const applications = pgTable("applications", {
   note: text("note"),
   adminNote: text("admin_note"),
   contractNo: text("contract_no").unique(),
+  /** electronic signature: when, by which typed name, and the exact text signed (never changes afterwards) */
+  contractSignedAt: timestamp("contract_signed_at", { withTimezone: true }),
+  contractSnapshot: jsonb("contract_snapshot").$type<import("@/lib/contract-types").ContractSnapshotData>(),
   lessonsDone: integer("lessons_done").notNull().default(0),
   createdAt: created(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
