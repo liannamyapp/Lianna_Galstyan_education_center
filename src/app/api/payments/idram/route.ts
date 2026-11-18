@@ -1,12 +1,14 @@
 import { eq } from "drizzle-orm";
 import { db, s } from "@/db";
-import { idramChecksumOk } from "@/lib/payments/idram";
+import { idramChecksumOk, idramEnabled } from "@/lib/payments/idram";
 import { markPaid } from "@/lib/payments";
 
 export const dynamic = "force-dynamic";
 
 /** Idram RESULT_URL: handles both the pre-check and the payment confirmation. Must answer "OK". */
 export async function POST(req: Request) {
+  // Without the merchant account and secret key nothing can be verified: never accept a confirmation then.
+  if (!idramEnabled()) return new Response("DISABLED", { status: 404 });
   const form = await req.formData();
   const f = Object.fromEntries([...form.entries()].map(([k, v]) => [k, String(v)]));
   const orderNo = Number(f.EDP_BILL_NO);

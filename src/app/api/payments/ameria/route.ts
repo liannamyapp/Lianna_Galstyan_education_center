@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 import { db, s } from "@/db";
-import { ameriaDetails } from "@/lib/payments/ameria";
+import { ameriaDetails, ameriaEnabled } from "@/lib/payments/ameria";
 import { markFailed, markPaid } from "@/lib/payments";
 import { siteUrl } from "@/lib/seo";
 
@@ -14,12 +14,16 @@ export async function GET(req: Request) {
   const paymentID = u.searchParams.get("paymentID") || u.searchParams.get("paymentId") || "";
   const orderNo = Number(u.searchParams.get("orderID") || u.searchParams.get("opaque"));
   const [p] = Number.isInteger(orderNo) ? await db.select().from(s.payments).where(eq(s.payments.orderNo, orderNo)).limit(1) : [];
-  if (!p) return NextResponse.redirect(`${siteUrl()}/${locale}/account`);
+  if (!p || !ameriaEnabled()) return NextResponse.redirect(`${siteUrl()}/${locale}/account`);
   try {
-    const d = await ameriaDetails(paymentID || p.providerRef || "");
+    // Only the payment created for THIS order counts: the id we stored at init, confirmed by the bank for this order number.
+    const id = p.providerRef || paymentID;
+    if (paymentID && p.providerRef && paymentID !== p.providerRef) throw new Error("paymentID does not belong to this order");
+    const d = await ameriaDetails(id);
+    const sameOrder = d.OrderID === undefined || String(d.OrderID) === String(p.orderNo);
     const approved = d.ResponseCode === "00" && (!d.PaymentState || d.PaymentState === "payment_approved" || d.PaymentState === "payment_deposited");
-    if (approved && Number(d.Amount) === p.amount) await markPaid(p.id, paymentID, d);
-    else if (p.status === "PENDING") await markFailed(p.id, d);
+    if (sameOrder && approved && Number(d.Amount) === p.amount) await markPaid(p.id, id, d);
+    else if (sameOrder && p.status === "PENDING") await markFailed(p.id, d);
   } catch (e) {
     console.error("[ameria]", e);
   }

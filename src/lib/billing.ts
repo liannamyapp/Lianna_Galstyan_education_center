@@ -49,18 +49,28 @@ export function billing(app: AppLike, course: CourseLike, groupStart: Date | str
     return { plan, months, instalments: [inst], next: done ? null : inst, paidCount: paid.length, paidTotal, state: done ? "done" : "unpaid", daysLeft: null, locked: false };
   }
 
+  // Instalments are covered by the AMOUNT paid, not by the number of payments: one cash payment for three months
+  // covers three instalments; two half payments cover one. Each instalment's date is when its amount was reached.
+  const coveredAt: (Date | null)[] = [];
+  let sum = 0;
+  for (const p of paid) {
+    sum += p.amount;
+    while (coveredAt.length < months && monthly > 0 && sum + 1 >= monthly * (coveredAt.length + 1)) coveredAt.push(p.paidAt ? new Date(p.paidAt) : null);
+  }
+  if (monthly <= 0) paid.forEach((p, i) => { if (i < months) coveredAt.push(p.paidAt ? new Date(p.paidAt) : null); });
+  const covered = coveredAt.length;
   const instalments: Instalment[] = Array.from({ length: months }, (_, i) => ({
     index: i,
     due: start ? addMonths(start, i) : null,
-    amount: monthly,
-    paid: i < paid.length,
-    paidAt: paid[i]?.paidAt ? new Date(paid[i].paidAt!) : null,
+    amount: i === covered ? Math.max(1, monthly * (i + 1) - paidTotal) : monthly, // the next one asks only for what is missing
+    paid: i < covered,
+    paidAt: coveredAt[i] ?? null,
   }));
   const next = instalments.find((x) => !x.paid) ?? null;
-  if (!next) return { plan, months, instalments, next, paidCount: paid.length, paidTotal, state: "done", daysLeft: null, locked: false };
-  if (paid.length === 0 || !next.due) return { plan, months, instalments, next, paidCount: 0, paidTotal, state: "unpaid", daysLeft: null, locked: false };
+  if (!next) return { plan, months, instalments, next, paidCount: covered, paidTotal, state: "done", daysLeft: null, locked: false };
+  if (covered === 0 && paid.length === 0 || !next.due) return { plan, months, instalments, next, paidCount: covered, paidTotal, state: "unpaid", daysLeft: null, locked: false };
 
   const daysLeft = dayNo(next.due) - dayNo(now);
   const state: BillingState = daysLeft > cfg.reminderDays ? "upcoming" : daysLeft > 0 ? "soon" : daysLeft >= -cfg.graceDays ? "due" : "overdue";
-  return { plan, months, instalments, next, paidCount: paid.length, paidTotal, state, daysLeft, locked: state === "overdue" };
+  return { plan, months, instalments, next, paidCount: covered, paidTotal, state, daysLeft, locked: state === "overdue" };
 }

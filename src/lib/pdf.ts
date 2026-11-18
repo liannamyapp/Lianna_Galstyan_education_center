@@ -44,7 +44,7 @@ async function getBrowser(): Promise<Browser> {
     let last: unknown;
     for (let i = 0; i < 5; i++) {
       try {
-        return await puppeteer.launch({ ...cfg, headless: true });
+        return await puppeteer.launch({ ...cfg, headless: true, timeout: 20_000, protocolTimeout: 30_000 });
       } catch (e) {
         last = e;
         const code = (e as NodeJS.ErrnoException)?.code;
@@ -57,19 +57,29 @@ async function getBrowser(): Promise<Browser> {
   return browserPromise;
 }
 
+function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
+  return Promise.race([p, new Promise<T>((_, rej) => setTimeout(() => rej(new Error("PDF render timeout")), ms))]);
+}
+
 async function render(html: string, origin: string): Promise<Uint8Array> {
+  return withTimeout(renderOnce(html, origin), 25_000);
+}
+
+async function renderOnce(html: string, origin: string): Promise<Uint8Array> {
   const browser = await getBrowser();
   const page = await browser.newPage();
   try {
     await page.setViewport({ width: 1400, height: 1000 });
     const withBase = html.replace(/<head>/i, `<head><base href="${origin}/">`);
-    await page.setContent(withBase, { waitUntil: "load", timeout: 25_000 });
-    await page.evaluate(async () => {
-      await document.fonts.ready;
-      await Promise.all(Array.from(document.images).map((i) => (i.complete ? null : new Promise((r) => { i.onload = i.onerror = r; }))));
-    });
+    page.setDefaultTimeout(20_000);
+    await page.setContent(withBase, { waitUntil: "load", timeout: 20_000 });
+    // fonts and images, but never wait forever for a slow asset
+    await page.evaluate(() => Promise.race([
+      Promise.all([document.fonts.ready, ...Array.from(document.images).map((i) => (i.complete ? null : new Promise((r) => { i.onload = i.onerror = r; })))]),
+      new Promise((r) => setTimeout(r, 8_000)),
+    ]));
     await page.emulateMediaType("print");
-    return await page.pdf({ preferCSSPageSize: true, printBackground: true });
+    return await page.pdf({ preferCSSPageSize: true, printBackground: true, timeout: 20_000 });
   } finally {
     await page.close().catch(() => {});
   }

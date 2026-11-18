@@ -1,12 +1,12 @@
 import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
-import { getSession } from "@/lib/auth";
+import { getCurrentUser } from "@/lib/auth";
 
 /** Issues short-lived tokens so the admin's browser uploads large files (video lessons) straight to Vercel Blob. */
 export async function POST(request: Request) {
   const body = (await request.json()) as HandleUploadBody;
   if (body.type === "blob.generate-client-token") {
-    const sess = await getSession();
-    if (sess?.role !== "ADMIN") return Response.json({ error: "Forbidden" }, { status: 403 });
+    const me = await getCurrentUser(); // role from the database, not the cookie
+    if (me?.role !== "ADMIN") return Response.json({ error: "Forbidden" }, { status: 403 });
   }
   try {
     const result = await handleUpload({
