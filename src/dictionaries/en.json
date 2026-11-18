@@ -510,6 +510,7 @@
       "test": "Test",
       "project": "Project",
       "final": "Final project"
-    }
+    },
+    "pending": "Your journal opens once your application is approved after the intro talk. Your attendance and grades will then appear here."
   }
 }

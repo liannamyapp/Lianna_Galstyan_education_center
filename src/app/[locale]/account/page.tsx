@@ -32,7 +32,7 @@ export default async function Account({ params }: { params: Promise<{ locale: Lo
   const certs = await db.query.certificates.findMany({ where: eq(s.certificates.userId, user.id), with: { course: true } });
   const myReviews = await db.select().from(s.reviews).where(eq(s.reviews.userId, user.id)).orderBy(desc(s.reviews.createdAt)).limit(5);
   const lessonsTotal = (c: { weeks: number; lessonsPerWeek: number }) => c.weeks * c.lessonsPerWeek;
-  const nav = [["overview", t.account.dashboard, "chart"], ["payments", t.account.payments, "card"], ["documents", t.account.documents, "file"], ["review", t.account.myReview, "star"], ["profile", t.account.profile, "users"]];
+  const nav = [["overview", t.account.dashboard, "chart"], ["payments", t.account.payments, "card"], ["documents", t.account.documents, "file"], ["review", t.account.myReview, "star"], ["profile", t.account.profile, "users"], [`/${locale}/account/journal`, t.journal.title, "book"]];
 
   return (
     <div className="container-x flex flex-wrap items-start gap-7 pt-9">
@@ -43,7 +43,7 @@ export default async function Account({ params }: { params: Promise<{ locale: Lo
           <div className="min-w-0"><b className="block truncate text-[15px] text-navy-900">{user.name}</b><span className="block truncate text-[12.5px] text-muted">{user.email}</span></div>
         </div>
         <nav aria-label={t.nav.account} className="grid grid-cols-2 gap-1 sm:grid-cols-3 lg:flex lg:flex-col">
-          {nav.map(([id, label, icon]) => <a key={id} href={`#${id}`} className="flex min-h-11 min-w-0 items-center gap-2 rounded-xl px-2 text-[13.5px] text-[#3d4757] sm:gap-2.5 sm:px-3 sm:text-[14px] no-underline hover:bg-ivory lg:px-3.5 lg:text-[14.5px]"><Icon name={icon} size={18} className="flex-none" /><span className="min-w-0 leading-tight break-words">{label}</span></a>)}
+          {nav.map(([id, label, icon]) => <a key={id} href={id.startsWith("/") ? id : `#${id}`} className="flex min-h-11 min-w-0 items-center gap-2 rounded-xl px-2 text-[13.5px] text-[#3d4757] sm:gap-2.5 sm:px-3 sm:text-[14px] no-underline hover:bg-ivory lg:px-3.5 lg:text-[14.5px]"><Icon name={icon} size={18} className="flex-none" /><span className="min-w-0 leading-tight break-words">{label}</span></a>)}
         </nav>
         <form action={logoutAction} className="mt-2 border-t border-[#eee7d8] pt-2"><input type="hidden" name="locale" value={locale} /><button className="flex min-h-11 w-full items-center gap-3 rounded-xl px-3.5 text-[14px] text-[#8a5a2b] hover:bg-ivory"><Icon name="logout" size={18} />{t.nav.logout}</button></form>
       </aside>
