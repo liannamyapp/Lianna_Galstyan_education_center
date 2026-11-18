@@ -53,7 +53,8 @@ body{font-family:'LG Sans',Arial,sans-serif;color:#1b1b1b;background:#e9e5dc;-we
 .bar{position:sticky;top:0;z-index:5;display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center;padding:10px 12px;background:#0f2440;color:#fff;font:14px 'LG Sans',Arial,sans-serif}
 .bar a,.bar button{font:inherit;color:#fff;text-decoration:none;border:1px solid rgba(255,255,255,.3);border-radius:999px;padding:8px 14px;background:transparent;cursor:pointer}
 .bar a.on{background:#fff;color:#0f2440}
-.bar button.p{background:#c9a24b;border-color:#c9a24b;color:#0f2440;font-weight:700}
+.bar button.p{background:transparent}
+.bar a.dl{background:#c9a24b;border-color:#c9a24b;color:#0f2440;font-weight:700}
 .bar .hint{width:100%;text-align:center;font-size:12px;color:#b9c4d4}
 .wrap{padding:16px 8px 40px;display:flex;flex-direction:column;align-items:center;gap:16px;overflow-x:hidden}
 .revoked{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:4}
@@ -172,12 +173,12 @@ const TITLES: Record<CertDocKind, string> = { hy: "Վկայական", en: "Certi
 export function certificatePage(d: CertData, kind: CertDocKind, links: Record<CertDocKind, string>, back: string) {
   const body = kind === "insert" ? `<section class="page">${insertHalf(d, "hy")}${insertHalf(d, "en")}<div class="fold"></div></section>` : kind === "hy" ? certificateHy(d) : certificateEn(d);
   const hint = kind === "insert"
-    ? "Տպեք A3 թղթի վրա, հորիզոնական (կամ պահպանեք PDF), և ծալեք կետագծով։ · Print on A3 landscape and fold on the dashed line."
-    : "Տպեք A4 թղթի վրա՝ առանց լուսանցքների, կամ պահպանեք որպես PDF։ · Print on A4 without margins or save as PDF.";
+    ? "PDF ֆայլը պահվում է Ձեր սարքում։ Տպեք A3 թղթի վրա, հորիզոնական, և ծալեք կետագծով։ · Download the PDF or print on A3 landscape and fold on the dashed line."
+    : "PDF ֆայլը պահվում է Ձեր սարքում։ Տպեք A4 թղթի վրա՝ առանց լուսանցքների։ · Download the PDF or print on A4 without margins.";
   const tab = (k: CertDocKind, label: string) => `<a href="${links[k]}" class="${k === kind ? "on" : ""}">${label}</a>`;
   return `<!DOCTYPE html><html lang="${kind === "en" ? "en" : "hy"}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">
 <title>${TITLES[kind]} № ${esc(d.number)} · ALTA Academy</title><style>${FONTS}${BASE}${kind === "insert" ? A3 : A4}</style></head><body>
-<div class="bar"><a href="${back}">←</a>${tab("hy", "Վկայական (հայ.)")}${tab("en", "Certificate (Eng.)")}${tab("insert", "Ներդիր / Supplement")}<button class="p" onclick="window.print()">Տպել / PDF</button><div class="hint">${hint}</div></div>
+<div class="bar"><a href="${back}">←</a>${tab("hy", "Վկայական (հայ.)")}${tab("en", "Certificate (Eng.)")}${tab("insert", "Ներդիր / Supplement")}<a class="dl" href="${links[kind]}?download=1" download>⬇ Ներբեռնել PDF</a><button class="p" onclick="window.print()">🖨 Տպել</button><div class="hint">${hint}</div></div>
 ${d.revoked ? '<div class="revoked"><div>ՉԵՂԱՐԿՎԱԾ</div></div>' : ""}
 <div class="wrap">${body.replace(/<section class="page">/g, '<div class="pw"><section class="page">').replace(/<\/section>/g, "</section></div>")}</div>
 <script>(function(){function fit(){document.querySelectorAll('.pw').forEach(function(w){var p=w.firstElementChild,pw=p.offsetWidth,ph=p.offsetHeight,s=Math.min(1,(document.documentElement.clientWidth-16)/pw);p.style.transform=s<1?'scale('+s+')':'';w.style.width=(pw*s)+'px';w.style.height=(ph*s)+'px';});}fit();addEventListener('resize',fit);addEventListener('orientationchange',function(){setTimeout(fit,300)});if(document.fonts)document.fonts.ready.then(fit);})();</script></body></html>`;

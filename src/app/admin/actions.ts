@@ -258,7 +258,9 @@ export async function issueCertificate(_: ActionResult, fd: FormData): Promise<A
     if (!number) {
       const year = new Date(str(fd, "endDate") || Date.now()).getFullYear();
       const prefix = `${course.code}/${year}/`;
-      const [{ n }] = await db.select({ n: sql<number>`count(*)::int` }).from(s.certificates).where(like(s.certificates.number, `${prefix}%`));
+      // Next number after the highest one ever issued with this prefix. Certificates are never deleted
+      // (only revoked), so a number is never reused and never left as a gap.
+      const [{ n }] = await db.select({ n: sql<number>`coalesce(max(substring(${s.certificates.number} from '([0-9]+)$')::int), 0)::int` }).from(s.certificates).where(like(s.certificates.number, `${prefix}%`));
       number = `${prefix}${String(n + 1).padStart(3, "0")}`;
     }
     const userId = str(fd, "userId") || null;
@@ -410,12 +412,15 @@ export async function deleteUsers(_: ActionResult, fd: FormData): Promise<Action
     const uids = list.map((u) => u.id), emails = list.map((u) => u.email);
     await db.delete(s.leads).where(or(inArray(s.leads.userId, uids), inArray(s.leads.email, emails)));
     await db.delete(s.messages).where(inArray(s.messages.email, emails));
-    await db.delete(s.certificates).where(inArray(s.certificates.userId, uids));
+    // Issued certificates stay in the register (number, holder name, course, dates) and remain verifiable;
+    // only the link to the removed account is cleared (user_id → null).
+    await db.update(s.certificates).set({ userId: null }).where(inArray(s.certificates.userId, uids));
     await db.delete(s.users).where(inArray(s.users.id, uids)); // applications, payments, reviews, tokens cascade
     refresh("reviews");
-    for (const path of ["/admin/students", "/admin/payments", "/admin/applications", "/admin/reviews", "/admin/crm/leads", "/admin"]) revalidatePath(path);
-    return ok(`Ջնջված է՝ ${list.length} ունկնդիր`);
+    for (const path of ["/admin/students", "/admin/payments", "/admin/applications", "/admin/reviews", "/admin/crm/leads", "/admin/certificates", "/admin"]) revalidatePath(path);
+    if (fd.get("back") !== "1") return ok(`Ջնջված է՝ ${list.length} ունկնդիր`);
   } catch (e) { return fail(e); }
+  redirect("/admin/students"); // removed from the student's own page → back to the list
 }
 
 /** Removes the admin's own test enrollments, payments and reviews; the account itself stays. */

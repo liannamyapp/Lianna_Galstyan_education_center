@@ -18,7 +18,12 @@ const config: NextConfig = {
   },
   experimental: { serverActions: { bodySizeLimit: "8mb" } },
   // the CRM guide page reads docs/CRM.md at runtime
-  outputFileTracingIncludes: { "/admin/crm/guide": ["./docs/CRM.md"] },
+  outputFileTracingIncludes: {
+    "/admin/crm/guide": ["./docs/CRM.md"],
+    // serverless Chromium binary for certificate PDF downloads
+    "/[locale]/account/certificate/[id]/[doc]": ["./node_modules/@sparticuz/chromium/bin/**"],
+  },
+  serverExternalPackages: ["@sparticuz/chromium", "puppeteer-core"],
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },

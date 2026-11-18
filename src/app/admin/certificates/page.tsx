@@ -38,7 +38,7 @@ export default async function Certificates() {
           <thead><tr><th className={th}>Համար</th><th className={th}>Ունկնդիր</th><th className={th}>Դասընթաց</th><th className={th}>Ժամկետ</th><th className={th}>Տրված</th><th className={th}>Փաստաթղթեր</th></tr></thead>
           <tbody>{list.map((c) => (
             <tr key={c.id} className={c.revoked ? "opacity-60" : ""}>
-              <td data-label="Համար" className={`${td} font-mono`}>{c.number}</td><td data-label="Ունկնդիր" className={td}>{c.holderName}</td><td data-label="Դասընթաց" className={td}>{c.course.code}</td>
+              <td data-label="Համար" className={`${td} font-mono`}>{c.number}</td><td data-label="Ունկնդիր" className={td}>{c.holderName}{!c.userId && <span className="chip ml-2 text-[11px]">հաշիվը հեռացված է</span>}</td><td data-label="Դասընթաց" className={td}>{c.course.code}</td>
               <td data-label="Ժամկետ" className={td}>{dateShort(c.startDate)} – {dateShort(c.endDate)}</td><td data-label="Տրված" className={td}>{dateShort(c.issuedAt)}</td>
               <td data-label="Փաստաթղթեր" className={td}>
                 <div className="flex flex-col items-start gap-2">

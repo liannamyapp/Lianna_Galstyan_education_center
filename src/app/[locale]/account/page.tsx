@@ -12,6 +12,7 @@ import { getSettings } from "@/lib/settings";
 import { ActionForm } from "@/components/ActionForm";
 import { SubmitButton } from "@/components/SubmitButton";
 import { Icon } from "@/components/Icon";
+import { CertDocs } from "@/components/CertDocs";
 import { emailChangeAction, logoutAction, payNextAction, profileAction, reviewAction } from "../actions";
 
 export const dynamic = "force-dynamic";
@@ -162,7 +163,8 @@ export default async function Account({ params }: { params: Promise<{ locale: Lo
         </section>
 
         <section id="documents" className="card p-5 sm:p-7">
-          <h2 className="mb-2 text-[18px] font-semibold text-navy-900">{t.account.documents}</h2>
+          <h2 className="mb-1 text-[18px] font-semibold text-navy-900">{t.account.documents}</h2>
+          {certs.some((c) => !c.revoked) && <p className="mt-0 mb-2 text-[13.5px] text-muted">{t.account.certFilesHint}</p>}
           <ul className="m-0 list-none p-0">
             {apps.filter((a) => a.contractNo || !["REJECTED", "CANCELLED"].includes(a.status)).map((a) => {
               const signedAt = a.contractSignedAt;
@@ -183,14 +185,7 @@ export default async function Account({ params }: { params: Promise<{ locale: Lo
               <li key={c.id} className="flex flex-wrap items-center gap-3.5 border-b border-[#eee7d8] py-3.5 last:border-0">
                 <span className={`flex size-10 flex-none items-center justify-center rounded-xl ${c.revoked ? "bg-[#fbefeb] text-[#8a2f1d]" : "bg-[#e3f1e6] text-[#1f5f33]"}`}><Icon name="shield" size={18} /></span>
                 <span className="min-w-0 flex-1 basis-[180px]"><b className="text-[14.5px] text-navy-900">{fmt(t.account.certificate, { no: c.number })}</b><br /><span className="text-[13px] text-muted">{tr(c.course.title, locale)}{c.revoked ? ` · ${t.account.certRevoked}` : ""}</span></span>
-                {!c.revoked && (
-                  <span className="flex basis-full flex-wrap gap-2 sm:basis-auto">
-                    <a href={`/${locale}/account/certificate/${c.id}/hy`} target="_blank" rel="noopener" className="btn-soft min-h-10 px-3.5 text-[13.5px]">{t.account.certHy}</a>
-                    <a href={`/${locale}/account/certificate/${c.id}/en`} target="_blank" rel="noopener" className="btn-soft min-h-10 px-3.5 text-[13.5px]">{t.account.certEn}</a>
-                    <a href={`/${locale}/account/certificate/${c.id}/insert`} target="_blank" rel="noopener" className="btn-soft min-h-10 px-3.5 text-[13.5px]">{t.account.certInsert}</a>
-                    {c.fileUrl && <a href={c.fileUrl} target="_blank" rel="noopener noreferrer" className="btn-soft min-h-10 px-3.5 text-[13.5px]">{t.account.certScan}</a>}
-                  </span>
-                )}
+                {!c.revoked && <CertDocs base={`/${locale}/account/certificate/${c.id}`} fileUrl={c.fileUrl} labels={{ hy: t.account.certHy, en: t.account.certEn, insert: t.account.certInsert, scan: t.account.certScan, open: t.account.certOpen, download: t.account.certDownload }} />}
               </li>
             ))}
             {certs.length === 0 && (

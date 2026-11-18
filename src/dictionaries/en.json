@@ -262,7 +262,10 @@
     "certEn": "Certificate — English",
     "certInsert": "Supplement",
     "certScan": "Scanned copy",
-    "certRevoked": "revoked"
+    "certRevoked": "revoked",
+    "certOpen": "Open / print",
+    "certDownload": "Download PDF",
+    "certFilesHint": "You can open and print every document, or download it as a PDF file and keep it on your device."
   },
   "verify": {
     "eyebrow": "Certificate verification",
