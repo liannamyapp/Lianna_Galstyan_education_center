@@ -22,7 +22,6 @@ const config: NextConfig = {
     "/admin/crm/guide": ["./docs/CRM.md"],
     // serverless Chromium binary for certificate PDF downloads
     "/[locale]/account/certificate/[id]/[doc]": ["./node_modules/@sparticuz/chromium/bin/**"],
-    "/api/pdf-selftest": ["./node_modules/@sparticuz/chromium/bin/**"],
   },
   serverExternalPackages: ["@sparticuz/chromium", "puppeteer-core"],
   async headers() {
