@@ -77,6 +77,9 @@ export const courses = pgTable("courses", {
   imageUrl: text("image_url"),
   certificateUrl: text("certificate_url"),
   endorsement: text("endorsement"),
+  /** Ministry endorsement order printed on certificates: number and date (YYYY-MM-DD) */
+  endorsementNo: text("endorsement_no"),
+  endorsementDate: text("endorsement_date"),
   published: boolean("published").notNull().default(true),
   featured: boolean("featured").notNull().default(true),
   order: integer("sort_order").notNull().default(0),
@@ -90,6 +93,8 @@ export const courseModules = pgTable("course_modules", {
   code: text("code").notNull(),
   title: jsonb("title").$type<L10n>().notNull(),
   hours: integer("hours").notNull(),
+  /** learning outcomes achieved, shown in the certificate supplement */
+  outcomes: jsonb("outcomes").$type<Partial<L10n>>(),
   order: integer("sort_order").notNull().default(0),
 });
 
@@ -184,6 +189,12 @@ export const certificates = pgTable("certificates", {
   number: text("number").notNull(),
   userId: text("user_id").references(() => users.id, { onDelete: "set null" }),
   holderName: text("holder_name").notNull(),
+  /** name in Latin letters for the English certificate and supplement */
+  holderNameEn: text("holder_name_en"),
+  projectTopic: text("project_topic"),
+  projectTopicEn: text("project_topic_en"),
+  projectUrl: text("project_url"),
+  attendance: integer("attendance"),
   courseId: text("course_id").notNull().references(() => courses.id, { onDelete: "restrict" }),
   startDate: timestamp("start_date", { withTimezone: true }).notNull(),
   endDate: timestamp("end_date", { withTimezone: true }).notNull(),

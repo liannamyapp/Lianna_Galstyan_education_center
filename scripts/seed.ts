@@ -4,6 +4,7 @@ import { and, eq, sql } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { db, s } from "../src/db";
 import { CONTRACT_TEMPLATE } from "../src/lib/contract-template";
+import MODULE_OUTCOMES from "./module-outcomes.json";
 
 const L = (hy: string, ru: string, en: string) => ({ hy, ru, en });
 const LEGACY_TITLES: Record<string, string> = {
@@ -34,6 +35,13 @@ async function main() {
       const r = await db.update(s.users).set({ role: "STUDENT" }).where(and(eq(s.users.email, "liana.galstyan.87@mail.ru"), eq(s.users.role, "ADMIN"))).returning({ id: s.users.id });
       if (r.length) console.log("✓ Eva Sahakyan is a learner again");
     }
+  }
+  // Certificate supplement: learning outcomes of the endorsed programmes' modules (from the official forms)
+  for (const [code, rows] of Object.entries(MODULE_OUTCOMES as Record<string, { hy: string; en: string }[]>)) {
+    const [c] = await db.select({ id: s.courses.id }).from(s.courses).where(eq(s.courses.code, code)).limit(1);
+    if (!c) continue;
+    const mods = await db.select().from(s.courseModules).where(eq(s.courseModules.courseId, c.id)).orderBy(s.courseModules.order);
+    for (const [i, m] of mods.entries()) if (!m.outcomes && rows[i]) await db.update(s.courseModules).set({ outcomes: { hy: rows[i].hy, en: rows[i].en } }).where(eq(s.courseModules.id, m.id));
   }
   // One-time move of the public/notification e-mail to the academy address (Nov 2026)
   await db.execute(sql`update settings set value = replace(value::text, 'galstyan.liana.87@gmail.com', 'altaacademy666@gmail.com')::jsonb where value::text like '%galstyan.liana.87@gmail.com%'`);

@@ -257,7 +257,12 @@
     "emailConfirmBtn": "Confirm new email",
     "emailLinkInvalid": "The link is invalid or expired. Request the change again in Profile.",
     "emailChanged": "Done. From now on, sign in with {email}.",
-    "replyFrom": "ALTA Academy replied:"
+    "replyFrom": "ALTA Academy replied:",
+    "certHy": "Certificate — Armenian",
+    "certEn": "Certificate — English",
+    "certInsert": "Supplement",
+    "certScan": "Scanned copy",
+    "certRevoked": "revoked"
   },
   "verify": {
     "eyebrow": "Certificate verification",

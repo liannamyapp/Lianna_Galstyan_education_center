@@ -1,0 +1,90 @@
+{
+ "ՖՎԾ-01": [
+  {
+   "hy": "Բացատրում է վեբ էջի բեռնման գործընթացը. ստեղծում է կառուցվածքային HTML էջ. ստեղծում է վեբ ձևաթուղթ. կիրառում է սեմանտիկ տեգեր",
+   "en": "Explains how a web page loads; builds a structured HTML page; creates a web form; uses semantic tags",
+   "hours": 10,
+   "titleHy": "Վեբի հիմունքներ և HTML"
+  },
+  {
+   "hy": "Կիրառում է CSS ընտրիչներ և ոճեր. դասավորում է էջի տարրերը Flexbox և Grid միջոցներով. ստեղծում է հարմարվող էջ. կիրառում է անցումներ և անիմացիաներ",
+   "en": "Applies CSS selectors and styles; lays out pages with Flexbox and Grid; builds a responsive page; uses transitions and animations",
+   "hours": 14,
+   "titleHy": "CSS և հարմարվող ձևավորում"
+  },
+  {
+   "hy": "Կիրառում է փոփոխականներ, տվյալների տեսակներ և օպերատորներ. գրում է պայմաններ և ցիկլեր. ստեղծում է ֆունկցիաներ. աշխատում է զանգվածների և օբյեկտների հետ. գտնում և ուղղում է կոդի սխալները",
+   "en": "Uses variables, data types and operators; writes conditions and loops; creates functions; works with arrays and objects; finds and fixes code errors",
+   "hours": 16,
+   "titleHy": "JavaScript-ի հիմունքներ"
+  },
+  {
+   "hy": "Փոփոխում է էջի բովանդակությունը DOM-ի միջոցով. մշակում է օգտատիրոջ գործողությունները. ստանում և ցուցադրում է տվյալներ API-ից",
+   "en": "Changes page content via the DOM; handles user actions; fetches and displays data from an API",
+   "hours": 12,
+   "titleHy": "DOM, իրադարձություններ և ասինխրոն JavaScript"
+  },
+  {
+   "hy": "Կառավարում է նախագիծը Git-ով. հրապարակում է կայքը համացանցում",
+   "en": "Manages a project with Git; deploys a website",
+   "hours": 4,
+   "titleHy": "Git, GitHub և կայքի հրապարակում"
+  },
+  {
+   "hy": "Ստեղծում է React նախագիծ և կոմպոնենտներ. կառավարում է կոմպոնենտի վիճակը. ստանում է տվյալներ API-ից React-ում. կազմակերպում է էջերի միջև նավիգացիա",
+   "en": "Creates a React project and components; manages component state; fetches API data in React; implements page navigation",
+   "hours": 16,
+   "titleHy": "React-ի հիմունքներ"
+  },
+  {
+   "hy": "Պլանավորում է նախագիծը. մշակում է ամբողջական ֆրոնթենդ հավելված. ներկայացնում և հիմնավորում է իր աշխատանքը",
+   "en": "Plans the project; develops a complete front-end application; presents and justifies the work",
+   "hours": 12,
+   "titleHy": "Ավարտական նախագիծ"
+  }
+ ],
+ "ԲՎԾ-01": [
+  {
+   "hy": "Ստեղծում և կազմակերպում է Node.js նախագիծ. կառուցում է կոդը մոդուլներով. աշխատում է ֆայլերի հետ ասինխրոն եղանակով. կառավարում է կարգավորումները միջավայրի փոփոխականներով",
+   "en": "Creates and organizes a Node.js project; structures code in modules; works with files asynchronously; manages configuration with environment variables",
+   "hours": 8,
+   "titleHy": "Node.js-ի հիմունքներ և npm"
+  },
+  {
+   "hy": "Բացատրում է HTTP-ի և REST-ի սկզբունքները. ստեղծում է REST API Express-ով. կիրառում է middleware և տվյալների ստուգում",
+   "en": "Explains HTTP and REST principles; builds a REST API with Express; applies middleware and data validation",
+   "hours": 14,
+   "titleHy": "HTTP, REST և Express"
+  },
+  {
+   "hy": "Նախագծում է ռելյացիոն տվյալների բազա. գրում է SQL հարցումներ. միացնում է բազան Express API-ին",
+   "en": "Designs a relational database; writes SQL queries; connects the database to an Express API",
+   "hours": 12,
+   "titleHy": "Տվյալների բազաներ և SQL (PostgreSQL)"
+  },
+  {
+   "hy": "Աշխատում է տվյալների բազայի հետ Prisma ORM-ով. տարբերակում է SQL և NoSQL բազաները և կատարում է հիմնական գործողություններ MongoDB-ում",
+   "en": "Works with a database through Prisma ORM; distinguishes SQL and NoSQL databases and performs basic MongoDB operations",
+   "hours": 6,
+   "titleHy": "ORM (Prisma) և MongoDB-ի հիմունքներ"
+  },
+  {
+   "hy": "Իրականացնում է օգտատիրոջ գրանցում և մուտք. կիրառում է անվտանգության հիմնական միջոցներ",
+   "en": "Implements user registration and login; applies basic security measures",
+   "hours": 8,
+   "titleHy": "Նույնականացում և անվտանգություն"
+  },
+  {
+   "hy": "Թեստավորում է REST API. հրապարակում է սերվերային հավելվածը",
+   "en": "Tests a REST API; deploys a server application",
+   "hours": 4,
+   "titleHy": "Թեստավորում և հրապարակում"
+  },
+  {
+   "hy": "Նախագծում է բեքենդ հավելվածը. մշակում է ամբողջական բեքենդ հավելված. ներկայացնում և հիմնավորում է իր տեխնիկական լուծումները",
+   "en": "Designs a back-end application; develops a complete back-end application; presents and justifies technical decisions",
+   "hours": 8,
+   "titleHy": "Ավարտական նախագիծ"
+  }
+ ]
+}

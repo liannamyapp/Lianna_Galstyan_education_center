@@ -257,7 +257,12 @@
     "emailConfirmBtn": "Подтвердить новый e-mail",
     "emailLinkInvalid": "Ссылка недействительна или устарела. Запросите смену заново в разделе «Профиль».",
     "emailChanged": "Готово. Теперь входите с адресом {email}.",
-    "replyFrom": "Ответ ALTA Academy:"
+    "replyFrom": "Ответ ALTA Academy:",
+    "certHy": "Сертификат — армянский",
+    "certEn": "Сертификат — английский",
+    "certInsert": "Вкладыш",
+    "certScan": "Скан-копия",
+    "certRevoked": "аннулирован"
   },
   "verify": {
     "eyebrow": "Проверка сертификата",

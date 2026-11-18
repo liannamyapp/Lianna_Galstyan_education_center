@@ -13,6 +13,7 @@ import { getDict, fmt, tr, type Locale } from "@/lib/i18n";
 import type { L10n } from "@/db/schema";
 import { markFailed, markPaid, markRefunded } from "@/lib/payments";
 import { autoTranslateEnabled, translateAll } from "@/lib/translate";
+import { hyToLatin } from "@/lib/translit";
 import { siteUrl } from "@/lib/seo";
 import type { ActionResult } from "@/components/ActionForm";
 import { syncLeadForUser } from "@/lib/crm/automations";
@@ -71,6 +72,8 @@ export async function saveCourse(_: ActionResult, fd: FormData): Promise<ActionR
       priceMonthly: num(fd, "priceMonthly"), priceFull: num(fd, "priceFull") || null,
       priceIndividual: num(fd, "priceIndividual", 125000), priceIndividualFull: num(fd, "priceIndividualFull") || null, months: Math.max(1, num(fd, "months", 3)), minAge: num(fd, "minAge", 16),
       endorsement: str(fd, "endorsement") || null,
+      endorsementNo: str(fd, "endorsementNo") || null,
+      endorsementDate: /^\d{4}-\d{2}-\d{2}$/.test(str(fd, "endorsementDate")) ? str(fd, "endorsementDate") : null,
       published: bool(fd, "published"), featured: bool(fd, "featured"), order: num(fd, "order"),
       ...(image ? { imageUrl: image } : {}), ...(cert ? { certificateUrl: cert } : {}),
     };
@@ -263,17 +266,35 @@ export async function issueCertificate(_: ActionResult, fd: FormData): Promise<A
     if (!holderName && userId) holderName = (await db.select({ name: s.users.name }).from(s.users).where(eq(s.users.id, userId)).limit(1))[0]?.name ?? "";
     if (!holderName) return { error: "Նշեք ունկնդրի անունը" };
     const fileUrl = await storeFile(file(fd, "file"), "certificates");
-    await db.insert(s.certificates).values({ number, userId, holderName, courseId, startDate: new Date(str(fd, "startDate")), endDate: new Date(str(fd, "endDate")), fileUrl });
+    await db.insert(s.certificates).values({ number, userId, holderName, courseId, startDate: new Date(str(fd, "startDate")), endDate: new Date(str(fd, "endDate")), fileUrl, ...certExtras(fd, holderName) });
     revalidatePath("/admin/certificates");
     return ok(`Վկայականը տրված է՝ № ${number}`);
   } catch (e) { return fail(e); }
+}
+
+/** Optional details printed on the English certificate and the supplement. */
+function certExtras(fd: FormData, holderName: string) {
+  const att = Number(str(fd, "attendance"));
+  return {
+    holderNameEn: str(fd, "holderNameEn") || hyToLatin(holderName),
+    projectTopic: str(fd, "projectTopic") || null,
+    projectTopicEn: str(fd, "projectTopicEn") || null,
+    projectUrl: str(fd, "projectUrl") || null,
+    attendance: str(fd, "attendance") && Number.isFinite(att) ? Math.min(100, Math.max(0, Math.round(att))) : null,
+  };
 }
 
 export async function updateCertificate(fd: FormData) {
   await requireAdmin();
   const id = str(fd, "id");
   const fileUrl = await storeFile(file(fd, "file"), "certificates");
-  await db.update(s.certificates).set({ revoked: bool(fd, "revoked"), ...(fileUrl ? { fileUrl } : {}) }).where(eq(s.certificates.id, id));
+  const [c] = await db.select().from(s.certificates).where(eq(s.certificates.id, id)).limit(1);
+  if (!c) return;
+  const holderName = str(fd, "holderName") || c.holderName;
+  await db.update(s.certificates).set({
+    revoked: bool(fd, "revoked"), ...(fileUrl ? { fileUrl } : {}),
+    ...(fd.has("holderNameEn") ? { holderName, ...certExtras(fd, holderName) } : {}),
+  }).where(eq(s.certificates.id, id));
   revalidatePath("/admin/certificates");
 }
 

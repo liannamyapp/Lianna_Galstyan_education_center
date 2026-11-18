@@ -69,6 +69,8 @@ export default async function EditCourse({ params, searchParams }: { params: Pro
             <Field label="Նկար (Google / սոցցանցեր)"><input type="file" name="image" accept="image/*" className="text-[14px]" />{c?.imageUrl && <Image src={c.imageUrl} alt="" width={160} height={90} className="mt-2 rounded-lg" />}</Field>
             <Field label="Վկայականի նմուշ (նկար)"><input type="file" name="certificate" accept="image/*" className="text-[14px]" />{c?.certificateUrl && <Image src={c.certificateUrl} alt="" width={90} height={127} className="mt-2 rounded" />}</Field>
             <Field label="Երաշխավորման նշում"><input name="endorsement" defaultValue={c?.endorsement ?? ""} placeholder="ՀՀ ԿԳՄՍՆ երաշխավորում՝ № …, ամսաթիվ" className="input" /></Field>
+            <Field label="Նախարարի հրամանի № (վկայականի համար)"><input name="endorsementNo" defaultValue={c?.endorsementNo ?? ""} placeholder="օր.՝ 123-Ա/Լ" className="input" /></Field>
+            <Field label="Հրամանի ամսաթիվ"><input name="endorsementDate" type="date" defaultValue={c?.endorsementDate ?? ""} className="input" /></Field>
           </div>
         </AdminCard>
         <div className="flex flex-wrap items-center gap-5">
