@@ -1,3 +1,4 @@
+import { ameriaEnabled, idramEnabled } from "@/lib/payments";
 import Link from "next/link";
 import { getDict, tr, type Locale } from "@/lib/i18n";
 import { getSettings } from "@/lib/settings";
@@ -42,12 +43,12 @@ export async function Footer({ locale }: { locale: Locale }) {
           <Link href={`/${locale}/p/refund`} className="text-[#b9c4d4] no-underline hover:text-white">{t.footer.refund}</Link>
           <Link href={`/${locale}/p/privacy`} className="text-[#b9c4d4] no-underline hover:text-white">{t.footer.privacy}</Link>
         </div>
-        <div className="flex flex-col gap-3 text-[14px]">
+        {(idramEnabled() || ameriaEnabled()) && <div className="flex flex-col gap-3 text-[14px]">
           <p className="font-semibold text-white">{t.footer.payment}</p>
           <div className="flex flex-wrap gap-2">
-            {["Idram", "ArCa", "Visa", "Mastercard"].map((b) => <span key={b} className="rounded-lg border border-[#2c3d57] px-2.5 py-1 text-[13px]">{b}</span>)}
+            {[...(idramEnabled() ? ["Idram"] : []), ...(ameriaEnabled() ? ["ArCa", "Visa", "Mastercard"] : [])].map((b) => <span key={b} className="rounded-lg border border-[#2c3d57] px-2.5 py-1 text-[13px]">{b}</span>)}
           </div>
-        </div>
+        </div>}
       </div>
       <div className="container-x flex flex-wrap justify-between gap-3 border-t border-[#1f3049] py-6 text-[12.5px]">
         <span>© {new Date().getFullYear()} {tr(st.legal.entity, locale)} · {t.footer.tin} {st.legal.tin}</span>

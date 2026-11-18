@@ -1,3 +1,4 @@
+import { ameriaEnabled, idramEnabled } from "@/lib/payments";
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
@@ -28,6 +29,9 @@ export default async function CoursePage({ params }: { params: Promise<{ locale:
   const [c, st] = await Promise.all([getCourse(slug), getSettings()]);
   if (!c) notFound();
   const t = getDict(locale);
+  // only advertise online payment methods that are actually connected
+  const payBrands = [idramEnabled() && "Idram", ameriaEnabled() && "ArCa · Visa · Mastercard"].filter(Boolean).join(" · ");
+  const onlinePay = Boolean(payBrands);
   const g = c.nextGroup;
   const maxH = Math.max(...c.modules.map((m) => m.hours), 1);
   const courseLd = {
@@ -90,8 +94,8 @@ export default async function CoursePage({ params }: { params: Promise<{ locale:
                   </>
                 ) : <div><dt className="sr-only">{t.course.start}</dt><dd className="m-0 text-muted">{t.course.tbaGroup}</dd></div>}
               </dl>
-              <Link href={`/${locale}/enroll/${c.slug}`} className="btn-navy w-full">{t.course.enrollPay}</Link>
-              <p className="mt-3 mb-0 text-center text-[12.5px] text-muted">{t.course.trial} · Idram · ArCa · Visa · Mastercard</p>
+              <Link href={`/${locale}/enroll/${c.slug}`} className="btn-navy w-full">{onlinePay ? t.course.enrollPay : t.nav.register}</Link>
+              <p className="mt-3 mb-0 text-center text-[12.5px] text-muted">{t.course.trial}{payBrands ? ` · ${payBrands}` : ""}</p>
             </aside>
           </div>
         </div>
