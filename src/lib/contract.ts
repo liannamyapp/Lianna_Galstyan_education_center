@@ -69,10 +69,18 @@ export async function contractTemplate(): Promise<L10n> {
 }
 
 export async function nextContractNo() {
-  // after the highest number ever used this year (not a count), so removing a learner never makes a number repeat
-  const prefix = `ՊՄ-${new Date().getFullYear()}-`;
-  const [{ n }] = await db.select({ n: sql<number>`coalesce(max(substring(${s.applications.contractNo} from '([0-9]+)$')::int), 0)::int` }).from(s.applications).where(sql`${s.applications.contractNo} like ${prefix + "%"}`);
-  return `${prefix}${String(n + 1).padStart(3, "0")}`;
+  // A counter per year that only goes up: a number, once given, is never given again — even if that learner and
+  // their contract are later deleted. Starts after the highest number still in the database.
+  const year = new Date().getFullYear();
+  const prefix = `ՊՄ-${year}-`;
+  const key = `contract_seq_${year}`;
+  const [{ m }] = await db.select({ m: sql<number>`coalesce(max(substring(${s.applications.contractNo} from '([0-9]+)$')::int), 0)::int` }).from(s.applications).where(sql`${s.applications.contractNo} like ${prefix + "%"}`);
+  const rows = await db.execute(sql`
+    insert into settings (key, value) values (${key}, jsonb_build_object('n', ${m + 1}::int))
+    on conflict (key) do update set value = jsonb_build_object('n', greatest((settings.value->>'n')::int + 1, ${m + 1}::int))
+    returning (value->>'n')::int as n`);
+  const n = Number((rows as unknown as { rows: { n: number }[] }).rows[0].n);
+  return `${prefix}${String(n).padStart(3, "0")}`;
 }
 
 /** The Provider's block on the agreement, from site settings. */
