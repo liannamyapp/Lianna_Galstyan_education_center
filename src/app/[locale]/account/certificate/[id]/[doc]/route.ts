@@ -3,7 +3,7 @@ import { db, s } from "@/db";
 import { getCurrentUser } from "@/lib/auth";
 import { certificatePage, type CertDocKind } from "@/lib/certificate-docs";
 import { hyToLatin } from "@/lib/translit";
-import { htmlToPdf, pdfHeaders } from "@/lib/pdf";
+import { htmlToPdf, pdfHeaders, pdfFailedPage } from "@/lib/pdf";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -30,11 +30,20 @@ export async function GET(req: Request, { params }: { params: Promise<{ locale: 
     user.role === "ADMIN" ? "/admin/certificates" : `/${locale}/account#documents`,
   );
   if (new URL(req.url).searchParams.has("download")) {
-    const origin = new URL(req.url).origin;
-    const pdf = await htmlToPdf(html, origin);
+    const url = new URL(req.url);
     const who = (cert.holderNameEn || hyToLatin(cert.holderName)).trim();
     const name = `ALTA_${kind === "insert" ? "Supplement" : kind === "en" ? "Certificate_EN" : "Certificate_HY"}_${hyToLatin(cert.number).toUpperCase().replace(/[\\/]/g, "-")}_${who}.pdf`;
-    return new Response(Buffer.from(pdf), { headers: pdfHeaders(name) });
+    // In-app browsers (Instagram, Facebook, Telegram, Android WebView) can't save downloads: open the PDF inline there,
+    // so their built-in viewer's "Share → Save to Files" works. Regular browsers get a normal file download.
+    const ua = req.headers.get("user-agent") ?? "";
+    const inline = /Instagram|FBAN|FBAV|Telegram|Line\/|; wv\)|GSA\//i.test(ua);
+    try {
+      const pdf = await htmlToPdf(html, url.origin);
+      return new Response(Buffer.from(pdf), { headers: pdfHeaders(name, inline) });
+    } catch (e) {
+      console.error("certificate pdf failed", e);
+      return new Response(pdfFailedPage(url.pathname, `${url.pathname}?download=1&r=${Date.now()}`), { status: 503, headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store", "retry-after": "3" } });
+    }
   }
   return new Response(html, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "private, no-store", "x-robots-tag": "noindex" } });
 }

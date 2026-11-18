@@ -12,7 +12,7 @@ export function CertDocs({ base, fileUrl, labels }: { base: string; fileUrl?: st
           <b className="text-[14px] text-navy-900">{label}</b>
           <div className="flex flex-wrap gap-2">
             <a href={`${base}/${k}`} target="_blank" rel="noopener" className="btn-soft min-h-10 flex-1 px-3 text-[13px] whitespace-nowrap">{labels.open}</a>
-            <a href={`${base}/${k}?download=1`} download className="btn-navy min-h-10 flex-1 gap-1.5 px-3 text-[13px] whitespace-nowrap"><Icon name="file" size={16} />{labels.download}</a>
+            <a href={`${base}/${k}?download=1`} className="btn-navy min-h-10 flex-1 gap-1.5 px-3 text-[13px] whitespace-nowrap"><Icon name="file" size={16} />{labels.download}</a>
           </div>
         </div>
       ))}
