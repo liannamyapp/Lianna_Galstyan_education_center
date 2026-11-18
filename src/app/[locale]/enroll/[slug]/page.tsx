@@ -28,8 +28,8 @@ export default async function Enroll({ params, searchParams }: { params: Promise
   const t = getDict(locale);
   const [c, user, st] = await Promise.all([getCourse(slug), getCurrentUser(), getSettings()]);
   if (!c) notFound();
-  const card = st.payments.card && (ameriaEnabled() || testPaymentsAllowed());
-  const idram = st.payments.idram && (idramEnabled() || testPaymentsAllowed());
+  const card = st.payments.card && (ameriaEnabled() || testPaymentsAllowed(user?.role));
+  const idram = st.payments.idram && (idramEnabled() || testPaymentsAllowed(user?.role));
   const steps = [t.enroll.stepCourse, t.enroll.stepData, t.enroll.stepDone];
 
   return (

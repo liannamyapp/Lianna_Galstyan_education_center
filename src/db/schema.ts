@@ -29,6 +29,8 @@ export const users = pgTable("users", {
   locale: text("locale").notNull().default("hy"),
   /** set when an admin blocks the account: no sign-in, no lessons, no reminders */
   blockedAt: timestamp("blocked_at", { withTimezone: true }),
+  failedLogins: integer("failed_logins").notNull().default(0),
+  loginLockedUntil: timestamp("login_locked_until", { withTimezone: true }),
   createdAt: created(),
 });
 

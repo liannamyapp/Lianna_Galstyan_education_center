@@ -11,7 +11,8 @@ import { syncLeadForUser } from "@/lib/crm/automations";
 
 export { idramEnabled } from "./idram";
 export { ameriaEnabled } from "./ameria";
-export const testPaymentsAllowed = () => process.env.ALLOW_TEST_PAYMENTS === "true";
+/** Test payments ("payment successful" button without money) — only for admins checking the flow, never for learners. */
+export const testPaymentsAllowed = (role: string | null | undefined) => process.env.ALLOW_TEST_PAYMENTS === "true" && role === "ADMIN";
 
 /** Idempotently marks a payment as paid and updates the application. */
 export async function markPaid(paymentId: string, providerRef?: string, providerData?: unknown) {

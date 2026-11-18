@@ -44,7 +44,7 @@ export default async function Pay({ params }: { params: Promise<{ locale: Locale
     }
     redirect(url);
   }
-  if (!testPaymentsAllowed()) redirect(`/${locale}/pay/result?id=${p.id}&e=1`);
+  if (!testPaymentsAllowed(user.role)) redirect(`/${locale}/pay/result?id=${p.id}&e=1`);
 
   return (
     <div className="container-x max-w-[620px] py-20">

@@ -72,10 +72,20 @@ export async function loginAction(_: ActionResult, fd: FormData): Promise<Action
   const password = String(fd.get("password") ?? "");
   if (!e.success || !password) return { error: t.auth.errInvalid };
   const [u] = await db.select().from(s.users).where(eq(s.users.email, e.data)).limit(1);
+  // Brute-force protection: after 5 wrong passwords the account is locked for 15 minutes.
+  if (u?.loginLockedUntil && u.loginLockedUntil > new Date()) {
+    const min = Math.max(1, Math.ceil((u.loginLockedUntil.getTime() - Date.now()) / 60_000));
+    return { error: fmt(t.auth.errLocked, { min }) };
+  }
   if (!u || !(await checkPassword(password, u.passwordHash))) {
+    if (u) {
+      const n = (u.failedLogins ?? 0) + 1;
+      await db.update(s.users).set(n >= 5 ? { failedLogins: 0, loginLockedUntil: new Date(Date.now() + 15 * 60_000) } : { failedLogins: n }).where(eq(s.users.id, u.id));
+    }
     await new Promise((r) => setTimeout(r, 400));
     return { error: t.auth.errInvalid };
   }
+  if (u.failedLogins || u.loginLockedUntil) await db.update(s.users).set({ failedLogins: 0, loginLockedUntil: null }).where(eq(s.users.id, u.id));
   if (u.blockedAt) return { error: t.auth.errBlocked };
   await createSession(u);
   const next = str(fd, "next");
@@ -92,7 +102,9 @@ export async function forgotAction(_: ActionResult, fd: FormData): Promise<Actio
   const e = emailSchema.safeParse(str(fd, "email"));
   if (e.success) {
     const [u] = await db.select().from(s.users).where(eq(s.users.email, e.data)).limit(1);
-    if (u) {
+    // at most one reset email every 2 minutes per account (stops mailbox flooding)
+    const recent = u ? await db.select({ id: s.tokens.id }).from(s.tokens).where(and(eq(s.tokens.userId, u.id), eq(s.tokens.type, "reset"), gt(s.tokens.expiresAt, new Date(Date.now() + 3600_000 - 120_000)))).limit(1) : [];
+    if (u && !recent.length) {
       const token = randomBytes(32).toString("hex");
       await db.insert(s.tokens).values({ userId: u.id, type: "reset", token, expiresAt: new Date(Date.now() + 3600_000) });
       await sendMail(u.email, t.mail.resetSubject, emailHtml(t.mail.resetSubject, [t.mail.resetBody], { label: t.mail.resetBtn, url: `${siteUrl()}/${l}/reset?token=${token}` }));
@@ -107,7 +119,7 @@ export async function resetAction(_: ActionResult, fd: FormData): Promise<Action
   if (password.length < 8) return { error: t.auth.errForm };
   const [tk] = await db.select().from(s.tokens).where(and(eq(s.tokens.token, token), eq(s.tokens.type, "reset"), gt(s.tokens.expiresAt, new Date()))).limit(1);
   if (!tk) return { error: t.auth.errToken };
-  await db.update(s.users).set({ passwordHash: await hashPassword(password) }).where(eq(s.users.id, tk.userId));
+  await db.update(s.users).set({ passwordHash: await hashPassword(password), failedLogins: 0, loginLockedUntil: null }).where(eq(s.users.id, tk.userId));
   await db.delete(s.tokens).where(eq(s.tokens.userId, tk.userId));
   return { ok: true, message: t.auth.resetDone };
 }
