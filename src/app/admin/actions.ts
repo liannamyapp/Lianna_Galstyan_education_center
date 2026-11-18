@@ -438,6 +438,21 @@ export async function clearMyTestData(_: ActionResult, fd: FormData): Promise<Ac
   } catch (e) { return fail(e); }
 }
 
+/** After testing: numbering continues from the data that is still in the database, as if the removed (test)
+ *  learners had never existed. Removes certificates of deleted accounts, resets the contract counter and the payment
+ *  order number. Numbers of learners who are still in the list are never touched. */
+export async function resetNumbering(_: ActionResult, fd: FormData): Promise<ActionResult> {
+  await requireAdmin();
+  try {
+    if (str(fd, "confirm").trim().toUpperCase() !== "ԶՐՈՅԱՑՆԵԼ") return { error: "Հաստատելու համար դաշտում գրեք՝ ԶՐՈՅԱՑՆԵԼ" };
+    const removed = await db.delete(s.certificates).where(sql`${s.certificates.userId} is null`).returning({ id: s.certificates.id });
+    await db.delete(s.settings).where(like(s.settings.key, "contract_seq_%"));
+    await db.execute(sql`select setval(pg_get_serial_sequence('payments', 'order_no'), coalesce((select max(order_no) from payments), 0) + 1, false)`);
+    for (const path of ["/admin/students", "/admin/certificates", "/admin/payments", "/admin/applications"]) revalidatePath(path);
+    return ok(`Համարակալումը զրոյացված է${removed.length ? ` · ջնջված է հեռացված հաշիվների ${removed.length} վկայական` : ""}`);
+  } catch (e) { return fail(e); }
+}
+
 /** Blocks or unblocks a student account. Blocking ends access at once (sessions, lessons, reviews, reminders). */
 export async function setUserBlocked(fd: FormData) {
   const me = await requireAdmin();

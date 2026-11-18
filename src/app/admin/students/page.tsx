@@ -2,7 +2,7 @@ import { desc, ilike, or, sql, eq } from "drizzle-orm";
 import { db, s } from "@/db";
 import { dateShort } from "@/lib/format";
 import { PageHead, th, td } from "@/components/admin/fields";
-import { clearMyTestData, deleteUsers, setUserBlocked, setUserRole } from "../actions";
+import { clearMyTestData, deleteUsers, resetNumbering, setUserBlocked, setUserRole } from "../actions";
 import { ValueButton } from "@/components/ValueButton";
 import { SelectAll } from "@/components/admin/SelectAll";
 import { ActionForm } from "@/components/ActionForm";
@@ -74,6 +74,7 @@ export default async function Students({ searchParams }: { searchParams: Promise
           ))}</tbody>
         </table>
       </div>
+      <NumberingCard />
       <ActionForm action={clearMyTestData} className="card mt-4 flex flex-col gap-3 p-4">
         <p className="m-0 text-[14px]"><b>Ձեր (ադմինի) փորձնական տվյալները.</b> <span className="text-muted">Եթե ադմինի հաշվով գրանցվել եք դասընթացի, վճարել կամ կարծիք թողել, այստեղից կարող եք դրանք ջնջել։ Ձեր հաշիվը կմնա։</span></p>
         <div className="flex flex-wrap items-center gap-4">
@@ -82,5 +83,38 @@ export default async function Students({ searchParams }: { searchParams: Promise
         </div>
       </ActionForm>
     </>
+  );
+}
+
+/** Shows the next numbers and lets the admin restart them after testing. */
+async function NumberingCard() {
+  const year = new Date().getFullYear();
+  const prefix = `ՊՄ-${year}-`;
+  const [[{ m }], counter, [{ orphans }], seq] = await Promise.all([
+    db.select({ m: sql<number>`coalesce(max(substring(${s.applications.contractNo} from '([0-9]+)$')::int), 0)::int` }).from(s.applications).where(sql`${s.applications.contractNo} like ${prefix + "%"}`),
+    db.select().from(s.settings).where(eq(s.settings.key, `contract_seq_${year}`)),
+    db.select({ orphans: sql<number>`count(*)::int` }).from(s.certificates).where(sql`${s.certificates.userId} is null`),
+    db.execute(sql`select (case when is_called then last_value + 1 else last_value end)::int as n from payments_order_no_seq`),
+  ]);
+  const nextPay = Number((seq as unknown as { rows: { n: number }[] }).rows[0]?.n ?? 1);
+  const used = Math.max(m, Number((counter[0]?.value as { n?: number } | undefined)?.n ?? 0));
+  const nextContract = `${prefix}${String(used + 1).padStart(3, "0")}`;
+  return (
+    <details className="card mt-4 p-4">
+      <summary className="cursor-pointer text-[14px] font-semibold text-navy-900">Համարակալում փորձարկումից հետո · հաջորդ պայմանագիրը՝ {nextContract}</summary>
+      <div className="mt-3 flex flex-col gap-3 text-[14px]">
+        <ul className="m-0 flex list-none flex-col gap-1 p-0">
+          <li>Հաջորդ պայմանագրի համարը՝ <b>{nextContract}</b></li>
+          <li>Հեռացված հաշիվների վկայականներ՝ <b>{orphans}</b>{orphans ? " (դրանք զբաղեցնում են իրենց համարները)" : ""}</li>
+          <li>Հաջորդ վճարման համարը՝ <b>{nextPay}</b></li>
+        </ul>
+        <p className="m-0 text-muted">Փորձնական ունկնդիրներին ջնջելուց հետո սեղմեք այս կոճակը, և համարակալումը կշարունակվի միայն ցուցակում մնացած ունկնդիրներից, կարծես հեռացվածները երբեք չեն եղել։ Եթե ոչ ոք չի մնացել, պայմանագրերն ու վկայականները կսկսվեն 001-ից։ Ցուցակում մնացած ունկնդիրների համարները չեն փոխվում։</p>
+        <p className="m-0 rounded-xl bg-[#fbefeb] p-3 text-[13.5px] text-[#8a2f1d]">Օգտագործեք միայն փորձարկումից հետո։ Եթե հեռացրել եք <b>իրական</b> ունկնդրի, որին պայմանագիր կամ վկայական է տրվել, նրա համարը կարող է կրկին տրվել ուրիշին, իսկ նրա վկայականը կջնջվի ռեեստրից։</p>
+        <ActionForm action={resetNumbering} className="flex flex-wrap items-end gap-3">
+          <label className="label w-full sm:w-[260px]">Հաստատելու համար գրեք՝ ԶՐՈՅԱՑՆԵԼ<input name="confirm" autoComplete="off" className="input" /></label>
+          <button className="btn-soft min-h-12 text-[#8a2f1d]">Զրոյացնել համարակալումը</button>
+        </ActionForm>
+      </div>
+    </details>
   );
 }
