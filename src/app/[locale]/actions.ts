@@ -215,6 +215,8 @@ export async function enrollAction(_: ActionResult, fd: FormData): Promise<Actio
     await notifyAdminWhatsApp(`Նոր հայտ՝ ${course.code} · ${u.name} · ${u.phone ?? u.email}`);
     const utm = await readUtm();
     after(() => captureLead({ userId: u.id, name: u.name, email: u.email, phone: u.phone, locale: l, source: "site_enroll", courseId: course.id, format, message: str(fd, "note") || null, utm }, { notify: false }).then(() => syncLeadForUser(u.id)));
+  } else if (str(fd, "method") === "none") {
+    return { error: fmt(t.enroll.alreadyBody, { course: tr(course.title, l) }) }; // already applied: no second application
   } else if (!app.contractNo) {
     // not paid yet: the learner may still change format, plan or group at today's prices
     [app] = await db.update(s.applications).set({ groupId: format === "group" ? groupId ?? app.groupId : null, ...locked }).where(eq(s.applications.id, app.id)).returning();

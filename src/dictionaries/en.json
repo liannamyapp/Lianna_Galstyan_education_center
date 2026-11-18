@@ -144,7 +144,11 @@
     "noMethods": "Online payment is coming soon. Send your application and we'll contact you.",
     "loginFirst": "Log in or create an account to enrol.",
     "note": "Comment (optional)",
-    "applied": "Application sent. We'll contact you to arrange an intro call."
+    "applied": "Application sent. We'll contact you to arrange an intro call.",
+    "alreadyTitle": "You are already enrolled in this course",
+    "alreadyBody": "Your application for “{course}” has already been received. There is no need to apply again — see its status and next steps in your account.",
+    "alreadyBtn": "Open my account",
+    "alreadySign": "Sign the agreement"
   },
   "pay": {
     "successTitle": "Payment successful",

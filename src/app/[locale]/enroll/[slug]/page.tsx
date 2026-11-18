@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { and, eq, notInArray } from "drizzle-orm";
+import { db, s } from "@/db";
 import { getDict, tr, fmt, type Locale } from "@/lib/i18n";
 import { getCourse } from "@/lib/data";
 import { getCurrentUser } from "@/lib/auth";
@@ -31,6 +33,8 @@ export default async function Enroll({ params, searchParams }: { params: Promise
   const card = st.payments.card && (ameriaEnabled() || testPaymentsAllowed(user?.role));
   const idram = st.payments.idram && (idramEnabled() || testPaymentsAllowed(user?.role));
   const steps = [t.enroll.stepCourse, t.enroll.stepData, t.enroll.stepDone];
+  // already enrolled in this course (any status except rejected / cancelled): no second application
+  const existing = user ? (await db.select().from(s.applications).where(and(eq(s.applications.userId, user.id), eq(s.applications.courseId, c.id), notInArray(s.applications.status, ["REJECTED", "CANCELLED"]))).limit(1))[0] : undefined;
 
   return (
     <div className="container-x max-w-[1160px] pt-11">
@@ -50,6 +54,16 @@ export default async function Enroll({ params, searchParams }: { params: Promise
           <div className="mt-5 flex flex-wrap gap-3">
             <Link href={`/${locale}/register?next=/${locale}/enroll/${slug}`} className="btn-navy">{t.auth.registerBtn}</Link>
             <Link href={`/${locale}/login?next=/${locale}/enroll/${slug}`} className="btn-soft">{t.auth.loginBtn}</Link>
+          </div>
+        </div>
+      ) : existing ? (
+        <div className="card max-w-[620px] p-7 sm:p-9">
+          <h1 className="font-serif text-[clamp(24px,6vw,30px)] font-bold text-navy-900">{t.enroll.alreadyTitle}</h1>
+          <p className="mt-2 text-[15px] text-[#3d4757]">{fmt(t.enroll.alreadyBody, { course: tr(c.title, locale) })}</p>
+          <p className="mt-3"><span className="chip bg-[#fbf2dd] font-semibold text-[#7a5a12]">{t.account.status[existing.status]}</span></p>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <Link href={`/${locale}/account`} className="btn-navy">{t.enroll.alreadyBtn}</Link>
+            {existing.status !== "PAID" && !existing.contractSignedAt && existing.status === "APPROVED" && <Link href={`/${locale}/account/contract/${existing.id}`} className="btn-soft">{t.enroll.alreadySign}</Link>}
           </div>
         </div>
       ) : (
