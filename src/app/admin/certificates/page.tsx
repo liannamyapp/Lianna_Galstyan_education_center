@@ -19,8 +19,10 @@ export default async function Certificates() {
           <Field label="Ունկնդիր (ակտիվներից)"><select name="userId" className="input"><option value="">— ձեռքով մուտքագրել ներքևում —</option>{students.map((a) => <option key={a.id} value={a.userId}>{a.user.name} · {a.course.code}</option>)}</select></Field>
           <Field label="Կամ անուն, ազգանուն (ինչպես վկայականում)"><input name="holderName" className="input" /></Field>
           <Field label="Դասընթաց"><select name="courseId" required className="input">{courses.map((c) => <option key={c.id} value={c.id}>{c.code} · {tr(c.title, "hy")}</option>)}</select></Field>
-          <Field label="Ուսուցման սկիզբ"><input name="startDate" type="date" required className="input" /></Field>
-          <Field label="Ուսուցման ավարտ"><input name="endDate" type="date" required className="input" /></Field>
+          <div className="grid min-w-0 grid-cols-1 gap-3 min-[420px]:grid-cols-2 md:col-span-2 md:max-w-[460px]">
+            <Field label="Ուսուցման սկիզբ" className="min-w-0"><input name="startDate" type="date" required className="input" /></Field>
+            <Field label="Ուսուցման ավարտ" className="min-w-0"><input name="endDate" type="date" required className="input" /></Field>
+          </div>
           <Field label="Համար (դատարկ՝ ավտոմատ, օր. ՖՎԾ-01/2027/001)"><input name="number" className="input font-mono" /></Field>
           <Field label="Սկանավորված վկայական (PDF / նկար, ոչ պարտադիր)" className="md:col-span-2"><input type="file" name="file" accept="application/pdf,image/*" className="text-[14px]" /></Field>
           <div className="flex items-end"><SubmitButton pendingText="…">Տալ վկայական</SubmitButton></div>

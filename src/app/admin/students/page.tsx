@@ -46,7 +46,7 @@ export default async function Students({ searchParams }: { searchParams: Promise
                       <button className="btn min-h-9 bg-[#8a2f1d] text-[13px] text-white">Այո, հեռացնել</button>
                     </ActionForm>
                   </details>
-                ) : null}
+                ) : u.id !== me.id ? <span className="text-[12px] text-muted">Ադմին է․ ջնջելու համար նախ «Դեր» դաշտում ընտրեք «Ունկնդիր»</span> : null}
               </td>
               <td data-label="Կոնտակտ" className={td}><a href={`mailto:${u.email}`}>{u.email}</a><br /><span className="text-muted">{u.phone ?? "—"}</span></td>
               <td data-label="Հայտեր" className={td}>{u.apps}</td>

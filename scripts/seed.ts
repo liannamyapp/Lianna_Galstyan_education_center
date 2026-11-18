@@ -1,6 +1,6 @@
 /* Initial content. Safe to re-run: existing records are never overwritten. */
 import "dotenv/config";
-import { eq, sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { db, s } from "../src/db";
 import { CONTRACT_TEMPLATE } from "../src/lib/contract-template";
@@ -27,6 +27,14 @@ async function main() {
     }
   } else console.warn("! ADMIN_EMAIL / ADMIN_PASSWORD not set — admin not created");
 
+  // Nov 2026: the test learner «Եվա Սահակյան» was made an admin by mistake — back to learner (only while another admin exists)
+  {
+    const admins = await db.select({ id: s.users.id }).from(s.users).where(eq(s.users.role, "ADMIN"));
+    if (admins.length > 1) {
+      const r = await db.update(s.users).set({ role: "STUDENT" }).where(and(eq(s.users.email, "liana.galstyan.87@mail.ru"), eq(s.users.role, "ADMIN"))).returning({ id: s.users.id });
+      if (r.length) console.log("✓ Eva Sahakyan is a learner again");
+    }
+  }
   // One-time move of the public/notification e-mail to the academy address (Nov 2026)
   await db.execute(sql`update settings set value = replace(value::text, 'galstyan.liana.87@gmail.com', 'altaacademy666@gmail.com')::jsonb where value::text like '%galstyan.liana.87@gmail.com%'`);
   await db.execute(sql`update pages set body = replace(body::text, 'galstyan.liana.87@gmail.com', 'altaacademy666@gmail.com')::jsonb where body::text like '%galstyan.liana.87@gmail.com%'`);
