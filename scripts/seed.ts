@@ -36,6 +36,33 @@ async function main() {
       if (r.length) console.log("✓ Eva Sahakyan is a learner again");
     }
   }
+
+  // Nov 18, 2026 — one-time reset requested by the owner: everything so far was testing. Removes all learners and their
+  // data, every certificate (numbering restarts at 001), all applications/payments/reviews (admins' test ones too),
+  // CRM leads, messages and subscribers. Courses, groups, schedule, pages, blog, settings and admin accounts stay.
+  {
+    const FLAG = "reset_test_data_2026_11_18";
+    const [done] = await db.select().from(s.settings).where(eq(s.settings.key, FLAG)).limit(1);
+    if (!done) {
+      await db.transaction(async (tx) => {
+        await tx.delete(s.certificates);
+        await tx.delete(s.reviews);
+        await tx.delete(s.payments);
+        await tx.delete(s.applications);
+        await tx.delete(s.crmTasks);
+        await tx.delete(s.leadActivities);
+        await tx.delete(s.leads);
+        await tx.delete(s.messages);
+        await tx.delete(s.subscribers);
+        await tx.delete(s.lessons).where(sql`${s.lessons.userId} is not null`); // individual lessons of removed learners
+        await tx.delete(s.users).where(eq(s.users.role, "STUDENT")); // tokens cascade
+        await tx.delete(s.tokens);
+        await tx.execute(sql`select setval(pg_get_serial_sequence('payments', 'order_no'), 1, false)`);
+        await tx.insert(s.settings).values({ key: FLAG, value: { at: new Date().toISOString() } });
+      });
+      console.log("✓ test data removed — certificates start at 001");
+    }
+  }
   // Certificate supplement: learning outcomes of the endorsed programmes' modules (from the official forms)
   for (const [code, rows] of Object.entries(MODULE_OUTCOMES as Record<string, { hy: string; en: string }[]>)) {
     const [c] = await db.select({ id: s.courses.id }).from(s.courses).where(eq(s.courses.code, code)).limit(1);

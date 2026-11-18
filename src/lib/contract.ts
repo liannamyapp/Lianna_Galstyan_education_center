@@ -69,8 +69,10 @@ export async function contractTemplate(): Promise<L10n> {
 }
 
 export async function nextContractNo() {
-  const [{ n }] = await db.select({ n: sql<number>`count(*)::int` }).from(s.applications).where(sql`${s.applications.contractNo} is not null`);
-  return `ՊՄ-${new Date().getFullYear()}-${String(n + 1).padStart(3, "0")}`;
+  // after the highest number ever used this year (not a count), so removing a learner never makes a number repeat
+  const prefix = `ՊՄ-${new Date().getFullYear()}-`;
+  const [{ n }] = await db.select({ n: sql<number>`coalesce(max(substring(${s.applications.contractNo} from '([0-9]+)$')::int), 0)::int` }).from(s.applications).where(sql`${s.applications.contractNo} like ${prefix + "%"}`);
+  return `${prefix}${String(n + 1).padStart(3, "0")}`;
 }
 
 /** The Provider's block on the agreement, from site settings. */
