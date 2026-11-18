@@ -5,6 +5,7 @@
  * Fields the site does not hold (Personal ID) stay as dotted lines to fill in by hand.
  */
 import type { L10n } from "@/db/schema";
+import { SIGNATURE_PNG } from "@/lib/signature";
 
 export type CertDocKind = "hy" | "en" | "insert";
 export type CertData = {
@@ -44,6 +45,9 @@ const FONTS = `
 
 const BASE = `
 html,body{margin:0;padding:0}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+.pw{flex:none;position:relative}
+.pw>.page{transform-origin:0 0}
 body{font-family:'LG Sans',Arial,sans-serif;color:#1b1b1b;background:#e9e5dc;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 .bg{position:absolute;left:0;top:0;width:100%;height:100%}
 .bar{position:sticky;top:0;z-index:5;display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center;padding:10px 12px;background:#0f2440;color:#fff;font:14px 'LG Sans',Arial,sans-serif}
@@ -54,7 +58,7 @@ body{font-family:'LG Sans',Arial,sans-serif;color:#1b1b1b;background:#e9e5dc;-we
 .wrap{padding:16px 8px 40px;display:flex;flex-direction:column;align-items:center;gap:16px;overflow-x:hidden}
 .revoked{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:4}
 .revoked div{transform:rotate(-28deg);font:700 90px 'LG Serif',serif;color:rgba(160,30,30,.28);border:8px solid rgba(160,30,30,.28);padding:6px 40px;letter-spacing:12px}
-@media print{body{background:#fff}.bar{display:none}.wrap{padding:0;gap:0;display:block}.page{box-shadow:none!important;margin:0!important;zoom:1!important}}
+@media print{body{background:#fff}.bar{display:none}.wrap{padding:0;gap:0;display:block}.pw{width:auto!important;height:auto!important}.page{box-shadow:none!important;margin:0!important;transform:none!important}}
 `;
 
 const A4 = `
@@ -73,7 +77,8 @@ const A4 = `
 .prog{font-family:'LG Serif',serif;font-size:15pt;color:#17375e;font-weight:700;margin:2mm 0 1mm!important}
 .foot{position:absolute;left:0;right:0;bottom:0;display:flex;justify-content:space-between;align-items:flex-end;text-align:left;font-size:9.4pt}
 .seal{width:30mm;height:30mm}
-.sig{border-top:.25mm solid #555;width:74mm;padding-top:1mm;font-size:8.6pt;color:#333}
+.sig{position:relative;border-top:.25mm solid #555;width:74mm;padding-top:1mm;font-size:8.6pt;color:#333}
+.sig img.sg{position:absolute;left:16mm;bottom:100%;height:15mm;width:auto;margin-bottom:-2mm}
 .note{position:absolute;left:0;right:0;bottom:-12mm;font-size:8.2pt;font-style:italic;color:#555}
 .meta{font-size:9.4pt;color:#333}
 .v{color:#17375e;font-weight:700}
@@ -99,8 +104,9 @@ td.code{white-space:nowrap;font-size:9pt}
 tr.tot td{font-weight:700}
 th:nth-child(1){width:7%}th:nth-child(2){width:24%}th:nth-child(3){width:6%}th:nth-child(5){width:12%}
 .ic.hy{font-size:9.4pt;line-height:1.32}.ic.hy th{font-size:8.8pt}
-.sig{margin-top:2.6mm;display:flex;justify-content:space-between;align-items:flex-end}
-.sig .l{border-top:.2mm solid #555;width:64mm;padding-top:.8mm;font-size:9pt;color:#333}
+.sig{margin-top:10mm;display:flex;justify-content:space-between;align-items:flex-end}
+.sig .l{position:relative;border-top:.2mm solid #555;width:64mm;padding-top:.8mm;font-size:9pt;color:#333}
+.sig .l img.sg{position:absolute;left:14mm;bottom:100%;height:12mm;width:auto;margin-bottom:-1.5mm}
 .v{color:#17375e;font-weight:700}
 `;
 
@@ -118,14 +124,14 @@ function certificateHy(d: CertData) {
 <p>(որակիչ՝ <b>${esc(c.code)}</b>) լրացուցիչ (ոչ ֆորմալ) կրթական մոդուլային ծրագիրը՝<br><b>${c.hours} ակադեմիական ժամ</b> ծավալով (տեսական՝ ${c.theoryHours}, գործնական՝ ${c.practiceHours}),<br>և ձեռք է բերել ներդիրում նշված ուսումնառության արդյունքները։</p>
 <p class="meta">Ծրագիրը երաշխավորված է ՀՀ կրթության, գիտության, մշակույթի և սպորտի<br>նախարարի ${end ? hyDate(end) : "«……» …………… 20…… թ."} № ${c.endorsementNo ? esc(c.endorsementNo) : "………"} հրամանով։</p>
 <p class="meta">Գրանցման համար՝ <span class="v">${esc(d.number)}</span><br>Տրման ամսաթիվ՝ <span class="v">${hyDate(d.issuedAt)}</span> · ք. Երևան</p>
-<div class="foot"><div><img class="seal" src="/cert/seal.png" alt="ALTA Academy"></div><div class="sig">Դասավանդող, անհատ ձեռնարկատեր<br><b>Լ. Ա. Գալստյան</b></div></div>
+<div class="foot"><div><img class="seal" src="/cert/seal.png" alt="ALTA Academy"></div><div class="sig"><img class="sg" src="${SIGNATURE_PNG}" alt="">Դասավանդող, անհատ ձեռնարկատեր<br><b>Լ. Ա. Գալստյան</b></div></div>
 <div class="note">Վկայականն առանց ներդիրի անվավեր է։</div></div></section>`;
 }
 
 function certificateEn(d: CertData) {
   const c = d.course; const end = isoToDate(c.endorsementDate);
   return `<section class="page"><img class="bg" src="/cert/bg-a4.svg" alt="">
-<div class="c"><div class="org"><b>INDIVIDUAL ENTREPRENEUR LIANNA GALSTYAN</b><br>Tax ID 58229843 · Apt. 7B, 7 Adonts St., Arabkir, Yerevan, Armenia</div>
+<div class="c"><div class="org"><b>INDIVIDUAL ENTREPRENEUR LIANNA GALSTYAN</b><br>Tax ID 58229843</div>
 <div class="title">CERTIFICATE</div><div class="rule"></div>
 <div class="num">No. <span class="v">${esc(d.number)}</span></div>
 <p>This is to certify that</p><div class="name">${esc(d.holderNameEn)}</div><div class="lbl">(full name) · Personal ID No. ……………………………</div>
@@ -134,7 +140,7 @@ function certificateEn(d: CertData) {
 <p>(code <b>${esc(c.code)}</b>) supplementary (non-formal) modular education program<br>of <b>${c.hours} academic hours</b> (theory ${c.theoryHours}, practice ${c.practiceHours}),<br>and has achieved the learning outcomes listed in the supplement.</p>
 <p class="meta">The program is endorsed by Order No. ${c.endorsementNo ? esc(c.endorsementNo) : "………"} of ${end ? enDate(end) : "…………………… 20……"}<br>of the Minister of Education, Science, Culture and Sport of the Republic of Armenia.</p>
 <p class="meta">Registration No. <span class="v">${esc(d.number)}</span><br>Date of issue: <span class="v">${enDate(d.issuedAt)}</span> · Yerevan</p>
-<div class="foot"><div><img class="seal" src="/cert/seal.png" alt="ALTA Academy"></div><div class="sig">Instructor, Individual Entrepreneur<br><b>L. A. Galstyan</b></div></div>
+<div class="foot"><div><img class="seal" src="/cert/seal.png" alt="ALTA Academy"></div><div class="sig"><img class="sg" src="${SIGNATURE_PNG}" alt="">Instructor, Individual Entrepreneur<br><b>L. A. Galstyan</b></div></div>
 <div class="note">This certificate is not valid without the supplement.</div></div></section>`;
 }
 
@@ -157,7 +163,7 @@ function insertHalf(d: CertData, lang: "hy" | "en") {
 <table><tr>${L.cols.map((x) => `<th>${x}</th>`).join("")}</tr>${rows}<tr class="tot"><td></td><td>${L.tot}</td><td class="n">${total}</td><td></td><td></td></tr></table>
 <div class="f">${L.topic}՝ ${(hy ? d.projectTopic : d.projectTopicEn || d.projectTopic) ? `<span class="v">${esc((hy ? d.projectTopic : d.projectTopicEn || d.projectTopic)!)}</span>` : dots(30)}</div>
 <div class="f">${L.link}՝ ${d.projectUrl ? `<span class="v">${esc(d.projectUrl)}</span>` : dots(20)} · ${L.att}՝ ${d.attendance != null ? `<span class="v">${d.attendance} %</span>` : `${dots(3)} %`} ${L.min}</div>
-<div class="sig"><div class="l">${L.sig}</div><div class="l" style="width:44mm"><span class="v">${numDate(d.issuedAt)}</span><br>${L.date}</div></div></div></div>`.replace(/՝/g, hy ? "՝" : ":");
+<div class="sig"><div class="l"><img class="sg" src="${SIGNATURE_PNG}" alt="">${L.sig}</div><div class="l" style="width:44mm"><span class="v">${numDate(d.issuedAt)}</span><br>${L.date}</div></div></div></div>`.replace(/՝/g, hy ? "՝" : ":");
 }
 
 const TITLES: Record<CertDocKind, string> = { hy: "Վկայական", en: "Certificate", insert: "Ներդիր / Supplement" };
@@ -173,6 +179,6 @@ export function certificatePage(d: CertData, kind: CertDocKind, links: Record<Ce
 <title>${TITLES[kind]} № ${esc(d.number)} · ALTA Academy</title><style>${FONTS}${BASE}${kind === "insert" ? A3 : A4}</style></head><body>
 <div class="bar"><a href="${back}">←</a>${tab("hy", "Վկայական (հայ.)")}${tab("en", "Certificate (Eng.)")}${tab("insert", "Ներդիր / Supplement")}<button class="p" onclick="window.print()">Տպել / PDF</button><div class="hint">${hint}</div></div>
 ${d.revoked ? '<div class="revoked"><div>ՉԵՂԱՐԿՎԱԾ</div></div>' : ""}
-<div class="wrap">${body}</div>
-<script>(function(){function fit(){document.querySelectorAll('.page').forEach(function(p){p.style.zoom='';var z=Math.min(1,(window.innerWidth-16)/p.offsetWidth);p.style.zoom=z<1?String(z):'';});}fit();addEventListener('resize',fit);})();</script></body></html>`;
+<div class="wrap">${body.replace(/<section class="page">/g, '<div class="pw"><section class="page">').replace(/<\/section>/g, "</section></div>")}</div>
+<script>(function(){function fit(){document.querySelectorAll('.pw').forEach(function(w){var p=w.firstElementChild,pw=p.offsetWidth,ph=p.offsetHeight,s=Math.min(1,(document.documentElement.clientWidth-16)/pw);p.style.transform=s<1?'scale('+s+')':'';w.style.width=(pw*s)+'px';w.style.height=(ph*s)+'px';});}fit();addEventListener('resize',fit);addEventListener('orientationchange',function(){setTimeout(fit,300)});if(document.fonts)document.fonts.ready.then(fit);})();</script></body></html>`;
 }
