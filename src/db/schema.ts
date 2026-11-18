@@ -1,5 +1,5 @@
 import {
-  pgTable, text, integer, boolean, timestamp, jsonb, pgEnum, serial, index, uniqueIndex,
+  pgTable, text, integer, real, boolean, timestamp, jsonb, pgEnum, serial, index, uniqueIndex,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
@@ -344,6 +344,51 @@ export const crmCampaigns = pgTable("crm_campaigns", {
   failed: integer("failed").notNull().default(0),
   createdAt: created(),
 });
+
+/* ── Electronic journal ───────────────────────────────────────────────
+   A class session (one date) of a group, or of one individual learner. */
+export const journalSessions = pgTable("journal_sessions", {
+  id: id(),
+  courseId: text("course_id").notNull().references(() => courses.id, { onDelete: "cascade" }),
+  groupId: text("group_id").references(() => groups.id, { onDelete: "cascade" }),
+  applicationId: text("application_id").references(() => applications.id, { onDelete: "cascade" }), // individual learner
+  date: timestamp("date", { withTimezone: true }).notNull(),
+  topic: text("topic").notNull().default(""),
+  createdAt: created(),
+}, (t) => [index("journal_sessions_group_idx").on(t.groupId), index("journal_sessions_app_idx").on(t.applicationId)]);
+
+/** P present · L late · R watched the recording (counts as attended, contract 7.1) · A absent */
+export const attendance = pgTable("attendance", {
+  id: id(),
+  sessionId: text("session_id").notNull().references(() => journalSessions.id, { onDelete: "cascade" }),
+  applicationId: text("application_id").notNull().references(() => applications.id, { onDelete: "cascade" }),
+  status: text("status").notNull(),
+  note: text("note"),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
+}, (t) => [uniqueIndex("attendance_session_app_idx").on(t.sessionId, t.applicationId), index("attendance_app_idx").on(t.applicationId)]);
+
+/** Graded work: homework, test, project, final project. */
+export const assessments = pgTable("assessments", {
+  id: id(),
+  courseId: text("course_id").notNull().references(() => courses.id, { onDelete: "cascade" }),
+  groupId: text("group_id").references(() => groups.id, { onDelete: "cascade" }),
+  applicationId: text("application_id").references(() => applications.id, { onDelete: "cascade" }),
+  title: text("title").notNull(),
+  kind: text("kind").notNull().default("homework"), // homework | test | project | final
+  maxScore: integer("max_score").notNull().default(10),
+  weight: integer("weight").notNull().default(1),
+  date: timestamp("date", { withTimezone: true }),
+  createdAt: created(),
+}, (t) => [index("assessments_group_idx").on(t.groupId), index("assessments_app_idx").on(t.applicationId)]);
+
+export const grades = pgTable("grades", {
+  id: id(),
+  assessmentId: text("assessment_id").notNull().references(() => assessments.id, { onDelete: "cascade" }),
+  applicationId: text("application_id").notNull().references(() => applications.id, { onDelete: "cascade" }),
+  score: real("score").notNull(),
+  comment: text("comment"),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
+}, (t) => [uniqueIndex("grades_assessment_app_idx").on(t.assessmentId, t.applicationId), index("grades_app_idx").on(t.applicationId)]);
 
 export const leadsRel = relations(leads, ({ one, many }) => ({
   course: one(courses, { fields: [leads.courseId], references: [courses.id] }),

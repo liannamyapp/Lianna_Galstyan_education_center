@@ -97,9 +97,13 @@ export default async function Account({ params }: { params: Promise<{ locale: Lo
                         <div className="mt-4 flex flex-wrap gap-2.5">
                           {meeting && <a href={meeting} target="_blank" rel="noopener noreferrer" className="btn-gold min-h-11">{t.account.joinLesson}</a>}
                           <Link href={`/${locale}/account/lessons/${a.id}`} className="btn-ghost min-h-11"><Icon name="play" size={18} />{t.lessons.open}</Link>
+                          <Link href={`/${locale}/account/journal`} className="btn-ghost min-h-11"><Icon name="book" size={18} />{t.journal.open}</Link>
                           {a.group?.recordingsUrl && <a href={a.group.recordingsUrl} target="_blank" rel="noopener noreferrer" className="btn-ghost min-h-11">{t.account.recordings}</a>}
                         </div>
-                      ) : <p className="mt-4 mb-0 flex items-center gap-2 text-[14px] text-[#f3c9bd]"><Icon name="lock" size={18} />{t.lessons.locked}</p>}
+                      ) : <>
+                        <p className="mt-4 mb-0 flex items-center gap-2 text-[14px] text-[#f3c9bd]"><Icon name="lock" size={18} />{t.lessons.locked}</p>
+                        <Link href={`/${locale}/account/journal`} className="btn-ghost mt-3 min-h-11"><Icon name="book" size={18} />{t.journal.open}</Link>
+                      </>}
                     </>
                   )}
                 </div>

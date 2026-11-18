@@ -468,5 +468,48 @@
     "clientGuardian": "{relation}, acting for the learner",
     "minorBadge": "Minor learner",
     "adultOk": "The learner is an adult and signs the agreement themselves."
+  },
+  "journal": {
+    "title": "Electronic journal",
+    "intro": "Only your own attendance, grades and progress towards the certificate are shown here.",
+    "open": "Journal",
+    "empty": "Your journal will appear once you enrol in a course.",
+    "attendance": "Attendance",
+    "result": "Result (average grade)",
+    "readiness": "Certificate requirements met",
+    "eligible": "Meets the certificate requirements",
+    "notEligible": "Not all requirements are met yet",
+    "required": "required: {min}%",
+    "sessions": "Attendance by class",
+    "grades": "Grades",
+    "date": "Date",
+    "topic": "Topic",
+    "status": "Status",
+    "score": "Score",
+    "comment": "Comment",
+    "noSessions": "No classes recorded yet.",
+    "noGrades": "No graded work yet.",
+    "notMarked": "Not marked",
+    "notGraded": "Not graded yet",
+    "held": "attended: {n} / {m}",
+    "gradedOf": "graded: {n} / {m}",
+    "checks": "Certificate requirements",
+    "checkAttendance": "Attendance of at least {min}%",
+    "checkResult": "Average grade of at least {min}%",
+    "checkFinal": "Final project submitted",
+    "checkPaid": "Course fully paid",
+    "how": "Attendance counts classes you attended, were late for, or watched as a recording. The average grade is calculated from graded work, weighted.",
+    "st": {
+      "P": "Present",
+      "L": "Late",
+      "R": "Watched the recording",
+      "A": "Absent"
+    },
+    "kind": {
+      "homework": "Homework",
+      "test": "Test",
+      "project": "Project",
+      "final": "Final project"
+    }
   }
 }

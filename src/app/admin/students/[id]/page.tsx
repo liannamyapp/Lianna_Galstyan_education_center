@@ -13,6 +13,9 @@ import { ActionForm } from "@/components/ActionForm";
 import { ValueButton } from "@/components/ValueButton";
 import { CertDocs } from "@/components/CertDocs";
 import { Icon } from "@/components/Icon";
+import { JournalView, type JournalLabels } from "@/components/JournalView";
+import { journalApps, loadJournal } from "@/lib/journal";
+import { getDict } from "@/lib/i18n";
 import { deleteUsers, setUserBlocked } from "../../actions";
 
 export const dynamic = "force-dynamic";
@@ -34,6 +37,9 @@ export default async function StudentCard({ params }: { params: Promise<{ id: st
   const pays = await db.select().from(s.payments).where(eq(s.payments.userId, id)).orderBy(desc(s.payments.createdAt));
   const certs = await db.query.certificates.findMany({ where: eq(s.certificates.userId, id), with: { course: true }, orderBy: [desc(s.certificates.issuedAt)] });
   const reviews = await db.select().from(s.reviews).where(eq(s.reviews.userId, id)).orderBy(desc(s.reviews.createdAt));
+  const jApps = await journalApps(eq(s.applications.userId, id));
+  const journal = await loadJournal(jApps);
+  const JL = getDict("hy").journal as unknown as JournalLabels;
   const student = user.role === "STUDENT";
   const birth = user.birthDate ? new Date(user.birthDate) : null;
   const age = user.birthDate ? ageOn(user.birthDate) : null;
@@ -109,6 +115,21 @@ export default async function StudentCard({ params }: { params: Promise<{ id: st
           })}</div>
         )}
       </section>
+
+      {jApps.length > 0 && (
+        <section className={card}>
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <h2 className={`${h2} m-0`}>Էլեկտրոնային մատյան</h2>
+            <Link href="/admin/journal" className="text-[13.5px] font-semibold">Նշել հաճախումներ / գնահատականներ →</Link>
+          </div>
+          <div className="flex flex-col gap-6">{jApps.map((a) => (
+            <div key={a.id} className="min-w-0">
+              {jApps.length > 1 && <p className="m-0 mb-3 font-semibold text-navy-900">{a.course.code} · {tr(a.course.title, "hy")}</p>}
+              <JournalView j={journal.get(a.id)!} L={JL} dateFmt={dateShort} />
+            </div>
+          ))}</div>
+        </section>
+      )}
 
       <section className={card}>
         <h2 className={h2}>Փաստաթղթեր</h2>

@@ -21,6 +21,7 @@ const nav: [string, string, string][] = [
   ["/admin/courses", "Դասընթացներ", "book"],
   ["/admin/groups", "Խմբեր և դասացուցակ", "calendar"],
   ["/admin/lessons", "Տեսադասեր", "play"],
+  ["/admin/journal", "Էլ. մատյան", "book"],
   ["/admin/certificates", "Վկայականներ", "shield"],
   ["/admin/posts", "Բլոգ", "palette"],
   ["/admin/faq", "Հաճախ տրվող հարցեր", "plus"],

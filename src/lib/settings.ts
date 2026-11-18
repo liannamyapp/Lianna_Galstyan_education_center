@@ -11,6 +11,8 @@ export type SiteSettings = {
   contacts: { phone: string; email: string; telegram: string; whatsapp: string; instagram: string; facebook: string; city: L10n };
   legal: { entity: L10n; tin: string; endorsement: L10n; address: L10n };
   payments: { card: boolean; idram: boolean; reminderDays: number; graceDays: number };
+  /** e-journal: certificate thresholds in percent */
+  journal: { attendanceMin: number; resultMin: number };
   adminEmail: string;
 };
 
@@ -68,6 +70,7 @@ export const defaultSettings: SiteSettings = {
     address: L("ք. Երևան, Արաբկիր, Ադոնցի 7", "г. Ереван, Арабкир, ул. Адонца 7", "7 Adonts St, Arabkir, Yerevan"),
   },
   payments: { card: true, idram: true, reminderDays: 5, graceDays: 7 },
+  journal: { attendanceMin: 80, resultMin: 60 },
   adminEmail: "altaacademy666@gmail.com",
 };
 
