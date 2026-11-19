@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { and, asc, desc, eq, inArray } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, isNull } from "drizzle-orm";
 import { db, s } from "@/db";
 import { dateShort } from "@/lib/format";
 import { getSettings } from "@/lib/settings";
@@ -7,6 +7,7 @@ import { ATT_STATUSES, KINDS, journalApps, loadJournal, type AttStatus, type Kin
 import { ActionForm } from "@/components/ActionForm";
 import { SubmitButton } from "@/components/SubmitButton";
 import { AdminCard, Field, PageHead, th, td } from "@/components/admin/fields";
+import { SubmitOnChange } from "@/components/admin/SubmitOnChange";
 import { deleteAssessment, deleteSession, saveAssessment, saveAttendance, saveGrades, saveSession, saveThresholds } from "./actions";
 
 export const dynamic = "force-dynamic";
@@ -30,12 +31,16 @@ export default async function Journal({ searchParams }: { searchParams: Promise<
 
   const [groups, indiv, st] = await Promise.all([
     db.select().from(s.groups).where(eq(s.groups.courseId, course.id)).orderBy(desc(s.groups.startDate)),
-    db.query.applications.findMany({ where: and(eq(s.applications.courseId, course.id), eq(s.applications.format, "individual"), inArray(s.applications.status, ["APPROVED", "PAID"])), with: { user: true } }),
+    // every approved/paid enrolment that is not in a group gets its own journal: individual learners,
+    // and group-format learners who have not been placed in a group yet (they already see their journal)
+    db.query.applications.findMany({ where: and(eq(s.applications.courseId, course.id), isNull(s.applications.groupId), inArray(s.applications.status, ["APPROVED", "PAID"])), with: { user: true } }),
     getSettings(),
   ]);
   const scopes = [
     ...groups.map((g) => ({ value: `g:${g.id}`, label: `Խումբ՝ ${g.name} (${dateShort(g.startDate)})` })),
-    ...indiv.map((a) => ({ value: `a:${a.id}`, label: `Անհատական՝ ${a.user.name}` })),
+    ...indiv
+      .sort((x, y) => x.user.name.localeCompare(y.user.name, "hy"))
+      .map((a) => ({ value: `a:${a.id}`, label: `${a.format === "individual" ? "Անհատական" : "Առանց խմբի"}՝ ${a.user.name}` })),
   ];
   const scope = scopes.find((x) => x.value === sp.s)?.value ?? scopes[0]?.value ?? "";
   const gId = scope.startsWith("g:") ? scope.slice(2) : null;
@@ -65,10 +70,10 @@ export default async function Journal({ searchParams }: { searchParams: Promise<
       <PageHead title="Էլեկտրոնային մատյան" />
 
       <AdminCard>
-        <form className="grid items-end gap-3 sm:grid-cols-[1fr_1fr_auto]">
-          <Field label="Դասընթաց"><select name="c" defaultValue={course.id} className="input">{courses.map((c) => <option key={c.id} value={c.id}>{c.code} · {c.title.hy}</option>)}</select></Field>
+        <form key={`${course.id}|${scope}`} className="grid items-end gap-3 sm:grid-cols-[1fr_1fr_auto]">
+          <Field label="Դասընթաց"><SubmitOnChange name="c" reset="s" defaultValue={course.id} className="input">{courses.map((c) => <option key={c.id} value={c.id}>{c.code} · {c.title.hy}</option>)}</SubmitOnChange></Field>
           <Field label="Խումբ կամ անհատական ունկնդիր">
-            <select name="s" defaultValue={scope} className="input">{scopes.length ? scopes.map((o) => <option key={o.value} value={o.value}>{o.label}</option>) : <option value="">Խմբեր կամ անհատական ունկնդիրներ չկան</option>}</select>
+            <SubmitOnChange name="s" defaultValue={scope} className="input">{scopes.length ? scopes.map((o) => <option key={o.value} value={o.value}>{o.label}</option>) : <option value="">Այս դասընթացում հաստատված ունկնդիրներ դեռ չկան</option>}</SubmitOnChange>
           </Field>
           <button className="btn-navy min-h-12">Բացել</button>
         </form>
@@ -83,7 +88,9 @@ export default async function Journal({ searchParams }: { searchParams: Promise<
         </details>
       </AdminCard>
 
-      {!scope ? null : (
+      {!scope ? (
+        <AdminCard><p className="m-0 text-muted">«{course.code}» դասընթացում հաստատված կամ վճարած ունկնդիրներ դեռ չկան։ Ունկնդիրը մատյանում հայտնվում է հայտը «Հաստատված» կարգավիճակի բերելուց հետո։</p></AdminCard>
+      ) : (
         <>
           <AdminCard title={`Ամփոփում · ${apps.length} ունկնդիր · վկայականի պահանջները բավարարում է՝ ${eligibleCount}`}>
             {apps.length === 0 ? <p className="m-0 text-muted">Այս խմբում հաստատված կամ վճարած ունկնդիրներ դեռ չկան։</p> : (
