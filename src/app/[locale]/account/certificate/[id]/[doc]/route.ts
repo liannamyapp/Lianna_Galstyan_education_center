@@ -16,6 +16,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ locale: 
   if (!user) return Response.redirect(new URL(`/${locale}/login`, process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"), 302);
   const cert = await db.query.certificates.findFirst({ where: eq(s.certificates.id, id), with: { course: true } });
   if (!cert || (user.role !== "ADMIN" && cert.userId !== user.id)) return new Response("Not found", { status: 404 });
+  // the holder opens the documents only after acknowledging receipt in their account (admins always can)
+  if (user.role !== "ADMIN" && !cert.receivedAt) return Response.redirect(new URL(`/${locale}/account#documents`, req.url), 302);
   const modules = await db.select().from(s.courseModules).where(eq(s.courseModules.courseId, cert.courseId)).orderBy(asc(s.courseModules.order));
   const base = `/${locale}/account/certificate/${id}`;
   const html = certificatePage(

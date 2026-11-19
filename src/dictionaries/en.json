@@ -270,7 +270,15 @@
     "certRevoked": "revoked",
     "certOpen": "Open / print",
     "certDownload": "Download PDF",
-    "certFilesHint": "You can open and print every document, or download it as a PDF file and keep it on your device."
+    "certFilesHint": "You can open and print every document, or download it as a PDF file and keep it on your device.",
+    "receiptTitle": "Confirm receipt of your certificate",
+    "receiptText": "I confirm that I have received certificate No. {no} and its supplement.",
+    "receiptName": "Your first and last name",
+    "receiptHint": "The name you type and the time of confirmation are kept as an electronic acknowledgement of receipt in the certificate register.",
+    "receiptAgree": "I confirm receipt",
+    "receiptBtn": "Confirm and open the certificate",
+    "receiptDone": "Receipt confirmed: {date}",
+    "receiptErr": "Type your first and last name as they appear on the certificate."
   },
   "verify": {
     "eyebrow": "Certificate verification",

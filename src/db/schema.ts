@@ -203,6 +203,11 @@ export const certificates = pgTable("certificates", {
   issuedAt: timestamp("issued_at", { withTimezone: true }).notNull().defaultNow(),
   revoked: boolean("revoked").notNull().default(false),
   fileUrl: text("file_url"),
+  /** Electronic acknowledgement of receipt: the holder typed their name in their account before opening the documents */
+  receivedAt: timestamp("received_at", { withTimezone: true }),
+  receivedName: text("received_name"),
+  receivedIpHash: text("received_ip_hash"),
+  receivedUa: text("received_ua"),
 }, (t) => [uniqueIndex("certificates_number_idx").on(t.number)]);
 
 export const posts = pgTable("posts", {

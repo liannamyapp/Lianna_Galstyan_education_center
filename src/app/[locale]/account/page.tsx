@@ -13,7 +13,10 @@ import { ActionForm } from "@/components/ActionForm";
 import { SubmitButton } from "@/components/SubmitButton";
 import { Icon } from "@/components/Icon";
 import { CertDocs } from "@/components/CertDocs";
+import { confirmCertReceipt } from "./certificate-actions";
+
 import { emailChangeAction, logoutAction, payNextAction, profileAction, reviewAction } from "../actions";
+const dateTime = (d: Date) => new Intl.DateTimeFormat("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit", timeZone: "Asia/Yerevan" }).format(d);
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { robots: { index: false } };
@@ -189,7 +192,23 @@ export default async function Account({ params }: { params: Promise<{ locale: Lo
               <li key={c.id} className="flex flex-wrap items-center gap-3.5 border-b border-[#eee7d8] py-3.5 last:border-0">
                 <span className={`flex size-10 flex-none items-center justify-center rounded-xl ${c.revoked ? "bg-[#fbefeb] text-[#8a2f1d]" : "bg-[#e3f1e6] text-[#1f5f33]"}`}><Icon name="shield" size={18} /></span>
                 <span className="min-w-0 flex-1 basis-[180px]"><b className="text-[14.5px] text-navy-900">{fmt(t.account.certificate, { no: c.number })}</b><br /><span className="text-[13px] text-muted">{tr(c.course.title, locale)}{c.revoked ? ` · ${t.account.certRevoked}` : ""}</span></span>
-                {!c.revoked && <CertDocs base={`/${locale}/account/certificate/${c.id}`} fileUrl={c.fileUrl} labels={{ hy: t.account.certHy, en: t.account.certEn, insert: t.account.certInsert, scan: t.account.certScan, open: t.account.certOpen, download: t.account.certDownload }} />}
+                {!c.revoked && !c.receivedAt && (
+                  <ActionForm action={confirmCertReceipt} className="flex basis-full flex-col gap-3 rounded-xl border border-gold-500/60 bg-[#fdf7e9] p-4">
+                    <input type="hidden" name="id" value={c.id} />
+                    <input type="hidden" name="locale" value={locale} />
+                    <b className="text-[14.5px] text-navy-900">{t.account.receiptTitle}</b>
+                    <label className="flex items-start gap-2.5 text-[14px]"><input type="checkbox" name="agree" required className="mt-0.5 size-[18px] flex-none accent-navy-800" /><span>{fmt(t.account.receiptText, { no: c.number })}</span></label>
+                    <label className="label text-[13.5px]">{t.account.receiptName}<input name="name" required autoComplete="name" minLength={3} maxLength={160} className="input min-h-11 text-[16px] sm:text-[15px]" /></label>
+                    <p className="m-0 text-[12.5px] text-muted">{t.account.receiptHint}</p>
+                    <SubmitButton className="btn-navy self-start" pendingText="…">{t.account.receiptBtn}</SubmitButton>
+                  </ActionForm>
+                )}
+                {!c.revoked && c.receivedAt && (
+                  <>
+                    <CertDocs base={`/${locale}/account/certificate/${c.id}`} fileUrl={c.fileUrl} labels={{ hy: t.account.certHy, en: t.account.certEn, insert: t.account.certInsert, scan: t.account.certScan, open: t.account.certOpen, download: t.account.certDownload }} />
+                    <p className="m-0 basis-full text-[12.5px] text-[#1f5f33]">✓ {fmt(t.account.receiptDone, { date: dateTime(c.receivedAt) })}</p>
+                  </>
+                )}
               </li>
             ))}
             {certs.length === 0 && (

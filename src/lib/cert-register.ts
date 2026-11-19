@@ -7,10 +7,12 @@ import { dateShort } from "@/lib/format";
 import { getSettings } from "@/lib/settings";
 import { esc } from "@/lib/escape";
 
+const dateTimeHy = (d: Date) => new Intl.DateTimeFormat("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit", timeZone: "Asia/Yerevan" }).format(d);
+
 export type RegisterFilter = { year?: number | null; courseId?: string | null };
 export type RegisterRow = {
   n: number; number: string; holder: string; course: string; hours: number; endorsement: string;
-  start: Date; end: Date; project: string; attendance: number | null; issued: Date; revoked: boolean;
+  start: Date; end: Date; project: string; attendance: number | null; issued: Date; revoked: boolean; receipt: string;
 };
 
 /** Issued certificates in register order (by date of issue, then number). Revoked ones stay in the register, marked. */
@@ -29,6 +31,7 @@ export async function loadRegister(f: RegisterFilter): Promise<RegisterRow[]> {
     endorsement: c.course.endorsementNo ? `№ ${c.course.endorsementNo}${c.course.endorsementDate ? `, ${dateShort(c.course.endorsementDate)}` : ""}` : "",
     start: c.startDate, end: c.endDate, project: c.projectTopic ?? "", attendance: c.attendance,
     issued: c.issuedAt, revoked: c.revoked,
+    receipt: c.receivedAt ? `Էլ. հաստատում՝ ${c.receivedName ?? ""}, ${dateTimeHy(c.receivedAt)}` : "",
   }));
 }
 
@@ -69,7 +72,7 @@ export async function registerXlsx(rows: RegisterRow[], m: Meta): Promise<Buffer
   head.height = 34;
   head.eachCell((c) => { c.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF0F2440" } }; });
   for (const r of rows) {
-    const row = ws.addRow([r.n, r.number, r.holder, r.course, r.hours, r.endorsement, excelDay(r.start), excelDay(r.end), r.project, r.attendance ?? "", excelDay(r.issued), status(r), ""]);
+    const row = ws.addRow([r.n, r.number, r.holder, r.course, r.hours, r.endorsement, excelDay(r.start), excelDay(r.end), r.project, r.attendance ?? "", excelDay(r.issued), status(r), r.receipt]);
     row.alignment = { vertical: "top", wrapText: true };
     for (const i of [7, 8, 11]) row.getCell(i).numFmt = "dd.mm.yyyy";
     if (r.revoked) row.font = { color: { argb: "FF8A2F1D" }, strike: false };
@@ -88,7 +91,7 @@ export async function registerXlsx(rows: RegisterRow[], m: Meta): Promise<Buffer
 export function registerHtml(rows: RegisterRow[], m: Meta, toolbar?: { xlsx: string; pdf: string; back: string }) {
   const body = rows.map((r) => `<tr${r.revoked ? ' class="rev"' : ""}>
 <td class="c">${r.n}</td><td class="mono">${esc(r.number)}</td><td>${esc(r.holder)}</td><td>${esc(r.course)}</td><td class="c">${r.hours}</td><td>${esc(r.endorsement)}</td>
-<td class="c">${dateShort(r.start)}</td><td class="c">${dateShort(r.end)}</td><td>${esc(r.project)}</td><td class="c">${r.attendance ?? ""}</td><td class="c">${dateShort(r.issued)}</td><td class="c">${status(r)}</td><td></td></tr>`).join("");
+<td class="c">${dateShort(r.start)}</td><td class="c">${dateShort(r.end)}</td><td>${esc(r.project)}</td><td class="c">${r.attendance ?? ""}</td><td class="c">${dateShort(r.issued)}</td><td class="c">${status(r)}</td><td class="rc">${esc(r.receipt)}</td></tr>`).join("");
   return `<!doctype html><html lang="hy"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Վկայականների հաշվառման մատյան</title>
 <style>
 @font-face{font-family:Sans;src:url(/fonts/sans-lat-400.woff2) format("woff2");font-weight:400;unicode-range:U+0000-024F,U+2000-206F,U+20AC,U+2116}
@@ -100,7 +103,7 @@ export function registerHtml(rows: RegisterRow[], m: Meta, toolbar?: { xlsx: str
 .wrap{padding:16px}h1{font-size:17px;margin:0 0 4px;color:#0f2440}.meta{margin:0 0 2px;color:#3d4757}.muted{color:#5b6170}
 table{width:100%;border-collapse:collapse;margin-top:12px}th,td{border:1px solid #9aa3b2;padding:5px 4px;vertical-align:top;overflow-wrap:anywhere}
 th{background:#0f2440;color:#fff;font-weight:600;font-size:8.5px;line-height:1.25;overflow-wrap:normal;word-break:normal;hyphens:manual}table{table-layout:fixed}thead{display:table-header-group}tr{break-inside:avoid}
-.c{text-align:center;white-space:nowrap}.mono{font-family:ui-monospace,Menlo,monospace;white-space:nowrap}.rev td{color:#8a2f1d}
+.c{text-align:center;white-space:nowrap}.mono{font-family:ui-monospace,Menlo,monospace;white-space:nowrap}.rev td{color:#8a2f1d}.rc{font-size:9px;color:#1f5f33}
 .sign{display:flex;justify-content:space-between;margin-top:28px;font-size:11px}
 .bar{position:sticky;top:0;display:flex;flex-wrap:wrap;gap:8px;padding:10px 16px;background:#0f2440}
 .bar a{background:#c9a24b;color:#0a1a2f;text-decoration:none;font-weight:600;padding:9px 14px;border-radius:999px;font-size:13px}
