@@ -50,7 +50,7 @@ export async function Footer({ locale }: { locale: Locale }) {
           </div>
         </div>}
       </div>
-      <div className="container-x flex flex-wrap justify-between gap-3 border-t border-[#1f3049] py-6 text-[12.5px]">
+      <div className="container-x flex flex-wrap justify-between gap-3 border-t border-[#1f3049] pt-6 pb-24 text-[12.5px]">
         <span>© {new Date().getFullYear()} {tr(st.legal.entity, locale)} · {t.footer.tin} {st.legal.tin}</span>
         {tr(st.legal.endorsement, locale) && <span>{tr(st.legal.endorsement, locale)}</span>}
       </div>
