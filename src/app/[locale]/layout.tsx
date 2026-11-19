@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import "../globals.css";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { Chat } from "@/components/chat/Chat";
 import { htmlLang, isLocale, locales, tr } from "@/lib/i18n";
 import { getSettings } from "@/lib/settings";
 import { siteUrl } from "@/lib/seo";
@@ -43,6 +44,7 @@ export default async function LocaleLayout({ children, params }: { children: Rea
         <Header locale={locale} />
         <main id="main">{children}</main>
         <Footer locale={locale} />
+        <Chat locale={locale} />
       </body>
     </html>
   );

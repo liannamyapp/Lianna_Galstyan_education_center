@@ -8,6 +8,7 @@ const paths: Record<string, string> = {
   lock: "M5 11h14v9H5zM8 11V8a4 4 0 018 0v3",
   download: "M12 4v11M7 10l5 5 5-5M5 20h14",
   mail: "M4 6h16v12H4zM4 7l8 6 8-6",
+  chat: "M21 12a8 8 0 01-11.6 7.1L4 20l1-4.6A8 8 0 1121 12zM8.5 12h.01M12 12h.01M15.5 12h.01",
   phone: "M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4a2 2 0 01-2 2A16 16 0 013 6a2 2 0 012-2",
   send: "M22 2L11 13M22 2l-7 20-4-9-9-4z",
   menu: "M4 7h16M4 12h16M4 17h16",

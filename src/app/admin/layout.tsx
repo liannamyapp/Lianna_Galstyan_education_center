@@ -5,6 +5,8 @@ import "../globals.css";
 import { requireAdmin } from "@/lib/auth";
 import { Icon } from "@/components/Icon";
 import { logoutAction } from "../[locale]/actions";
+import { and, eq, gt, sql } from "drizzle-orm";
+import { db, s } from "@/db";
 
 export const metadata: Metadata = { title: "Ադմին · ALTA Academy", robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
@@ -16,6 +18,7 @@ const nav: [string, string, string][] = [
   ["/admin/students", "Ունկնդիրներ", "users"],
   ["/admin/payments", "Վճարումներ", "card"],
   ["/admin/reviews", "Կարծիքներ", "star"],
+  ["/admin/chats", "Չատեր", "chat"],
   ["/admin/messages", "Հաղորդագրություններ", "mail"],
   ["/admin/directions", "Ուղղություններ", "globe"],
   ["/admin/courses", "Դասընթացներ", "book"],
@@ -32,6 +35,9 @@ const nav: [string, string, string][] = [
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const me = await requireAdmin();
+  const unreadChats = await db.select({ n: sql<number>`count(*)::int` }).from(s.chatThreads)
+    .where(and(eq(s.chatThreads.status, "open"), gt(s.chatThreads.adminUnread, 0))).then((r) => r[0]?.n ?? 0).catch(() => 0);
+  const items = nav.map(([href, label, icon]) => [href, href === "/admin/chats" && unreadChats ? `${label} (${unreadChats})` : label, icon] as [string, string, string]);
   return (
     <html lang="hy">
       <body className="bg-[#f3f1ec]">
@@ -49,7 +55,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
               <Link href="/hy" target="_blank" rel="noopener" className="flex min-h-10 items-center justify-center gap-2 rounded-xl bg-gold-500 px-3 whitespace-nowrap lg:justify-start text-[13.5px] font-semibold text-navy-950 no-underline hover:bg-gold-400"><Icon name="globe" size={16} />Բացել կայքը</Link>
               <Link href="/hy/account#profile" className="flex min-h-10 items-center justify-center gap-2 rounded-xl border border-white/20 px-3 whitespace-nowrap lg:justify-start text-[13.5px] text-white no-underline hover:bg-white/5"><Icon name="lock" size={16} />Մուտքի տվյալներ</Link>
             </div>
-            <AdminNav items={nav as [string, string, string][]} />
+            <AdminNav items={items} />
             <form action={logoutAction} className="mt-2 border-t border-white/10 pt-2"><input type="hidden" name="locale" value="hy" /><button className="flex min-h-10 w-full items-center gap-3 rounded-xl px-3 text-[14px] text-[#b9c4d4] hover:bg-white/5 hover:text-white"><Icon name="logout" size={17} />Դուրս գալ</button></form>
           </aside>
           <main id="main" className="min-w-0 flex-1 p-5 sm:p-8">{children}</main>

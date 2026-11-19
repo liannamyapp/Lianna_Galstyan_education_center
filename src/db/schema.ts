@@ -259,6 +259,35 @@ export const messages = pgTable("messages", {
   createdAt: created(),
 });
 
+/* ---------------- Site chat ---------------- */
+/** One conversation with a site visitor. The visitor is recognised by `token` (an httpOnly cookie). */
+export const chatThreads = pgTable("chat_threads", {
+  id: id(),
+  token: text("token").notNull().unique(),
+  name: text("name"),
+  email: text("email"),
+  locale: text("locale").notNull().default("hy"),
+  page: text("page"), // the page the chat was started from
+  userId: text("user_id").references(() => users.id, { onDelete: "set null" }),
+  leadId: text("lead_id"),
+  ipHash: text("ip_hash"),
+  status: text("status").notNull().default("open"), // open | closed
+  adminUnread: integer("admin_unread").notNull().default(0),
+  visitorUnread: integer("visitor_unread").notNull().default(0),
+  lastMessageAt: timestamp("last_message_at", { withTimezone: true }).notNull().defaultNow(),
+  visitorSeenAt: timestamp("visitor_seen_at", { withTimezone: true }).notNull().defaultNow(),
+  adminNotifiedAt: timestamp("admin_notified_at", { withTimezone: true }),
+  createdAt: created(),
+}, (t) => [index("chat_threads_last_idx").on(t.status, t.lastMessageAt), index("chat_threads_ip_idx").on(t.ipHash, t.createdAt)]);
+
+export const chatMessages = pgTable("chat_messages", {
+  id: id(),
+  threadId: text("thread_id").notNull().references(() => chatThreads.id, { onDelete: "cascade" }),
+  sender: text("sender").notNull(), // visitor | admin
+  body: text("body").notNull(),
+  createdAt: created(),
+}, (t) => [index("chat_messages_thread_idx").on(t.threadId, t.createdAt)]);
+
 /* ---------------- CRM ---------------- */
 export const leadStageEnum = pgEnum("lead_stage", ["NEW", "CONTACTED", "CONSULTATION", "TRIAL", "NEGOTIATION", "WON", "LOST"]);
 export type LeadStage = (typeof leadStageEnum.enumValues)[number];
@@ -446,3 +475,5 @@ export const usersRel = relations(users, ({ many }) => ({
   reviews: many(reviews),
   certificates: many(certificates),
 }));
+export const chatThreadsRel = relations(chatThreads, ({ many }) => ({ messages: many(chatMessages) }));
+export const chatMessagesRel = relations(chatMessages, ({ one }) => ({ thread: one(chatThreads, { fields: [chatMessages.threadId], references: [chatThreads.id] }) }));

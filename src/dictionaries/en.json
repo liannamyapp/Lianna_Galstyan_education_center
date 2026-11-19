@@ -516,5 +516,37 @@
       "final": "Final project"
     },
     "pending": "Your journal opens once your application is approved after the intro talk. Your attendance and grades will then appear here."
+  },
+  "chat": {
+    "open": "Message us",
+    "title": "Have a question?",
+    "subtitle": "We usually reply the same day",
+    "close": "Close chat",
+    "quick": "Frequent questions",
+    "courses": "Courses and prices",
+    "perMonth": "month",
+    "months": "months",
+    "individual": "one-to-one",
+    "allCourses": "All courses",
+    "howTo": "How to enrol",
+    "howToAnswer": "Choose a course, press “Enrol” and fill in the application. We will contact you for an introductory talk, then sign the contract.",
+    "notFound": "Didn't find the answer? Write your question and we will reply here.",
+    "placeholder": "Write a message…",
+    "send": "Send",
+    "you": "You",
+    "team": "ALTA Academy",
+    "contactTitle": "How should we address you?",
+    "contactHint": "Your e-mail lets the reply reach you by mail too if you close the page.",
+    "name": "Name",
+    "email": "E-mail",
+    "save": "Save",
+    "skip": "Later",
+    "saved": "Thank you, we will also send the reply to your e-mail.",
+    "waiting": "Message sent. We will reply here.",
+    "errRate": "Too many messages. Please try again in a few minutes.",
+    "errSend": "Could not send. Check your connection and try again.",
+    "errEmail": "The e-mail address is not valid.",
+    "privacy": "By writing you agree that we keep your messages in order to reply.",
+    "newReply": "New reply"
   }
 }

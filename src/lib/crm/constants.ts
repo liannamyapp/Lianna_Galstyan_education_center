@@ -26,7 +26,7 @@ export const stageCls: Record<LeadStage, string> = {
 };
 
 export const SOURCES = [
-  "site_enroll", "site_register", "site_contact", "site_subscribe", "site_form",
+  "site_enroll", "site_register", "site_contact", "site_chat", "site_subscribe", "site_form",
   "whatsapp", "telegram", "instagram", "facebook", "tiktok", "google",
   "referral", "phone_call", "walk_in", "event", "other",
 ] as const;
@@ -36,6 +36,7 @@ export const sourceHy: Record<string, string> = {
   site_enroll: "Կայք՝ հայտ դասընթացին",
   site_register: "Կայք՝ գրանցում",
   site_contact: "Կայք՝ «Կապ» ձև",
+  site_chat: "Կայք՝ առցանց չատ",
   site_subscribe: "Կայք՝ բաժանորդագրություն",
   site_form: "Կայք / արտաքին ձև",
   whatsapp: "WhatsApp",
