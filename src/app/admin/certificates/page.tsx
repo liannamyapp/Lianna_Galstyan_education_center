@@ -11,9 +11,24 @@ export default async function Certificates() {
   const courses = await db.select().from(s.courses).orderBy(asc(s.courses.order));
   const students = await db.query.applications.findMany({ where: eq(s.applications.status, "PAID"), with: { user: true, course: true } });
   const list = await db.query.certificates.findMany({ orderBy: [desc(s.certificates.issuedAt)], with: { course: true } });
+  const thisYear = new Date().getFullYear();
+  const years = [...new Set([thisYear, ...list.map((c) => c.issuedAt.getFullYear())])].sort((a, b) => b - a);
   return (
     <>
       <PageHead title="Վկայականներ (էլեկտրոնային մատյան)" />
+      <AdminCard title="Հաշվառման մատյան">
+        <p className="-mt-2 mb-4 text-[14px] text-muted">Տրված վկայականների մատյանը՝ ըստ տրման ամսաթվի։ Չեղարկվածները մնում են մատյանում «Չեղարկված» նշումով։ Ներբեռնեք Excel (խմբագրելու համար) կամ PDF (տպելու և արխիվացնելու համար)։</p>
+        <form action="/api/admin/certificates/register" method="get" className="grid items-end gap-3 sm:grid-cols-2 lg:grid-cols-[180px_minmax(0,1fr)_auto]">
+          <Field label="Տարի"><select name="year" defaultValue="" className="input"><option value="">Բոլոր տարիները</option>{years.map((y) => <option key={y} value={y}>{y}</option>)}</select></Field>
+          <Field label="Դասընթաց"><select name="course" defaultValue="" className="input"><option value="">Բոլոր դասընթացները</option>{courses.map((c) => <option key={c.id} value={c.id}>{c.code} · {tr(c.title, "hy")}</option>)}</select></Field>
+          <div className="flex flex-wrap gap-2 sm:col-span-2 lg:col-span-1">
+            <button name="format" value="html" className="btn-soft min-h-12 px-4 text-[14px]">Դիտել</button>
+            <button name="format" value="xlsx" className="btn-navy min-h-12 px-4 text-[14px]">⬇ Excel</button>
+            <button name="format" value="pdf" className="btn-gold min-h-12 px-4 text-[14px]">⬇ PDF</button>
+          </div>
+        </form>
+      </AdminCard>
+      <div className="h-6" />
       <AdminCard title="Տալ վկայական">
         <ActionForm action={issueCertificate} resetOnSuccess className="grid gap-4 md:grid-cols-3">
           <Field label="Ունկնդիր (ակտիվներից)"><select name="userId" className="input"><option value="">— ձեռքով մուտքագրել ներքևում —</option>{students.map((a) => <option key={a.id} value={a.userId}>{a.user.name} · {a.course.code}</option>)}</select></Field>
