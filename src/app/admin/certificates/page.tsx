@@ -1,17 +1,17 @@
-import { asc, desc, eq, inArray } from "drizzle-orm";
+import { asc, desc, eq, notInArray } from "drizzle-orm";
 import { db, s } from "@/db";
 import { tr } from "@/lib/i18n";
 import { dateShort } from "@/lib/format";
 import { ActionForm } from "@/components/ActionForm";
 import { SubmitButton } from "@/components/SubmitButton";
-import { AdminCard, Field, PageHead, th, td } from "@/components/admin/fields";
+import { AdminCard, Field, PageHead, statusHy, th, td } from "@/components/admin/fields";
 import { issueCertificate, updateCertificate } from "../actions";
 import { CertStudentPicker, type PickerOption } from "@/components/admin/CertStudentPicker";
 
 export default async function Certificates() {
   const courses = await db.select().from(s.courses).orderBy(asc(s.courses.order));
-  // every approved learner can be chosen — payment does not have to be complete (the admin decides)
-  const students = await db.query.applications.findMany({ where: inArray(s.applications.status, ["APPROVED", "PAID"]), with: { user: true, course: true, group: true } });
+  // every enrolled learner can be chosen (not rejected or cancelled); the label shows where they stand — the admin decides
+  const students = await db.query.applications.findMany({ where: notInArray(s.applications.status, ["REJECTED", "CANCELLED"]), with: { user: true, course: true, group: true } });
   const list = await db.query.certificates.findMany({ orderBy: [desc(s.certificates.issuedAt)], with: { course: true } });
   const held = new Set(list.filter((c) => c.userId && !c.revoked).map((c) => `${c.userId}|${c.courseId}`));
   const ymd = (d?: Date | null) => (d ? new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Yerevan" }).format(d) : undefined);
@@ -26,7 +26,7 @@ export default async function Certificates() {
         const end = new Date(st); end.setMonth(end.getMonth() + a.course.months);
         return { start: ymd(st), end: ymd(end) };
       })(),
-      label: `${a.user.name} · ${a.course.code}${a.status === "PAID" ? "" : " · վճարումը չի ավարտվել"}${held.has(`${a.userId}|${a.courseId}`) ? " · ✓ վկայականն արդեն տրված է" : ""}`,
+      label: `${a.user.name} · ${a.course.code} · ${a.status === "PAID" ? "վճարված" : a.status === "APPROVED" ? "հաստատված, վճարումը չի ավարտվել" : `հայտը՝ «${statusHy[a.status] ?? a.status}»${a.contractSignedAt ? ", պայմանագիրը կնքված" : ""}`}${held.has(`${a.userId}|${a.courseId}`) ? " · ✓ վկայականն արդեն տրված է" : ""}`,
     }));
   const thisYear = new Date().getFullYear();
   const years = [...new Set([thisYear, ...list.map((c) => c.issuedAt.getFullYear())])].sort((a, b) => b - a);
@@ -48,7 +48,7 @@ export default async function Certificates() {
       <div className="h-6" />
       <AdminCard title="Տալ վկայական">
         <ActionForm action={issueCertificate} resetOnSuccess className="grid gap-4 md:grid-cols-3">
-          <Field label="Ունկնդիր (հաստատվածներից)"><CertStudentPicker options={pickerOptions} /></Field>
+          <Field label="Ունկնդիր"><CertStudentPicker options={pickerOptions} />{pickerOptions.length === 0 && <span className="mt-1 block text-[12.5px] font-normal text-muted">Ունկնդիրներ դեռ չկան։ Ունկնդիրը հայտնվում է այստեղ, երբ դասընթացի հայտ ունի (բացի մերժվածից և չեղարկվածից)։ Կարող եք նաև անունը գրել ձեռքով։</span>}</Field>
           <Field label="Կամ անուն, ազգանուն (ինչպես վկայականում)"><input name="holderName" className="input" /></Field>
           <Field label="Դասընթաց"><select name="courseId" required className="input">{courses.map((c) => <option key={c.id} value={c.id}>{c.code} · {tr(c.title, "hy")}</option>)}</select></Field>
           <div className="grid min-w-0 grid-cols-1 gap-3 min-[420px]:grid-cols-2 md:col-span-2 md:max-w-[460px]">
