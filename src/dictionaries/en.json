@@ -278,7 +278,10 @@
     "receiptAgree": "I confirm receipt",
     "receiptBtn": "Confirm and open the certificate",
     "receiptDone": "Receipt confirmed: {date}",
-    "receiptErr": "Type your first and last name as they appear on the certificate."
+    "receiptErr": "Type your first and last name as they appear on the certificate.",
+    "certMailSubject": "Your certificate is ready",
+    "certMailBody": "Congratulations on completing the course! Your certificate No. {no} ({course}) is ready. Open your account, confirm receipt, and you will be able to open, print and download the certificate and its supplement.",
+    "certMailCta": "Open my account"
   },
   "verify": {
     "eyebrow": "Certificate verification",

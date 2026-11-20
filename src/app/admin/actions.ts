@@ -12,6 +12,7 @@ import { emailHtml, sendMail } from "@/lib/mail";
 import { getDict, fmt, tr, type Locale } from "@/lib/i18n";
 import type { L10n } from "@/db/schema";
 import { markFailed, markPaid, markRefunded } from "@/lib/payments";
+import { priceFor } from "@/lib/billing";
 import { autoTranslateEnabled, translateAll } from "@/lib/translate";
 import { hyToLatin } from "@/lib/translit";
 import { siteUrl } from "@/lib/seo";
@@ -167,6 +168,13 @@ export async function addManualPayment(_: ActionResult, fd: FormData): Promise<A
     if (!app) return { error: "Ընտրեք հայտը" };
     const amount = num(fd, "amount");
     if (amount <= 0) return { error: "Գումարը սխալ է" };
+    // paying the whole course at its (discounted) full price switches the plan to "full": nothing more is due.
+    // Automatic when the very first payment equals the full price; otherwise the admin ticks the box.
+    const fullPrice = app.fullAmount ?? priceFor(app.course, app.format).full;
+    const earlier = await db.select({ id: s.payments.id }).from(s.payments).where(and(eq(s.payments.applicationId, app.id), eq(s.payments.status, "PAID"))).limit(1);
+    if (app.plan !== "full" && fullPrice && (bool(fd, "full") || (!earlier.length && amount === fullPrice))) {
+      await db.update(s.applications).set({ plan: "full", fullAmount: fullPrice }).where(eq(s.applications.id, app.id));
+    }
     const [p] = await db.insert(s.payments).values({ userId: app.userId, applicationId: app.id, amount, method: "CASH", description: str(fd, "description") || `${app.course.code} · կանխիկ / փոխանցում` }).returning();
     await markPaid(p.id, "MANUAL");
     revalidatePath("/admin/payments");
@@ -268,7 +276,27 @@ export async function issueCertificate(_: ActionResult, fd: FormData): Promise<A
     if (!holderName && userId) holderName = (await db.select({ name: s.users.name }).from(s.users).where(eq(s.users.id, userId)).limit(1))[0]?.name ?? "";
     if (!holderName) return { error: "Նշեք ունկնդրի անունը" };
     const fileUrl = await storeFile(file(fd, "file"), "certificates");
-    await db.insert(s.certificates).values({ number, userId, holderName, courseId, startDate: new Date(str(fd, "startDate")), endDate: new Date(str(fd, "endDate")), fileUrl, ...certExtras(fd, holderName) });
+    const manual = Boolean(str(fd, "number"));
+    for (let attempt = 0; ; attempt++) {
+      try {
+        await db.insert(s.certificates).values({ number, userId, holderName, courseId, startDate: new Date(str(fd, "startDate")), endDate: new Date(str(fd, "endDate")), fileUrl, ...certExtras(fd, holderName) });
+        break;
+      } catch (e) {
+        // two certificates issued at the same moment: take the next number (a number typed by hand is never changed)
+        if (manual || attempt >= 3 || !String((e as { code?: string })?.code ?? e).includes("23505")) throw manual && String((e as { code?: string })?.code ?? e).includes("23505") ? new Error(`№ ${number} արդեն տրված է`) : e;
+        const m = number.match(/^(.*\/)(\d+)$/);
+        if (!m) throw e;
+        number = `${m[1]}${String(Number(m[2]) + 1).padStart(3, "0")}`;
+      }
+    }
+    if (userId) {
+      const [u] = await db.select({ email: s.users.email, name: s.users.name, locale: s.users.locale }).from(s.users).where(eq(s.users.id, userId)).limit(1);
+      if (u?.email) {
+        const loc = (["hy", "ru", "en"].includes(u.locale) ? u.locale : "hy") as Locale;
+        const T = getDict(loc).account;
+        await sendMail(u.email, T.certMailSubject, emailHtml(T.certMailSubject, [`${u.name},`, fmt(T.certMailBody, { no: number, course: `${course.code} · ${tr(course.title, loc)}` })], { label: T.certMailCta, url: `${siteUrl()}/${loc}/account#documents` }));
+      }
+    }
     revalidatePath("/admin/certificates");
     return ok(`Վկայականը տրված է՝ № ${number}`);
   } catch (e) { return fail(e); }

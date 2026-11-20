@@ -297,6 +297,14 @@ export async function signContractAction(_: ActionResult, fd: FormData): Promise
     const site = siteUrl();
     if (guardian?.email) await sendMail(guardian.email, c.mailSubject, emailHtml(c.mailSubject, [`${guardian.name},`, fmt(c.mailBody, { no, course: `${app.course.code} · ${tr(app.course.title, l)}` })], { label: t.account.view, url: `${siteUrl()}/${l}/account/contract/${app.id}` }));
     await sendMail(app.user.email, c.mailSubject, emailHtml(c.mailSubject, [`${app.user.name},`, fmt(c.mailBody, { no, course: `${app.course.code} · ${tr(app.course.title, l)}` })], { label: t.account.view, url: `${site}/${l}/account/contract/${app.id}` }));
+    // tell the academy: a signed contract usually means the application can be approved
+    const st = await getSettings();
+    const adminTo = st.adminEmail || st.contacts.email;
+    if (adminTo) await sendMail(adminTo, `Պայմանագիր կնքվեց՝ ${no} · ${app.user.name}`, emailHtml("Ունկնդիրը կնքել է պայմանագիրը", [
+      `${app.user.name} (${app.user.email}) կնքեց ${no} պայմանագիրը՝ ${app.course.code} · ${tr(app.course.title, "hy")}։`,
+      ...(guardian ? [`Ներկայացուցիչ՝ ${guardian.name}, ${guardian.phone}`] : []),
+      "Եթե ամեն ինչ կարգին է, հայտը կարող եք տեղափոխել «Հաստատված» կարգավիճակի։",
+    ], { label: "Բացել հայտերը", url: `${site}/admin/applications` }));
     revalidatePath(`/${l}/account`);
   }
   if (method === "card" || method === "idram") {

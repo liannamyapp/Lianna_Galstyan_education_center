@@ -94,6 +94,39 @@ async function main() {
       console.log("✓ test data removed again — certificates and contracts start at 001");
     }
   }
+  // Nov 20, 2026 — final reset before going live: every test learner, application, contract, payment, journal entry,
+  // certificate (the register starts at 001), review, chat, CRM record and subscriber is removed.
+  // Kept: admin accounts, courses, groups, lessons, FAQ, pages, posts, settings, CRM templates and campaigns.
+  {
+    const FLAG = "reset_test_data_2026_11_20";
+    const [done] = await db.select().from(s.settings).where(eq(s.settings.key, FLAG)).limit(1);
+    if (!done) {
+      await db.transaction(async (tx) => {
+        await tx.delete(s.grades);
+        await tx.delete(s.attendance);
+        await tx.delete(s.assessments);
+        await tx.delete(s.journalSessions);
+        await tx.delete(s.certificates);
+        await tx.delete(s.reviews);
+        await tx.delete(s.payments);
+        await tx.delete(s.applications);
+        await tx.delete(s.chatMessages);
+        await tx.delete(s.chatThreads);
+        await tx.delete(s.crmTasks);
+        await tx.delete(s.leadActivities);
+        await tx.delete(s.leads);
+        await tx.delete(s.messages);
+        await tx.delete(s.subscribers);
+        await tx.delete(s.lessons).where(sql`${s.lessons.userId} is not null`);
+        await tx.delete(s.users).where(eq(s.users.role, "STUDENT"));
+        await tx.delete(s.tokens);
+        await tx.delete(s.settings).where(sql`${s.settings.key} like 'contract_seq_%'`);
+        await tx.execute(sql`select setval(pg_get_serial_sequence('payments', 'order_no'), 1, false)`);
+        await tx.insert(s.settings).values({ key: FLAG, value: { at: new Date().toISOString() } });
+      });
+      console.log("✓ test data removed — the site starts from zero (certificates, contracts, payments at 001)");
+    }
+  }
   // Certificate supplement: learning outcomes of the endorsed programmes' modules (from the official forms)
   for (const [code, rows] of Object.entries(MODULE_OUTCOMES as Record<string, { hy: string; en: string }[]>)) {
     const [c] = await db.select({ id: s.courses.id }).from(s.courses).where(eq(s.courses.code, code)).limit(1);

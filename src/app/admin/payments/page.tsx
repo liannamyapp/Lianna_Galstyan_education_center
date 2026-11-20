@@ -23,6 +23,7 @@ export default async function Payments() {
           <label className="label">Հայտ<select name="applicationId" required className="input">{apps.map((a) => <option key={a.id} value={a.id}>{a.user.name} · {a.course.code}</option>)}</select></label>
           <label className="label">Գումար (֏)<input name="amount" type="number" min={1} required className="input" /></label>
           <label className="label">Նկարագրություն<input name="description" placeholder="Օր.՝ 2-րդ ամիս, կանխիկ" className="input" /></label>
+          <label className="flex items-start gap-2 text-[13.5px] md:col-span-4"><input type="checkbox" name="full" className="mt-0.5 size-4 accent-navy-800" /><span>Ամբողջ դասընթացի վճարում՝ զեղչված գնով (դրանից հետո ամսական վճար այլևս չի պահանջվի)։ Եթե առաջին վճարումը հավասար է ամբողջ դասընթացի գնին, սա նշվում է ինքնաշխատ։</span></label>
           <SubmitButton pendingText="…">Ավելացնել</SubmitButton>
         </ActionForm>
       </AdminCard>

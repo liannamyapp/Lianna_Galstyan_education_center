@@ -58,7 +58,8 @@ export async function POST(req: Request) {
     const locale = isLocale(str("locale")) ? str("locale") : "hy";
     const session = await getSession().catch(() => null);
     const token = newToken();
-    [t] = await db.insert(s.chatThreads).values({ token, locale, page: str("page", 300) || null, ipHash, userId: session?.uid ?? null }).returning();
+    const me = session?.uid ? (await db.select({ name: s.users.name, email: s.users.email }).from(s.users).where(eq(s.users.id, session.uid)).limit(1))[0] : undefined;
+    [t] = await db.insert(s.chatThreads).values({ token, locale, page: str("page", 300) || null, ipHash, userId: session?.uid ?? null, name: me?.name ?? null, email: me?.email ?? null }).returning();
     jar.set(CHAT_COOKIE, token, { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/", maxAge: 60 * 60 * 24 * 180 });
   } else if (body && (await tooManyMessages(t.id))) {
     return json({ ok: false, error: "rate" }, 429);
@@ -71,7 +72,7 @@ export async function POST(req: Request) {
     saved = publicMessage(m);
   }
   const before = t;
-  const thread = name || email ? await saveContact(t, name, email, body || undefined) : t;
+  const thread = name || email || (t.email && !t.leadId) ? await saveContact(t, name, email, body || undefined) : t;
   after(async () => {
     if (body) {
       if (before.leadId) await logActivity(before.leadId, "message_in", body, "site").catch(() => {});
