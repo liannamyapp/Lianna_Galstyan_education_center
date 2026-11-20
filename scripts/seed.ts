@@ -127,6 +127,25 @@ async function main() {
       console.log("✓ test data removed — the site starts from zero (certificates, contracts, payments at 001)");
     }
   }
+  // Nov 20, 2026 — the academy's phone number changes from 077 053446 to 041 017066 everywhere it was saved
+  // (contacts, WhatsApp link, pages, posts, FAQ, CRM templates, course texts). Any spacing of the old number is matched.
+  {
+    const FLAG = "phone_change_2026_11_20";
+    const [done] = await db.select().from(s.settings).where(eq(s.settings.key, FLAG)).limit(1);
+    if (!done) {
+      const OLD = "7[ -]?7[ -]?0[ -]?5[ -]?3[ -]?4[ -]?4[ -]?6";
+      const fix = (col: string) => `regexp_replace(regexp_replace(regexp_replace(${col}, '\\+374[ -]?\\(?${OLD}\\)?', '+374 41 017066', 'g'), '374${OLD}', '37441017066', 'g'), '0?${OLD}', '041 017066', 'g')`;
+      for (const [table, col] of [["settings", "value"], ["pages", "body"], ["pages", "title"], ["posts", "body"], ["posts", "excerpt"], ["faqs", "answer"], ["crm_templates", "body"], ["courses", "description"]] as const) {
+        try {
+          await db.execute(sql.raw(`update ${table} set ${col} = (${fix(`${col}::text`)})::jsonb where ${col}::text ~ '${OLD}'`));
+        } catch {
+          try { await db.execute(sql.raw(`update ${table} set ${col} = ${fix(col)} where ${col} ~ '${OLD}'`)); } catch { /* column absent or not text */ }
+        }
+      }
+      await db.insert(s.settings).values({ key: FLAG, value: { at: new Date().toISOString() } });
+      console.log("✓ phone number changed to 041 017066");
+    }
+  }
   // Certificate supplement: learning outcomes of the endorsed programmes' modules (from the official forms)
   for (const [code, rows] of Object.entries(MODULE_OUTCOMES as Record<string, { hy: string; en: string }[]>)) {
     const [c] = await db.select({ id: s.courses.id }).from(s.courses).where(eq(s.courses.code, code)).limit(1);

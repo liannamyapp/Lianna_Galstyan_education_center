@@ -55,10 +55,10 @@ export const defaultSettings: SiteSettings = {
     tags: ["React · TypeScript · Next.js", "Node.js · Express · NestJS", "MS SQL · PostgreSQL · Docker", "GREEN-API"],
   },
   contacts: {
-    phone: "+374 77 053446",
+    phone: "+374 41 017066",
     email: "altaacademy666@gmail.com",
     telegram: "G_liann",
-    whatsapp: "37477053446",
+    whatsapp: "37441017066",
     instagram: "",
     facebook: "",
     city: L("Երևան · առցանց դասեր", "Ереван · онлайн-занятия", "Yerevan · online classes"),

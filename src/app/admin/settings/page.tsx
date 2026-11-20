@@ -57,7 +57,7 @@ export default async function Settings() {
             <Field label="Հեռախոս"><input name="phone" defaultValue={st.contacts.phone} className="input" /></Field>
             <Field label="Էլ. փոստ (կայքում)"><input name="email" type="email" defaultValue={st.contacts.email} className="input" /></Field>
             <Field label="Telegram (առանց @)"><input name="telegram" defaultValue={st.contacts.telegram} className="input" /></Field>
-            <Field label="WhatsApp (միայն թվեր, օր.՝ 37477053446)"><input name="whatsapp" defaultValue={st.contacts.whatsapp} className="input" /></Field>
+            <Field label="WhatsApp (միայն թվեր, օր.՝ 37441017066)"><input name="whatsapp" defaultValue={st.contacts.whatsapp} className="input" /></Field>
             <Field label="Instagram (ամբողջական հղում)"><input name="instagram" type="url" defaultValue={st.contacts.instagram} className="input" /></Field>
             <Field label="Facebook (ամբողջական հղում)"><input name="facebook" type="url" defaultValue={st.contacts.facebook} className="input" /></Field>
           </div>
