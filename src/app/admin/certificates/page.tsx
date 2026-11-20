@@ -1,4 +1,4 @@
-import { asc, desc, eq } from "drizzle-orm";
+import { asc, desc, eq, inArray } from "drizzle-orm";
 import { db, s } from "@/db";
 import { tr } from "@/lib/i18n";
 import { dateShort } from "@/lib/format";
@@ -6,11 +6,28 @@ import { ActionForm } from "@/components/ActionForm";
 import { SubmitButton } from "@/components/SubmitButton";
 import { AdminCard, Field, PageHead, th, td } from "@/components/admin/fields";
 import { issueCertificate, updateCertificate } from "../actions";
+import { CertStudentPicker, type PickerOption } from "@/components/admin/CertStudentPicker";
 
 export default async function Certificates() {
   const courses = await db.select().from(s.courses).orderBy(asc(s.courses.order));
-  const students = await db.query.applications.findMany({ where: eq(s.applications.status, "PAID"), with: { user: true, course: true } });
+  // every approved learner can be chosen — payment does not have to be complete (the admin decides)
+  const students = await db.query.applications.findMany({ where: inArray(s.applications.status, ["APPROVED", "PAID"]), with: { user: true, course: true, group: true } });
   const list = await db.query.certificates.findMany({ orderBy: [desc(s.certificates.issuedAt)], with: { course: true } });
+  const held = new Set(list.filter((c) => c.userId && !c.revoked).map((c) => `${c.userId}|${c.courseId}`));
+  const ymd = (d?: Date | null) => (d ? new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Yerevan" }).format(d) : undefined);
+  const pickerOptions: PickerOption[] = students
+    .sort((a, b) => a.user.name.localeCompare(b.user.name, "hy"))
+    .map((a) => ({
+      userId: a.userId, courseId: a.courseId,
+      ...(() => {
+        // prefill: the group's (or individual) start; end = start + course length — the admin can correct both
+        const st = a.group?.startDate ?? a.startDate;
+        if (!st) return {};
+        const end = new Date(st); end.setMonth(end.getMonth() + a.course.months);
+        return { start: ymd(st), end: ymd(end) };
+      })(),
+      label: `${a.user.name} · ${a.course.code}${a.status === "PAID" ? "" : " · վճարումը չի ավարտվել"}${held.has(`${a.userId}|${a.courseId}`) ? " · ✓ վկայականն արդեն տրված է" : ""}`,
+    }));
   const thisYear = new Date().getFullYear();
   const years = [...new Set([thisYear, ...list.map((c) => c.issuedAt.getFullYear())])].sort((a, b) => b - a);
   return (
@@ -31,7 +48,7 @@ export default async function Certificates() {
       <div className="h-6" />
       <AdminCard title="Տալ վկայական">
         <ActionForm action={issueCertificate} resetOnSuccess className="grid gap-4 md:grid-cols-3">
-          <Field label="Ունկնդիր (ակտիվներից)"><select name="userId" className="input"><option value="">— ձեռքով մուտքագրել ներքևում —</option>{students.map((a) => <option key={a.id} value={a.userId}>{a.user.name} · {a.course.code}</option>)}</select></Field>
+          <Field label="Ունկնդիր (հաստատվածներից)"><CertStudentPicker options={pickerOptions} /></Field>
           <Field label="Կամ անուն, ազգանուն (ինչպես վկայականում)"><input name="holderName" className="input" /></Field>
           <Field label="Դասընթաց"><select name="courseId" required className="input">{courses.map((c) => <option key={c.id} value={c.id}>{c.code} · {tr(c.title, "hy")}</option>)}</select></Field>
           <div className="grid min-w-0 grid-cols-1 gap-3 min-[420px]:grid-cols-2 md:col-span-2 md:max-w-[460px]">
