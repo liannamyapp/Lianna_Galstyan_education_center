@@ -34,12 +34,14 @@ export default async function Dashboard() {
   // what needs the admin right now, in the order of the learner's journey
   const staged = live.map((a) => ({ a, g: flowStage(a, certRows.find((c) => c.userId === a.userId && c.courseId === a.courseId && !c.revoked)) }));
   const by = (k: FlowKey) => staged.filter((x) => x.g.key === k).map((x) => x.a);
+  const stalePay = by("PAY").filter((a) => a.contractSignedAt && Date.now() - a.contractSignedAt.getTime() > 3 * 86_400_000 && !a.payments.some((p) => p.status === "PAID"));
   const overdue = dues.filter(({ b }) => (b.daysLeft ?? 0) < 0).map(({ a }) => a);
   type Todo = { title: string; hint: string; apps?: typeof live; n: number; href: string; cta: string };
   const todos: Todo[] = [
     { title: "Նոր հայտեր", hint: "Կապվեք և հրավիրեք մուտքային զրույցի", apps: by("NEW"), n: by("NEW").length, href: "/admin/applications?status=NEW", cta: "Հրավիրել" },
     { title: "Որոշում հարցազրույցից հետո", hint: "Հաստատեք կամ մերժեք", apps: by("INTERVIEW"), n: by("INTERVIEW").length, href: "/admin/applications?status=INTERVIEW", cta: "Որոշել" },
     { title: "Վճարված, բայց տվյալներ են պակասում", hint: "Նշեք խումբը, մեկնարկը կամ դասի հղումը", apps: by("SETUP"), n: by("SETUP").length, href: "/admin/applications?status=todo", cta: "Լրացնել" },
+    { title: "Կնքել են, բայց 3+ օր չեն վճարել", hint: "Ավտոմատ հիշեցում են ստացել․ զանգահարեք և ընդունեք վճարումը", apps: stalePay, n: stalePay.length, href: "/admin/applications?status=APPROVED", cta: "Դիտել" },
     { title: "Ավարտել են՝ վկայական տալ", hint: "Դասերն ավարտված են", apps: by("CERT"), n: by("CERT").length, href: "/admin/certificates", cta: "Տալ վկայական" },
     { title: "Ուշացած վճարումներ", hint: "Հիշեցումները գնում են ավտոմատ․ անհրաժեշտության դեպքում զանգեք", apps: overdue, n: overdue.length, href: "/admin/payments", cta: "Դիտել" },
     { title: "Չպատասխանված չատեր", hint: "Ունկնդիրները գրել են կայքի չատում", n: chats.n, href: "/admin/chats", cta: "Պատասխանել" },
@@ -48,7 +50,7 @@ export default async function Dashboard() {
   ].filter((x) => x.n > 0);
   const waiting = [
     { title: "Պայմանագիր չեն կնքել", n: by("SIGN").length },
-    { title: "Կնքել են, սպասում ենք վճարմանը", n: by("PAY").length },
+    { title: "Կնքել են, սպասում ենք վճարմանը", n: by("PAY").length - stalePay.length },
     { title: "Վկայականի ստացումը չեն հաստատել", n: by("RECEIPT").length },
   ].filter((x) => x.n > 0);
   const kpi = [

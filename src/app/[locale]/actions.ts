@@ -1,6 +1,7 @@
 "use server";
 import { redirect } from "next/navigation";
 import { notifyStudent } from "@/lib/notify";
+import { canPayOnline } from "@/lib/payments";
 import { guessLocale, translateAll } from "@/lib/translate";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { headers } from "next/headers";
@@ -224,7 +225,7 @@ export async function enrollAction(_: ActionResult, fd: FormData): Promise<Actio
   }
 
   const method = str(fd, "method");
-  if (method === "none") redirect(`/${l}/account#overview`); // the account shows the next step and the "application received" notice
+  if (method === "none") redirect(`/${l}/account?applied=1`); // the account shows the next step and the "application received" notice
   // the learner reads and signs the agreement before paying (older applications that already have a number may pay)
   if (!app.contractSignedAt && !app.contractNo) redirect(`/${l}/account/contract/${app.id}?method=${method === "idram" ? "idram" : "card"}`);
   const st = await getSettings();
@@ -248,6 +249,8 @@ export async function payNextAction(fd: FormData) {
   const app = await db.query.applications.findFirst({ where: and(eq(s.applications.id, str(fd, "applicationId")), eq(s.applications.userId, sess.uid)), with: { course: true, group: true, payments: true } });
   if (!app) redirect(`/${l}/account`);
   if (!app.contractSignedAt && !app.contractNo) redirect(`/${l}/account/contract/${app.id}?method=${str(fd, "method") === "idram" ? "idram" : "card"}`);
+  // no online payment connected yet: the account explains how to pay in cash or by transfer
+  if (!(await canPayOnline(str(fd, "method"), sess.role))) redirect(`/${l}/account?pay=offline`);
   const st = await getSettings();
   const b = billing(app, app.course, app.group?.startDate, app.payments, st.payments);
   if (!b.next) redirect(`/${l}/account`);
@@ -308,6 +311,7 @@ export async function signContractAction(_: ActionResult, fd: FormData): Promise
     ], { label: "Բացել հայտերը", url: `${site}/admin/applications` }));
     revalidatePath(`/${l}/account`);
   }
+  if ((method === "card" || method === "idram") && !(await canPayOnline(method, sess.role))) redirect(`/${l}/account?pay=offline`);
   if (method === "card" || method === "idram") {
     const st = await getSettings();
     const b = billing(app, app.course, app.group?.startDate, app.payments, st.payments);
@@ -320,5 +324,6 @@ export async function signContractAction(_: ActionResult, fd: FormData): Promise
       redirect(`/${l}/pay/${pay.id}`);
     }
   }
-  redirect(`/${l}/account/contract/${app.id}`);
+  // signed without paying: the account shows the payment as the next step
+  redirect(`/${l}/account?signed=1`);
 }

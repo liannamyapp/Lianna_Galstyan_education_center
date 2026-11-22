@@ -15,6 +15,17 @@ export { idramEnabled } from "./idram";
 export { ameriaEnabled } from "./ameria";
 /** Test payments ("payment successful" button without money) — only for admins checking the flow, never for learners. */
 export const testPaymentsAllowed = (role: string | null | undefined) => process.env.ALLOW_TEST_PAYMENTS === "true" && role === "ADMIN";
+/** Can this method be paid online right now? (Until the bank's vPOS / Idram are connected, learners pay in cash or by transfer.) */
+export async function canPayOnline(method: string, role?: string | null) {
+  const { idramEnabled: idram } = await import("./idram");
+  const { ameriaEnabled: card } = await import("./ameria");
+  return testPaymentsAllowed(role) || (method === "idram" ? idram() : card());
+}
+export async function anyOnlinePayment() {
+  const { idramEnabled: idram } = await import("./idram");
+  const { ameriaEnabled: card } = await import("./ameria");
+  return idram() || card();
+}
 
 /** Idempotently marks a payment as paid and updates the application. */
 export async function markPaid(paymentId: string, providerRef?: string, providerData?: unknown) {

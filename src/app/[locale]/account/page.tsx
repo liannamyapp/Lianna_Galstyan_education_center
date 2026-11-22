@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ValueButton } from "@/components/ValueButton";
+import { ScrollToId } from "@/components/ScrollToId";
 import { LiveRefresh } from "@/components/LiveRefresh";
 import { and, desc, eq, isNull } from "drizzle-orm";
 import { db, s } from "@/db";
@@ -14,7 +15,7 @@ import { SubmitButton } from "@/components/SubmitButton";
 import { Icon } from "@/components/Icon";
 import { CertDocs } from "@/components/CertDocs";
 import { confirmCertReceipt } from "./certificate-actions";
-import { idramEnabled } from "@/lib/payments";
+import { anyOnlinePayment, idramEnabled, testPaymentsAllowed } from "@/lib/payments";
 
 import { emailChangeAction, logoutAction, payNextAction, profileAction, reviewAction } from "../actions";
 const dateTime = (d: Date) => new Intl.DateTimeFormat("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit", timeZone: "Asia/Yerevan" }).format(d);
@@ -24,8 +25,9 @@ export const metadata: Metadata = { robots: { index: false } };
 
 const tone: Record<string, string> = { NEW: "bg-[#e6eef8] text-navy-800", INTERVIEW: "bg-[#fbf2dd] text-[#7a5a12]", APPROVED: "bg-[#e6eef8] text-navy-800", PAID: "bg-[#e3f1e6] text-[#1f5f33]", REJECTED: "bg-[#fbefeb] text-[#8a2f1d]", CANCELLED: "bg-[#eef0f3] text-[#4b5563]", PENDING: "bg-[#fbf2dd] text-[#7a5a12]", FAILED: "bg-[#fbefeb] text-[#8a2f1d]", REFUNDED: "bg-[#eef0f3] text-[#4b5563]" };
 
-export default async function Account({ params }: { params: Promise<{ locale: Locale }> }) {
+export default async function Account({ params, searchParams }: { params: Promise<{ locale: Locale }>; searchParams: Promise<{ pay?: string; signed?: string; applied?: string }> }) {
   const { locale } = await params;
+  const { pay: payParam, signed, applied } = await searchParams;
   const t = getDict(locale);
   const user = await requireUser(locale);
   // independent reads run in parallel (one round trip instead of seven)
@@ -38,6 +40,18 @@ export default async function Account({ params }: { params: Promise<{ locale: Lo
     db.select().from(s.notifications).where(eq(s.notifications.userId, user.id)).orderBy(desc(s.notifications.createdAt)).limit(12),
   ]);
   const idramOn = idramEnabled();
+  const payOnline = (await anyOnlinePayment()) || testPaymentsAllowed(user.role);
+  const phone = st.contacts.phone;
+  // until online payment is connected: how to pay in cash or by bank transfer
+  const offline = (cls = "") => (
+    <div className={`flex flex-col gap-2.5 ${cls}`}>
+      <p className="m-0 text-[14px] leading-snug">{t.account.payOffline}</p>
+      <div className="flex flex-wrap gap-2">
+        {phone && <a href={`tel:${phone.replace(/\s/g, "")}`} className="btn-navy min-h-11">{t.account.payCall} {phone}</a>}
+        <a href={`/${locale}/account?chat=1`} className="btn-soft min-h-11">{t.account.payChat}</a>
+      </div>
+    </div>
+  );
   const bills = new Map<string, Billing>(apps.map((a) => [a.id, billing(a, a.course, a.group?.startDate, allPays.filter((p) => p.applicationId === a.id), st.payments)]));
   const pays = allPays.filter((p) => ["PAID", "PENDING", "FAILED", "REFUNDED"].includes(p.status)).slice(0, 50);
   const unreadIds = notes.filter((n) => !n.readAt).map((n) => n.id);
@@ -71,8 +85,15 @@ export default async function Account({ params }: { params: Promise<{ locale: Lo
       </aside>
 
       <div className="flex min-w-0 flex-[999_1_600px] flex-col gap-6">
-        <section id="overview">
+        {(payParam || signed || applied) && <ScrollToId id="overview" />}
+        <section id="overview" className="scroll-mt-24">
           <h1 className="font-serif text-[clamp(26px,7vw,32px)] font-bold break-words text-navy-900">{fmt(t.account.welcome, { name: user.name.split(" ")[0] })}</h1>
+          {payParam === "offline" && (
+            <div role="status" className="mt-5 rounded-[18px] border border-[#e3d3a8] bg-[#fbf7ec] p-5 text-[#4a3d1c]">
+              <b className="mb-1 block text-[15.5px] text-navy-900">{t.account.payOfflineTitle}</b>
+              {offline()}
+            </div>
+          )}
           {apps.length === 0 ? (
             <div className="card mt-5 p-8"><p className="text-muted">{t.account.noCourses}</p><Link href={`/${locale}/courses`} className="btn-navy mt-3">{t.account.browseCourses}</Link></div>
           ) : (
@@ -87,11 +108,13 @@ export default async function Account({ params }: { params: Promise<{ locale: Lo
                   <div key={`b-${a.id}`} role={b.state === "soon" ? "status" : "alert"} className={`mt-5 flex flex-wrap items-center gap-4 rounded-[18px] border p-5 ${cls}`}>
                     <Icon name={b.state === "overdue" ? "lock" : "calendar"} className="flex-none" />
                     <p className="m-0 min-w-0 flex-[1_1_260px] text-[15px]"><b>{a.course.code}</b> · {text}</p>
-                    <form action={payNextAction} className="flex flex-wrap gap-2">
-                      <input type="hidden" name="locale" value={locale} /><input type="hidden" name="applicationId" value={a.id} />
-                      <ValueButton name="method" value="card" className="btn-navy min-h-11">{t.account.payNow}</ValueButton>
-                      {idramOn && <ValueButton name="method" value="idram" className="btn-soft min-h-11">Idram</ValueButton>}
-                    </form>
+                    {payOnline ? (
+                      <form action={payNextAction} className="flex flex-wrap gap-2">
+                        <input type="hidden" name="locale" value={locale} /><input type="hidden" name="applicationId" value={a.id} />
+                        <ValueButton name="method" value="card" className="btn-navy min-h-11">{t.account.payNow}</ValueButton>
+                        {idramOn && <ValueButton name="method" value="idram" className="btn-soft min-h-11">Idram</ValueButton>}
+                      </form>
+                    ) : offline("basis-full")}
                   </div>
                 );
               })}
@@ -137,12 +160,12 @@ export default async function Account({ params }: { params: Promise<{ locale: Lo
                         {g.key === "SIGN" && <Link href={`/${locale}/account/contract/${a.id}`} className="btn-navy min-h-11">{t.account.ctaSign}</Link>}
                         {g.key === "CERT" && <a href="#documents" className="btn-navy min-h-11">{t.account.ctaCert}</a>}
                         {g.key === "STUDY" && !bills.get(a.id)!.locked && <Link href={`/${locale}/account/lessons/${a.id}`} className="btn-navy min-h-11">{t.account.ctaLessons}</Link>}
-                        {g.key === "PAY" && (
+                        {g.key === "PAY" && (payOnline ? (
                           <form action={payNextAction}>
                             <input type="hidden" name="locale" value={locale} /><input type="hidden" name="applicationId" value={a.id} />
                             <ValueButton name="method" value="card" className="btn-navy min-h-11">{t.account.ctaPay}</ValueButton>
                           </form>
-                        )}
+                        ) : offline("basis-full"))}
                       </div>
                     </div>
                   );
@@ -181,11 +204,13 @@ export default async function Account({ params }: { params: Promise<{ locale: Lo
                           {b.next.due ? fmt(t.billing.nextDue, { date: date(b.next.due, locale) }) : t.account.nextPayment}
                           {b.daysLeft !== null && <> · <b className={b.state === "upcoming" ? "text-navy-800" : b.state === "soon" ? "text-[#7a5a12]" : "text-[#8a2f1d]"}>{b.daysLeft > 0 ? fmt(t.billing.daysLeft, { n: b.daysLeft }) : b.daysLeft === 0 ? t.billing.today : fmt(t.billing.overdueDays, { n: -b.daysLeft })}</b></>}
                         </p>
-                        <form action={payNextAction} className="mt-3 flex flex-col gap-2">
-                          <input type="hidden" name="locale" value={locale} /><input type="hidden" name="applicationId" value={a.id} />
-                          <ValueButton name="method" value="card" className="btn-navy min-h-11">{t.account.payNow} · {t.enroll.card}</ValueButton>
-                          {idramOn && <ValueButton name="method" value="idram" className="btn-soft min-h-11">Idram</ValueButton>}
-                        </form>
+                        {payOnline ? (
+                          <form action={payNextAction} className="mt-3 flex flex-col gap-2">
+                            <input type="hidden" name="locale" value={locale} /><input type="hidden" name="applicationId" value={a.id} />
+                            <ValueButton name="method" value="card" className="btn-navy min-h-11">{t.account.payNow} · {t.enroll.card}</ValueButton>
+                            {idramOn && <ValueButton name="method" value="idram" className="btn-soft min-h-11">Idram</ValueButton>}
+                          </form>
+                        ) : offline("mt-3")}
                       </>
                     ) : <p className="m-0 flex items-center gap-2 font-semibold text-[#1f5f33]"><Icon name="check" size={18} strokeWidth={2.6} />{t.billing.done}</p>}
                     {b.plan === "monthly" && b.paidCount > 0 && (

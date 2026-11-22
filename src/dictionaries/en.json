@@ -307,7 +307,12 @@
     "ctaSign": "Sign the agreement",
     "ctaPay": "Pay",
     "ctaCert": "Confirm receipt",
-    "ctaLessons": "Open lessons"
+    "ctaLessons": "Open lessons",
+    "payOfflineTitle": "How to pay",
+    "payOffline": "Online card payment is coming soon. For now, payment is accepted in cash or by bank transfer — contact us and we will send the payment details. As soon as the payment is recorded, your lessons open and you get a notification.",
+    "payCall": "Call",
+    "payChat": "Write in chat",
+    "remindSubject": "Reminder: finish your enrollment"
   },
   "verify": {
     "eyebrow": "Certificate verification",
