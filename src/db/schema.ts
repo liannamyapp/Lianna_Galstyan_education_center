@@ -155,6 +155,17 @@ export const payments = pgTable("payments", {
   createdAt: created(),
 }, (t) => [index("payments_user_idx").on(t.userId)]);
 
+/** What the academy told a learner (shown in the account and sent by e-mail). */
+export const notifications = pgTable("notifications", {
+  id: id(),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  title: text("title").notNull(),
+  body: text("body").notNull(),
+  url: text("url"),
+  readAt: timestamp("read_at", { withTimezone: true }),
+  createdAt: created(),
+}, (t) => [index("notifications_user_idx").on(t.userId)]);
+
 export const lessons = pgTable("lessons", {
   id: id(),
   courseId: text("course_id").notNull().references(() => courses.id, { onDelete: "cascade" }),

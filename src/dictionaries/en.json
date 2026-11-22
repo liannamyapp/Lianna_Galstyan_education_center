@@ -281,7 +281,36 @@
     "receiptErr": "Type your first and last name as they appear on the certificate.",
     "certMailSubject": "Your certificate is ready",
     "certMailBody": "Congratulations on completing the course! Your certificate No. {no} ({course}) is ready. Open your account, confirm receipt, and you will be able to open, print and download the certificate and its supplement.",
-    "certMailCta": "Open my account"
+    "certMailCta": "Open my account",
+    "notifTitle": "Notifications",
+    "notifEmpty": "No notifications yet. Every step — from application to certificate — will appear here.",
+    "notifNew": "new",
+    "stepsTitle": "Your progress",
+    "nextLabel": "Next step",
+    "steps": [
+      "Application",
+      "Interview",
+      "Approval",
+      "Agreement",
+      "Payment",
+      "Training",
+      "Certificate"
+    ],
+    "next": {
+      "NEW": "We have your application. We will contact you within 1 business day for an intake call.",
+      "INTERVIEW": "Expect our call or e-mail to agree on the day and time of the intake call.",
+      "SIGN": "Your application is approved. Now sign the agreement — it takes a minute.",
+      "PAY": "The agreement is signed. Make the first payment and lessons open right away.",
+      "STUDY": "Your training is active. Join the lessons and follow your results in the e-journal.",
+      "CERT": "Your certificate is ready. Confirm receipt in Documents to download it.",
+      "DONE": "The course is complete and your certificate is with you. Congratulations!",
+      "REJECTED": "The application was not approved. If you have questions, write to us in the chat.",
+      "CANCELLED": "The application was cancelled."
+    },
+    "ctaSign": "Sign the agreement",
+    "ctaPay": "Pay",
+    "ctaCert": "Confirm receipt",
+    "ctaLessons": "Open lessons"
   },
   "verify": {
     "eyebrow": "Certificate verification",
@@ -363,7 +392,40 @@
     "failedSubject": "Payment not confirmed",
     "failedBody": "Your payment of {amount} was not confirmed and nothing was charged. You can try again from your account or contact us.",
     "refundSubject": "Payment refunded",
-    "refundBody": "Your payment of {amount} has been refunded. The money will reach your account within your bank's usual time."
+    "refundBody": "Your payment of {amount} has been refunded. The money will reach your account within your bank's usual time.",
+    "statusMail": {
+      "NEW": [
+        "Your application is back in progress",
+        "Your application for “{course}” is back in progress. We will contact you soon."
+      ],
+      "INTERVIEW": [
+        "Invitation to an intake call",
+        "Your application for “{course}” has moved to the intake call (interview) stage. The call takes 15–20 minutes by video. We will contact you to agree on a day and time."
+      ],
+      "APPROVED": [
+        "Your application is approved",
+        "Congratulations — your application for “{course}” is approved. Next step: sign the agreement in your account, then make the first payment. Access to lessons opens after payment."
+      ],
+      "REJECTED": [
+        "A decision on your application",
+        "Unfortunately, we cannot approve your application for “{course}” this time. If you have questions, reply to this e-mail or write in the site chat."
+      ],
+      "PAID": [
+        "Your training is active",
+        "Your training on “{course}” is now active. Lessons, the e-journal and the lesson link are available in your account."
+      ],
+      "CANCELLED": [
+        "Application cancelled",
+        "Your application for “{course}” has been cancelled. If this is a mistake, please write to us."
+      ]
+    },
+    "groupSubject": "Your group and schedule",
+    "groupBody": "You have been added to the “{group}” group of “{course}”. Start: {date}. Schedule: {schedule}.",
+    "startSubject": "Your lessons start",
+    "startBody": "Your lessons for “{course}” start on {date}.",
+    "linkSubject": "Your lesson link is ready",
+    "linkBody": "The lesson link for “{course}” has been added to your account (the “Join lesson” button).",
+    "noteLabel": "Our note:"
   },
   "format": {
     "title": "Learning format",

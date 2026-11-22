@@ -66,9 +66,9 @@ export default async function Applications({ searchParams }: { searchParams: Pro
                 <label className="label">Պայմանագրի №<input name="contractNo" defaultValue={a.contractNo ?? ""} placeholder="ավտոմատ՝ կնքելիս" className="input" readOnly={!!a.contractSignedAt} /></label>
                 <p className="m-0 self-end text-[14px]"><a href={`/hy/account/contract/${a.id}`} target="_blank" rel="noopener noreferrer" className="font-semibold">Բացել պայմանագիրը →</a>{a.contractSnapshot ? <span className="text-muted"> · ստորագրություն՝ «{a.contractSnapshot.signedName}»{a.contractSnapshot.birthDate ? ` · ծնված՝ ${a.contractSnapshot.birthDate}` : ""}{a.contractSnapshot.guardian ? ` · ԱՆՉԱՓԱՀԱՍ, կնքել է ${a.contractSnapshot.guardian.relation === "parent" ? "ծնողը" : "օրինական ներկայացուցիչը"} (${a.contractSnapshot.guardian.phone}${a.contractSnapshot.guardian.email ? `, ${a.contractSnapshot.guardian.email}` : ""})` : ""}{a.contractSnapshot.ip ? ` · IP ${a.contractSnapshot.ip}` : ""}</span> : null}</p>
                 <label className="label md:col-span-2">Ներքին նշում<textarea name="adminNote" defaultValue={a.adminNote ?? ""} rows={2} className="input py-2.5" /></label>
-                <label className="label md:col-span-2">Լրացուցիչ տեքստ նամակում (ոչ պարտադիր)<textarea name="message" rows={2} placeholder="Օր.՝ մուտքային զրույցի ժամը, Zoom հղումը…" className="input py-2.5" /></label>
+                <label className="label md:col-span-2">Հաղորդագրություն ունկնդրին (ոչ պարտադիր)<textarea name="message" rows={2} placeholder="Օր.՝ մուտքային զրույցի ժամը, Zoom հղումը…" className="input py-2.5" /></label>
                 <div className="flex flex-wrap items-center justify-between gap-3 md:col-span-2">
-                  <Check name="notify" label="Կարգավիճակը փոխելիս ուղարկել նամակ ունկնդրին" defaultChecked />
+                  <Check name="notify" label="Ծանուցել ունկնդրին (անձնական էջում և էլ. փոստով)՝ կարգավիճակի, խմբի, մեկնարկի, հղման փոփոխության կամ հաղորդագրության մասին" defaultChecked />
                   <SubmitButton pendingText="Պահպանվում է…">Պահպանել</SubmitButton>
                 </div>
                 <p className="m-0 text-[12.5px] text-muted md:col-span-2">{tr(a.course.title, "hy")} · {a.group ? `${a.group.name}, ${dateShort(a.group.startDate)}` : "խումբ չկա"}</p>

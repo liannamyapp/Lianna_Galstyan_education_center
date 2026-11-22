@@ -1,5 +1,6 @@
 "use server";
 import { redirect } from "next/navigation";
+import { notifyStudent } from "@/lib/notify";
 import { guessLocale, translateAll } from "@/lib/translate";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { headers } from "next/headers";
@@ -210,7 +211,7 @@ export async function enrollAction(_: ActionResult, fd: FormData): Promise<Actio
     const [u] = await db.select().from(s.users).where(eq(s.users.id, sess.uid)).limit(1);
     const st = await getSettings();
     const title = tr(course.title, l);
-    await sendMail(u.email, t.mail.appSubject, emailHtml(t.mail.appSubject, [`${u.name},`, fmt(t.mail.appBody, { course: title })], { label: t.mail.openAccount, url: `${siteUrl()}/${l}/account` }));
+    await notifyStudent(u, t.mail.appSubject, [fmt(t.mail.appBody, { course: title })], { label: t.mail.openAccount, url: `${siteUrl()}/${l}/account` });
     await sendMail(st.adminEmail, `Նոր հայտ՝ ${course.code}`, emailHtml("Նոր հայտ", [`${u.name} · ${u.email} · ${u.phone ?? ""}`, `${course.code} · ${tr(course.title, "hy")} · ${format === "individual" ? "ԱՆՀԱՏԱԿԱՆ" : "խմբակային"} · ${plan === "full" ? "ամբողջությամբ" : "ամսական"}`], { label: "Բացել հայտերը", url: `${siteUrl()}/admin/applications` }));
     await notifyAdminWhatsApp(`Նոր հայտ՝ ${course.code} · ${u.name} · ${u.phone ?? u.email}`);
     const utm = await readUtm();
@@ -223,7 +224,7 @@ export async function enrollAction(_: ActionResult, fd: FormData): Promise<Actio
   }
 
   const method = str(fd, "method");
-  if (method === "none") return { ok: true, message: t.enroll.applied };
+  if (method === "none") redirect(`/${l}/account#overview`); // the account shows the next step and the "application received" notice
   // the learner reads and signs the agreement before paying (older applications that already have a number may pay)
   if (!app.contractSignedAt && !app.contractNo) redirect(`/${l}/account/contract/${app.id}?method=${method === "idram" ? "idram" : "card"}`);
   const st = await getSettings();
@@ -296,7 +297,7 @@ export async function signContractAction(_: ActionResult, fd: FormData): Promise
     }).where(eq(s.applications.id, app.id));
     const site = siteUrl();
     if (guardian?.email) await sendMail(guardian.email, c.mailSubject, emailHtml(c.mailSubject, [`${guardian.name},`, fmt(c.mailBody, { no, course: `${app.course.code} · ${tr(app.course.title, l)}` })], { label: t.account.view, url: `${siteUrl()}/${l}/account/contract/${app.id}` }));
-    await sendMail(app.user.email, c.mailSubject, emailHtml(c.mailSubject, [`${app.user.name},`, fmt(c.mailBody, { no, course: `${app.course.code} · ${tr(app.course.title, l)}` })], { label: t.account.view, url: `${site}/${l}/account/contract/${app.id}` }));
+    await notifyStudent(app.user, c.mailSubject, [fmt(c.mailBody, { no, course: `${app.course.code} · ${tr(app.course.title, l)}` })], { label: t.account.view, url: `${site}/${l}/account/contract/${app.id}` });
     // tell the academy: a signed contract usually means the application can be approved
     const st = await getSettings();
     const adminTo = st.adminEmail || st.contacts.email;

@@ -1,4 +1,5 @@
 import { revalidateTag } from "next/cache";
+import { notifyStudent } from "@/lib/notify";
 import { and, eq, inArray, lt, sql } from "drizzle-orm";
 import { db, s } from "@/db";
 import { getSettings } from "@/lib/settings";
@@ -48,7 +49,7 @@ export async function GET(req: Request) {
     const body = fmt(kind === "pre" ? t.mailx.preBody : kind === "due" ? t.mailx.dueBody : t.mailx.lockBody, vars);
     const url = `${site}/${l}/account`;
 
-    await sendMail(a.user.email, subject, emailHtml(subject, [`${a.user.name},`, body], { label: t.mailx.payBtn, url }));
+    await notifyStudent(a.user, subject, [body], { label: t.mailx.payBtn, url });
     await sendWhatsApp(a.user.phone, `${subject}\n\n${body}\n\n${url}`);
     await db.update(s.applications).set({ reminders: [...a.reminders, key] }).where(eq(s.applications.id, a.id));
 

@@ -33,8 +33,8 @@ export default async function Dashboard() {
         <Link href="/admin/groups" className="btn-soft min-h-11">+ Նոր խումբ</Link>
         <Link href="/admin/courses/new" className="btn-navy min-h-11">+ Նոր դասընթաց</Link>
       </PageHead>
-      <div className="mb-6 grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(190px,1fr))]">
-        {kpi.map(([l, v, href]) => <Link key={l} href={href} className="card p-5 no-underline hover:shadow-md"><span className="text-[13px] text-muted">{l}</span><span className="mt-1 block font-serif text-[28px] font-bold text-navy-900">{v}</span></Link>)}
+      <div className="mb-6 grid grid-cols-2 gap-3 sm:gap-4 sm:[grid-template-columns:repeat(auto-fit,minmax(190px,1fr))]">
+        {kpi.map(([l, v, href]) => <Link key={l} href={href} className="card p-4 no-underline hover:shadow-md sm:p-5"><span className="text-[12.5px] leading-tight text-muted sm:text-[13px]">{l}</span><span className="mt-1 block font-serif text-[24px] sm:text-[28px] font-bold text-navy-900">{v}</span></Link>)}
       </div>
       <AdminCard title={`Սպասվող վճարումներ (14 օր) · ${money(expected)}`} actions={<span className="text-[13px] text-muted">Հիշեցումները գնում են ավտոմատ՝ {cfg.reminderDays} օր առաջ, վճարման օրը և ուշացման դեպքում</span>}>
         {dues.length === 0 ? <p className="text-muted">Առաջիկա 14 օրում վճարումներ չկան։</p> : (

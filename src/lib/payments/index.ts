@@ -1,4 +1,5 @@
 import { nextContractNo } from "@/lib/contract";
+import { notifyStudent as tellStudent } from "@/lib/notify";
 import "server-only";
 import { eq, sql } from "drizzle-orm";
 import { db, s } from "@/db";
@@ -8,6 +9,7 @@ import { getSettings } from "@/lib/settings";
 import { money } from "@/lib/format";
 import { getDict, tr } from "@/lib/i18n";
 import { syncLeadForUser } from "@/lib/crm/automations";
+import type { L10n } from "@/db/schema";
 
 export { idramEnabled } from "./idram";
 export { ameriaEnabled } from "./ameria";
@@ -20,11 +22,16 @@ export async function markPaid(paymentId: string, providerRef?: string, provider
   if (!p || p.status === "PAID") return p;
   await db.update(s.payments).set({ status: "PAID", paidAt: new Date(), providerRef: providerRef ?? p.providerRef, providerData: providerData ?? p.providerData }).where(eq(s.payments.id, p.id));
 
+  let activated: { code: string; title: L10n } | null = null; // the course, when this payment activated the training
   if (p.applicationId) {
     const [app] = await db.select().from(s.applications).where(eq(s.applications.id, p.applicationId)).limit(1);
     if (app) {
       const patch: Partial<typeof s.applications.$inferInsert> = {};
-      if (!["PAID", "CANCELLED"].includes(app.status)) patch.status = "PAID";
+      if (!["PAID", "CANCELLED"].includes(app.status)) {
+        patch.status = "PAID";
+        const [c] = await db.select({ code: s.courses.code, title: s.courses.title }).from(s.courses).where(eq(s.courses.id, app.courseId)).limit(1);
+        if (c) activated = c;
+      }
       if (!app.contractNo) {
         patch.contractNo = await nextContractNo();
       }
@@ -37,7 +44,9 @@ export async function markPaid(paymentId: string, providerRef?: string, provider
   const site = process.env.NEXT_PUBLIC_SITE_URL || "";
   if (u) {
     const t = getDict(u.locale).mail;
-    await sendMail(u.email, t.paidSubject, emailHtml(t.paidSubject, [t.paidBody.replace("{amount}", money(p.amount)), p.description], { label: t.openAccount, url: `${site}/${u.locale}/account` }));
+    const c = activated as { code: string; title: L10n } | null;
+    const on = c ? t.statusMail.PAID[1].replace("{course}", `${c.code} · ${tr(c.title, u.locale)}`) : "";
+    await tellStudent(u, c ? `${t.paidSubject} · ${t.statusMail.PAID[0]}` : t.paidSubject, [t.paidBody.replace("{amount}", money(p.amount)), p.description, on], { label: t.openAccount, url: `${site}/${u.locale}/account` }, { greet: false });
   }
   await sendMail(st.adminEmail, `Վճարում՝ ${money(p.amount)}`, emailHtml("Ստացվել է վճարում", [`${u?.name ?? ""} · ${u?.email ?? ""}`, p.description, `Եղանակ՝ ${p.method}`], { label: "Ադմին", url: `${site}/admin/payments` }));
   await notifyAdminWhatsApp(`Նոր վճարում՝ ${money(p.amount)} · ${u?.name ?? ""} · ${p.description} · ${tr(st.site.name, "hy")}`);
@@ -69,5 +78,5 @@ async function notifyStudent(p: typeof s.payments.$inferSelect, kind: "failed" |
   const subject = kind === "failed" ? t.failedSubject : t.refundSubject;
   const body = (kind === "failed" ? t.failedBody : t.refundBody).replace("{amount}", money(p.amount, u.locale as "hy" | "ru" | "en"));
   const site = process.env.NEXT_PUBLIC_SITE_URL || "";
-  await sendMail(u.email, subject, emailHtml(subject, [`${u.name},`, body, p.description], { label: t.openAccount, url: `${site}/${u.locale}/account#payments` })).catch(() => {});
+  await tellStudent(u, subject, [body, p.description], { label: t.openAccount, url: `${site}/${u.locale}/account#payments` });
 }

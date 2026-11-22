@@ -149,6 +149,9 @@ export default async function Home({ params }: { params: Promise<{ locale: Local
             </li>
           ))}
         </ol>
+        <div className="mt-9 flex flex-wrap gap-3">
+          <Link href={`/${locale}/courses`} className="btn-navy min-h-12">{t.home.chooseCourse}</Link>
+        </div>
       </section>
 
       {/* INSTRUCTOR */}

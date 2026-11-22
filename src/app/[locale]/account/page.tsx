@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ValueButton } from "@/components/ValueButton";
 import { LiveRefresh } from "@/components/LiveRefresh";
-import { and, desc, eq, inArray } from "drizzle-orm";
+import { and, desc, eq, inArray, isNull } from "drizzle-orm";
 import { db, s } from "@/db";
 import { requireUser } from "@/lib/auth";
 import { getDict, tr, fmt, type Locale } from "@/lib/i18n";
@@ -14,6 +14,7 @@ import { SubmitButton } from "@/components/SubmitButton";
 import { Icon } from "@/components/Icon";
 import { CertDocs } from "@/components/CertDocs";
 import { confirmCertReceipt } from "./certificate-actions";
+import { idramEnabled } from "@/lib/payments";
 
 import { emailChangeAction, logoutAction, payNextAction, profileAction, reviewAction } from "../actions";
 const dateTime = (d: Date) => new Intl.DateTimeFormat("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit", timeZone: "Asia/Yerevan" }).format(d);
@@ -29,26 +30,41 @@ export default async function Account({ params }: { params: Promise<{ locale: Lo
   const user = await requireUser(locale);
   const apps = await db.query.applications.findMany({ where: eq(s.applications.userId, user.id), orderBy: [desc(s.applications.createdAt)], with: { course: true, group: true } });
   const st = await getSettings();
+  const idramOn = idramEnabled();
   const allPays = await db.select().from(s.payments).where(eq(s.payments.userId, user.id));
   const bills = new Map<string, Billing>(apps.map((a) => [a.id, billing(a, a.course, a.group?.startDate, allPays.filter((p) => p.applicationId === a.id), st.payments)]));
   const pays = await db.select().from(s.payments).where(and(eq(s.payments.userId, user.id), inArray(s.payments.status, ["PAID", "PENDING", "FAILED", "REFUNDED"]))).orderBy(desc(s.payments.createdAt)).limit(50);
   const certs = await db.query.certificates.findMany({ where: eq(s.certificates.userId, user.id), with: { course: true } });
   const myReviews = await db.select().from(s.reviews).where(eq(s.reviews.userId, user.id)).orderBy(desc(s.reviews.createdAt)).limit(5);
+  const notes = await db.select().from(s.notifications).where(eq(s.notifications.userId, user.id)).orderBy(desc(s.notifications.createdAt)).limit(12);
+  const unreadIds = notes.filter((n) => !n.readAt).map((n) => n.id);
+  if (unreadIds.length) await db.update(s.notifications).set({ readAt: new Date() }).where(and(eq(s.notifications.userId, user.id), isNull(s.notifications.readAt)));
   const lessonsTotal = (c: { weeks: number; lessonsPerWeek: number }) => c.weeks * c.lessonsPerWeek;
-  const nav = [["overview", t.account.dashboard, "chart"], ["payments", t.account.payments, "card"], ["documents", t.account.documents, "file"], ["review", t.account.myReview, "star"], ["profile", t.account.profile, "users"], [`/${locale}/account/journal`, t.journal.title, "book"]];
+  // where each application is on the way: application → interview → approval → agreement → payment → training → certificate
+  const stage = (a: (typeof apps)[number]) => {
+    const cert = certs.find((c) => c.courseId === a.courseId && !c.revoked);
+    if (a.status === "REJECTED" || a.status === "CANCELLED") return { done: -1, key: a.status } as const;
+    if (cert) return cert.receivedAt ? { done: 7, key: "DONE" } as const : { done: 6, key: "CERT" } as const;
+    if (a.status === "PAID") return { done: 5, key: "STUDY" } as const;
+    if (a.status === "APPROVED") return a.contractSignedAt ? { done: 4, key: "PAY" } as const : { done: 3, key: "SIGN" } as const;
+    if (a.status === "INTERVIEW") return { done: 1, key: "INTERVIEW" } as const;
+    return { done: 1, key: "NEW" } as const;
+  };
+  const nav = [["overview", t.account.dashboard, "chart"], ["notifications", `${t.account.notifTitle}${unreadIds.length ? ` (${unreadIds.length})` : ""}`, "mail"], ["payments", t.account.payments, "card"], ["documents", t.account.documents, "file"], ["review", t.account.myReview, "star"], ["profile", t.account.profile, "users"], [`/${locale}/account/journal`, t.journal.title, "book"]];
 
   return (
     <div className="container-x flex flex-wrap items-start gap-7 pt-9">
       <LiveRefresh poll={myReviews.some((r) => r.status === "PENDING") || pays.some((p) => p.status === "PENDING" && Date.now() - new Date(p.createdAt).getTime() < 3_600_000)} />
-      <aside className="card w-full p-4 lg:sticky lg:top-24 lg:w-[250px] lg:flex-none">
-        <div className="mb-2.5 flex items-center gap-3 border-b border-[#eee7d8] px-2 pt-2 pb-4">
-          <span className="flex size-11 items-center justify-center rounded-full bg-sand font-bold text-navy-800">{initials(user.name)}</span>
-          <div className="min-w-0"><b className="block truncate text-[15px] text-navy-900">{user.name}</b><span className="block truncate text-[12.5px] text-muted">{user.email}</span></div>
+      <aside className="card w-full p-3 sm:p-4 lg:sticky lg:top-24 lg:w-[250px] lg:flex-none">
+        <div className="mb-2 flex items-center gap-3 border-b border-[#eee7d8] px-1 pt-1 pb-3 lg:mb-2.5 lg:px-2 lg:pt-2 lg:pb-4">
+          <span className="flex size-10 flex-none items-center justify-center rounded-full bg-sand font-bold text-navy-800 lg:size-11">{initials(user.name)}</span>
+          <div className="min-w-0 flex-1"><b className="block truncate text-[15px] text-navy-900">{user.name}</b><span className="block truncate text-[12.5px] text-muted">{user.email}</span></div>
+          <form action={logoutAction} className="lg:hidden"><input type="hidden" name="locale" value={locale} /><button aria-label={t.nav.logout} className="flex size-10 items-center justify-center rounded-full text-[#8a5a2b] hover:bg-ivory"><Icon name="logout" size={18} /></button></form>
         </div>
-        <nav aria-label={t.nav.account} className="grid grid-cols-2 gap-1 sm:grid-cols-3 lg:flex lg:flex-col">
-          {nav.map(([id, label, icon]) => <a key={id} href={id.startsWith("/") ? id : `#${id}`} className="flex min-h-11 min-w-0 items-center gap-2 rounded-xl px-2 text-[13.5px] text-[#3d4757] sm:gap-2.5 sm:px-3 sm:text-[14px] no-underline hover:bg-ivory lg:px-3.5 lg:text-[14.5px]"><Icon name={icon} size={18} className="flex-none" /><span className="min-w-0 leading-tight break-words">{label}</span></a>)}
+        <nav aria-label={t.nav.account} className="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1 [scrollbar-width:none] lg:mx-0 lg:flex-col lg:gap-1 lg:overflow-visible lg:px-0 lg:pb-0">
+          {nav.map(([id, label, icon]) => <a key={id} href={id.startsWith("/") ? id : `#${id}`} className="flex min-h-10 flex-none items-center gap-2 rounded-full border border-[#e6dfcf] px-3.5 text-[13.5px] whitespace-nowrap text-[#3d4757] no-underline hover:bg-ivory lg:min-h-11 lg:rounded-xl lg:border-0 lg:px-3.5 lg:text-[14.5px] lg:whitespace-normal"><Icon name={icon} size={17} className="flex-none" /><span>{label}</span></a>)}
         </nav>
-        <form action={logoutAction} className="mt-2 border-t border-[#eee7d8] pt-2"><input type="hidden" name="locale" value={locale} /><button className="flex min-h-11 w-full items-center gap-3 rounded-xl px-3.5 text-[14px] text-[#8a5a2b] hover:bg-ivory"><Icon name="logout" size={18} />{t.nav.logout}</button></form>
+        <form action={logoutAction} className="mt-2 hidden border-t border-[#eee7d8] pt-2 lg:block"><input type="hidden" name="locale" value={locale} /><button className="flex min-h-11 w-full items-center gap-3 rounded-xl px-3.5 text-[14px] text-[#8a5a2b] hover:bg-ivory"><Icon name="logout" size={18} />{t.nav.logout}</button></form>
       </aside>
 
       <div className="flex min-w-0 flex-[999_1_600px] flex-col gap-6">
@@ -71,7 +87,7 @@ export default async function Account({ params }: { params: Promise<{ locale: Lo
                     <form action={payNextAction} className="flex flex-wrap gap-2">
                       <input type="hidden" name="locale" value={locale} /><input type="hidden" name="applicationId" value={a.id} />
                       <ValueButton name="method" value="card" className="btn-navy min-h-11">{t.account.payNow}</ValueButton>
-                      <ValueButton name="method" value="idram" className="btn-soft min-h-11">Idram</ValueButton>
+                      {idramOn && <ValueButton name="method" value="idram" className="btn-soft min-h-11">Idram</ValueButton>}
                     </form>
                   </div>
                 );
@@ -86,6 +102,48 @@ export default async function Account({ params }: { params: Promise<{ locale: Lo
             const individual = a.format === "individual";
             return (
               <div key={a.id} className="mt-5 grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(min(280px,100%),1fr))]">
+                {(() => {
+                  const g = stage(a);
+                  const stopped = g.done < 0;
+                  const steps = t.account.steps;
+                  const cur = Math.min(g.done, steps.length - 1);
+                  return (
+                    <div className={`card col-span-full p-5 sm:p-6 ${stopped ? "border-[#ead7d0]" : ""}`}>
+                      <div className="flex flex-wrap items-baseline justify-between gap-2">
+                        <p className="eyebrow m-0">{t.account.stepsTitle} · {a.course.code}</p>
+                        {!stopped && <span className="text-[13px] font-semibold text-muted">{Math.min(g.done + (g.done < 7 ? 1 : 0), 7)} / 7 · {steps[cur]}</span>}
+                      </div>
+                      {!stopped && (
+                        <>
+                          <div className="mt-3 h-1.5 rounded-full bg-[#eee7d8] sm:hidden"><div className="h-1.5 rounded-full bg-gold-500" style={{ width: `${Math.round((g.done / 7) * 100)}%` }} /></div>
+                          <ol className="m-0 mt-4 hidden list-none grid-cols-7 gap-1 p-0 sm:grid" aria-label={t.account.stepsTitle}>
+                            {steps.map((label, i) => {
+                              const done = i < g.done, now = i === g.done;
+                              return (
+                                <li key={label} className="flex min-w-0 flex-col items-center gap-1.5 text-center" aria-current={now ? "step" : undefined}>
+                                  <span className={`flex size-8 items-center justify-center rounded-full text-[13px] font-bold ${done ? "bg-[#1f5f33] text-white" : now ? "bg-gold-500 text-navy-950 ring-4 ring-gold-500/25" : "bg-[#eef0f3] text-[#7b8798]"}`}>{done ? "✓" : i + 1}</span>
+                                  <span className={`text-[12px] leading-tight [overflow-wrap:anywhere] ${now ? "font-semibold text-navy-900" : done ? "text-[#1f5f33]" : "text-muted"}`}>{label}</span>
+                                </li>
+                              );
+                            })}
+                          </ol>
+                        </>
+                      )}
+                      <div className={`mt-4 flex flex-wrap items-center gap-3 rounded-xl p-4 ${stopped ? "bg-[#fbefeb] text-[#7a2a1a]" : g.key === "DONE" ? "bg-[#e3f1e6] text-[#1f5f33]" : "bg-[#fbf7ec] text-[#4a3d1c]"}`}>
+                        <p className="m-0 min-w-0 flex-[1_1_240px] text-[14.5px] leading-snug"><b>{t.account.nextLabel}:</b> {t.account.next[g.key]}</p>
+                        {g.key === "SIGN" && <Link href={`/${locale}/account/contract/${a.id}`} className="btn-navy min-h-11">{t.account.ctaSign}</Link>}
+                        {g.key === "CERT" && <a href="#documents" className="btn-navy min-h-11">{t.account.ctaCert}</a>}
+                        {g.key === "STUDY" && !bills.get(a.id)!.locked && <Link href={`/${locale}/account/lessons/${a.id}`} className="btn-navy min-h-11">{t.account.ctaLessons}</Link>}
+                        {g.key === "PAY" && (
+                          <form action={payNextAction}>
+                            <input type="hidden" name="locale" value={locale} /><input type="hidden" name="applicationId" value={a.id} />
+                            <ValueButton name="method" value="card" className="btn-navy min-h-11">{t.account.ctaPay}</ValueButton>
+                          </form>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })()}
                 <div className={`card p-7 ${active ? "border-navy-900 bg-navy-900 text-white sm:col-span-2" : ""}`}>
                   <div className="flex flex-wrap justify-between gap-3">
                     <div><p className={`m-0 text-[12.5px] tracking-[0.14em] uppercase ${active ? "text-gold-300" : "text-gold-700"}`}>{t.account.currentCourse} · {individual ? t.format.individual : t.format.group}</p><h2 className="mt-1.5 font-serif text-[23px] font-bold">{tr(a.course.title, locale)}</h2></div>
@@ -123,7 +181,7 @@ export default async function Account({ params }: { params: Promise<{ locale: Lo
                         <form action={payNextAction} className="mt-3 flex flex-col gap-2">
                           <input type="hidden" name="locale" value={locale} /><input type="hidden" name="applicationId" value={a.id} />
                           <ValueButton name="method" value="card" className="btn-navy min-h-11">{t.account.payNow} · {t.enroll.card}</ValueButton>
-                          <ValueButton name="method" value="idram" className="btn-soft min-h-11">Idram</ValueButton>
+                          {idramOn && <ValueButton name="method" value="idram" className="btn-soft min-h-11">Idram</ValueButton>}
                         </form>
                       </>
                     ) : <p className="m-0 flex items-center gap-2 font-semibold text-[#1f5f33]"><Icon name="check" size={18} strokeWidth={2.6} />{t.billing.done}</p>}
@@ -144,6 +202,24 @@ export default async function Account({ params }: { params: Promise<{ locale: Lo
             );
           })}
             </>
+          )}
+        </section>
+
+        <section id="notifications" className="card p-5 sm:p-7">
+          <h2 className="mb-3 text-[18px] font-semibold text-navy-900">{t.account.notifTitle}</h2>
+          {notes.length === 0 ? <p className="m-0 text-[14px] text-muted">{t.account.notifEmpty}</p> : (
+            <ul className="m-0 flex list-none flex-col p-0">
+              {notes.map((n) => (
+                <li key={n.id} className={`border-t border-[#eee7d8] py-3.5 first:border-t-0 first:pt-0 ${n.readAt ? "" : ""}`}>
+                  <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+                    <b className="text-[15px] text-navy-900">{!n.readAt && <span className="mr-2 inline-block rounded-full bg-[#c2412d] px-2 py-0.5 align-middle text-[11px] font-bold text-white uppercase">{t.account.notifNew}</span>}{n.title}</b>
+                    <span className="text-[12.5px] whitespace-nowrap text-muted">{dateTime(n.createdAt)}</span>
+                  </div>
+                  <p className="mt-1 mb-0 text-[14px] leading-relaxed whitespace-pre-line text-[#3d4757] [overflow-wrap:anywhere]">{n.body}</p>
+                  {n.url && <a href={n.url.replace(/^https?:\/\/[^/]+/, "")} className="mt-1.5 inline-block text-[13.5px] font-semibold">{t.account.view} →</a>}
+                </li>
+              ))}
+            </ul>
           )}
         </section>
 

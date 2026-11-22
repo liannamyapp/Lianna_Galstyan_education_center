@@ -18,6 +18,8 @@ import { hyToLatin } from "@/lib/translit";
 import { siteUrl } from "@/lib/seo";
 import type { ActionResult } from "@/components/ActionForm";
 import { syncLeadForUser } from "@/lib/crm/automations";
+import { notifyStudent } from "@/lib/notify";
+import { date } from "@/lib/format";
 import { logOutbound } from "@/lib/crm/leads";
 
 const ok = (message = "Պահպանված է"): ActionResult => ({ ok: true, message });
@@ -147,16 +149,35 @@ export async function updateApplication(_: ActionResult, fd: FormData): Promise<
       months: num(fd, "months") || app.months,
       meetingUrl: str(fd, "meetingUrl") || null,
     }).where(eq(s.applications.id, id));
-    if (status !== app.status && bool(fd, "notify")) {
-      const t = getDict(app.user.locale);
+    // the learner hears about every change: status, group, start date and lesson link — combined into one message
+    let told = false;
+    if (bool(fd, "notify")) {
+      const loc = app.user.locale as Locale;
+      const t = getDict(loc);
+      const course = `${app.course.code} · ${tr(app.course.title, loc)}`;
+      const parts: { subject: string; line: string }[] = [];
+      if (status !== app.status) {
+        const [subject, body] = t.mail.statusMail[status];
+        parts.push({ subject, line: fmt(body, { course }) });
+      }
+      const groupId = str(fd, "groupId") || null;
+      if (groupId && groupId !== app.groupId) {
+        const g = await db.query.groups.findFirst({ where: eq(s.groups.id, groupId) });
+        if (g) parts.push({ subject: t.mail.groupSubject, line: fmt(t.mail.groupBody, { course, group: g.name, date: date(g.startDate, loc), schedule: tr(g.schedule, loc) }) });
+      }
+      const start = str(fd, "startDate") ? new Date(str(fd, "startDate")) : null;
+      if (start && (!app.startDate || app.startDate.getTime() !== start.getTime())) parts.push({ subject: t.mail.startSubject, line: fmt(t.mail.startBody, { course, date: date(start, loc) }) });
+      const link = str(fd, "meetingUrl") || null;
+      if (link && link !== app.meetingUrl) parts.push({ subject: t.mail.linkSubject, line: fmt(t.mail.linkBody, { course }) });
       const custom = str(fd, "message");
-      await sendMail(app.user.email, t.mail.statusSubject, emailHtml(t.mail.statusSubject, [
-        `${app.user.name},`, fmt(t.mail.statusBody, { course: tr(app.course.title, app.user.locale), status: t.account.status[status] }), ...(custom ? [custom] : []),
-      ], { label: t.mail.openAccount, url: `${siteUrl()}/${app.user.locale}/account` }));
+      if (parts.length || custom) {
+        await notifyStudent(app.user, parts[0]?.subject ?? t.mail.statusSubject, [...parts.map((x) => x.line), ...(custom ? [t.mail.noteLabel, custom] : [])], { label: t.mail.openAccount, url: `${siteUrl()}/${loc}/account` });
+        told = true;
+      }
     }
     if (status !== app.status) await syncLeadForUser(app.userId); // CRM stage follows the application
     revalidatePath("/admin/applications");
-    return ok(status !== app.status && bool(fd, "notify") ? "Պահպանված է, նամակն ուղարկված է" : undefined);
+    return ok(told ? "Պահպանված է, ունկնդիրը ծանուցված է" : undefined);
   } catch (e) { return fail(e); }
 }
 
@@ -226,7 +247,7 @@ export async function moderateReview(fd: FormData) {
     }).where(eq(s.reviews.id, id));
     if (!forceAuto && status === "APPROVED" && r.status !== "APPROVED") {
       const t = getDict(r.user.locale);
-      await sendMail(r.user.email, t.mail.reviewSubject, emailHtml(t.mail.reviewSubject, [`${r.user.name},`, t.mail.reviewBody], { label: tr({ hy: "Կայք", ru: "Сайт", en: "Website" }, r.user.locale), url: `${siteUrl()}/${r.user.locale}#reviews` }));
+      await notifyStudent(r.user, t.mail.reviewSubject, [t.mail.reviewBody], { label: tr({ hy: "Կայք", ru: "Сайт", en: "Website" }, r.user.locale), url: `${siteUrl()}/${r.user.locale}#reviews` });
     }
   }
   refresh("reviews");
@@ -290,11 +311,11 @@ export async function issueCertificate(_: ActionResult, fd: FormData): Promise<A
       }
     }
     if (userId) {
-      const [u] = await db.select({ email: s.users.email, name: s.users.name, locale: s.users.locale }).from(s.users).where(eq(s.users.id, userId)).limit(1);
+      const [u] = await db.select({ id: s.users.id, email: s.users.email, name: s.users.name, locale: s.users.locale }).from(s.users).where(eq(s.users.id, userId)).limit(1);
       if (u?.email) {
         const loc = (["hy", "ru", "en"].includes(u.locale) ? u.locale : "hy") as Locale;
         const T = getDict(loc).account;
-        await sendMail(u.email, T.certMailSubject, emailHtml(T.certMailSubject, [`${u.name},`, fmt(T.certMailBody, { no: number, course: `${course.code} · ${tr(course.title, loc)}` })], { label: T.certMailCta, url: `${siteUrl()}/${loc}/account#documents` }));
+        await notifyStudent(u, T.certMailSubject, [fmt(T.certMailBody, { no: number, course: `${course.code} · ${tr(course.title, loc)}` })], { label: T.certMailCta, url: `${siteUrl()}/${loc}/account#documents` });
       }
     }
     revalidatePath("/admin/certificates");
@@ -530,7 +551,7 @@ export async function saveLesson(_: ActionResult, fd: FormData): Promise<ActionR
         const l = a.user.locale;
         const t = getDict(l);
         const vars = { title: tr(data.title, l), course: tr(a.course.title, l) };
-        await sendMail(a.user.email, fmt(t.mailx.lessonSubject, vars), emailHtml(fmt(t.mailx.lessonSubject, vars), [`${a.user.name},`, fmt(t.mailx.lessonBody, vars)], { label: t.mailx.lessonBtn, url: `${siteUrl()}/${l}/account/lessons/${a.id}` }));
+        await notifyStudent(a.user, fmt(t.mailx.lessonSubject, vars), [fmt(t.mailx.lessonBody, vars)], { label: t.mailx.lessonBtn, url: `${siteUrl()}/${l}/account/lessons/${a.id}` });
         sent++;
       }
     }
