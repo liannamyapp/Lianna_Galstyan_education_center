@@ -540,7 +540,9 @@
     "learner": "Learner",
     "born": "born {date}",
     "clientGuardian": "{relation}, acting for the learner",
-    "adultOk": "The learner is an adult and signs the agreement themselves."
+    "adultOk": "The learner is an adult and signs the agreement themselves.",
+    "waitingLearner": "The learner has not signed the agreement yet. They can sign it in their account; you can send a reminder from Applications.",
+    "noOnSign": "assigned on signing"
   },
   "journal": {
     "title": "Electronic journal",

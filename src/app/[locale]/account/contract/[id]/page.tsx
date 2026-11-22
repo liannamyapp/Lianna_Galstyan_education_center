@@ -48,7 +48,7 @@ export default async function ContractView({ params, searchParams }: {
   } else {
     const tpl = await contractTemplate();
     markdown = fillContract(tpl[locale], contractValues(app, app.course, app.group?.startDate, locale), locale);
-    no = app.contractNo ?? "—";
+    no = app.contractNo ?? t.noOnSign;
     dateText = esc(date(new Date(), locale));
     client = { name: esc(app.user.name), lines: [esc([app.user.email, app.user.phone].filter(Boolean).join(" · "))] };
   }
@@ -73,7 +73,11 @@ export default async function ContractView({ params, searchParams }: {
         signed={snap ? { at: snap.signedAt, name: snap.signedName } : null}
       />
 
-      {!snap && !admin && (
+      {!snap && app.userId !== user.id && (
+        <p className="mt-6 rounded-2xl border border-[#e3d3a8] bg-[#fbf7ec] px-5 py-4 text-[14.5px] text-[#5b4a22] print:hidden">{t.waitingLearner}</p>
+      )}
+      {/* the learner signs here — also when the learner's account is an admin account (e.g. the owner testing the flow) */}
+      {!snap && app.userId === user.id && (
         <SignForm locale={locale} appId={app.id} method={payNext ? method : ""} learnerName={app.user.name} birthDate={app.user.birthDate ?? ""} t={t} />
       )}
     </article>
