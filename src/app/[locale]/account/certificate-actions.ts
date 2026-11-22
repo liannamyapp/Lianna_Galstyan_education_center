@@ -1,5 +1,7 @@
 "use server";
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
+import { prewarmCertificate } from "@/lib/cert-pdf";
 import { headers } from "next/headers";
 import { and, eq, isNull } from "drizzle-orm";
 import { db, s } from "@/db";
@@ -33,5 +35,6 @@ export async function confirmCertReceipt(_: ActionResult, fd: FormData): Promise
     .where(and(eq(s.certificates.id, id), isNull(s.certificates.receivedAt)));
   revalidatePath(`/${l}/account`);
   revalidatePath("/admin/certificates");
+  after(() => prewarmCertificate(id, l)); // the PDFs are ready by the time the holder taps "Download"
   return { ok: true };
 }

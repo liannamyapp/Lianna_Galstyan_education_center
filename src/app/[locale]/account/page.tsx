@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ValueButton } from "@/components/ValueButton";
 import { LiveRefresh } from "@/components/LiveRefresh";
-import { and, desc, eq, inArray, isNull } from "drizzle-orm";
+import { and, desc, eq, isNull } from "drizzle-orm";
 import { db, s } from "@/db";
 import { requireUser } from "@/lib/auth";
 import { getDict, tr, fmt, type Locale } from "@/lib/i18n";
@@ -28,15 +28,18 @@ export default async function Account({ params }: { params: Promise<{ locale: Lo
   const { locale } = await params;
   const t = getDict(locale);
   const user = await requireUser(locale);
-  const apps = await db.query.applications.findMany({ where: eq(s.applications.userId, user.id), orderBy: [desc(s.applications.createdAt)], with: { course: true, group: true } });
-  const st = await getSettings();
+  // independent reads run in parallel (one round trip instead of seven)
+  const [apps, st, allPays, certs, myReviews, notes] = await Promise.all([
+    db.query.applications.findMany({ where: eq(s.applications.userId, user.id), orderBy: [desc(s.applications.createdAt)], with: { course: true, group: true } }),
+    getSettings(),
+    db.select().from(s.payments).where(eq(s.payments.userId, user.id)).orderBy(desc(s.payments.createdAt)),
+    db.query.certificates.findMany({ where: eq(s.certificates.userId, user.id), with: { course: true } }),
+    db.select().from(s.reviews).where(eq(s.reviews.userId, user.id)).orderBy(desc(s.reviews.createdAt)).limit(5),
+    db.select().from(s.notifications).where(eq(s.notifications.userId, user.id)).orderBy(desc(s.notifications.createdAt)).limit(12),
+  ]);
   const idramOn = idramEnabled();
-  const allPays = await db.select().from(s.payments).where(eq(s.payments.userId, user.id));
   const bills = new Map<string, Billing>(apps.map((a) => [a.id, billing(a, a.course, a.group?.startDate, allPays.filter((p) => p.applicationId === a.id), st.payments)]));
-  const pays = await db.select().from(s.payments).where(and(eq(s.payments.userId, user.id), inArray(s.payments.status, ["PAID", "PENDING", "FAILED", "REFUNDED"]))).orderBy(desc(s.payments.createdAt)).limit(50);
-  const certs = await db.query.certificates.findMany({ where: eq(s.certificates.userId, user.id), with: { course: true } });
-  const myReviews = await db.select().from(s.reviews).where(eq(s.reviews.userId, user.id)).orderBy(desc(s.reviews.createdAt)).limit(5);
-  const notes = await db.select().from(s.notifications).where(eq(s.notifications.userId, user.id)).orderBy(desc(s.notifications.createdAt)).limit(12);
+  const pays = allPays.filter((p) => ["PAID", "PENDING", "FAILED", "REFUNDED"].includes(p.status)).slice(0, 50);
   const unreadIds = notes.filter((n) => !n.readAt).map((n) => n.id);
   if (unreadIds.length) await db.update(s.notifications).set({ readAt: new Date() }).where(and(eq(s.notifications.userId, user.id), isNull(s.notifications.readAt)));
   const lessonsTotal = (c: { weeks: number; lessonsPerWeek: number }) => c.weeks * c.lessonsPerWeek;

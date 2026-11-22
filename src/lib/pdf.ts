@@ -85,21 +85,49 @@ async function renderOnce(html: string, origin: string): Promise<Uint8Array> {
   }
 }
 
-export async function htmlToPdf(html: string, origin: string): Promise<Uint8Array> {
-  const key = createHash("sha1").update(origin).update(html).digest("hex");
+/**
+ * Finished PDFs are kept privately in the database (key = hash of everything printed), so the slow Chromium
+ * rendering happens once per document version; later downloads are a quick read. Only the newest 200 are kept.
+ */
+async function fromStore(key: string): Promise<Uint8Array | null> {
+  try {
+    const { db, s } = await import("@/db");
+    const { eq } = await import("drizzle-orm");
+    const [row] = await db.select({ data: s.pdfCache.data }).from(s.pdfCache).where(eq(s.pdfCache.key, key)).limit(1);
+    return row ? new Uint8Array(row.data) : null;
+  } catch { return null; }
+}
+async function toStore(key: string, pdf: Uint8Array) {
+  try {
+    const { db, s } = await import("@/db");
+    const { sql } = await import("drizzle-orm");
+    await db.insert(s.pdfCache).values({ key, data: Buffer.from(pdf) }).onConflictDoNothing();
+    await db.execute(sql`delete from pdf_cache where key in (select key from pdf_cache order by created_at desc offset 200)`);
+  } catch (e) { console.error("[pdf] cache write", (e as Error).message); }
+}
+
+/** `cacheKey` identifies the printed content when the page also has view-only parts (toolbar, back link). */
+export async function htmlToPdf(html: string, origin: string, cacheKey?: string): Promise<Uint8Array> {
+  const key = createHash("sha256").update(origin).update(cacheKey ?? html).digest("hex").slice(0, 48);
   const hit = done.get(key);
-  if (hit && Date.now() - hit.at < 120_000) return hit.pdf;
+  if (hit && Date.now() - hit.at < 600_000) return hit.pdf;
   let p = inflight.get(key);
   if (!p) {
     p = (async () => {
+      const stored = await fromStore(key);
+      if (stored) return stored;
       try {
-        return await render(html, origin);
+        const pdf = await render(html, origin);
+        await toStore(key, pdf);
+        return pdf;
       } catch (e) {
         // the shared browser may have crashed: start a fresh one and try once more
         const b = await browserPromise?.catch(() => null);
         browserPromise = null;
         await b?.close().catch(() => {});
-        return await render(html, origin);
+        const pdf = await render(html, origin);
+        await toStore(key, pdf);
+        return pdf;
       }
     })();
     inflight.set(key, p);

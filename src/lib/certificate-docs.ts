@@ -125,7 +125,7 @@ function certificateHy(d: CertData) {
 <p>(որակիչ՝ <b>${esc(c.code)}</b>) լրացուցիչ (ոչ ֆորմալ) կրթական մոդուլային ծրագիրը՝<br><b>${c.hours} ակադեմիական ժամ</b> ծավալով (տեսական՝ ${c.theoryHours}, գործնական՝ ${c.practiceHours}),<br>և ձեռք է բերել ներդիրում նշված ուսումնառության արդյունքները։</p>
 <p class="meta">Ծրագիրը երաշխավորված է ՀՀ կրթության, գիտության, մշակույթի և սպորտի<br>նախարարի ${end ? hyDate(end) : "«……» …………… 20…… թ."} № ${c.endorsementNo ? esc(c.endorsementNo) : "………"} հրամանով։</p>
 <p class="meta">Գրանցման համար՝ <span class="v">${esc(d.number)}</span><br>Տրման ամսաթիվ՝ <span class="v">${hyDate(d.issuedAt)}</span> · ք. Երևան</p>
-<div class="foot"><div><img class="seal" src="/cert/seal.png" alt="ALTA Academy"></div><div class="sig"><img class="sg" src="${SIGNATURE_PNG}" alt="">Դասավանդող, անհատ ձեռնարկատեր<br><b>Լ. Ա. Գալստյան</b></div></div>
+<div class="foot"><div><img class="seal" src="/cert/seal.webp" alt="ALTA Academy"></div><div class="sig"><img class="sg" src="${SIGNATURE_PNG}" alt="">Դասավանդող, անհատ ձեռնարկատեր<br><b>Լ. Ա. Գալստյան</b></div></div>
 <div class="note">Վկայականն առանց ներդիրի անվավեր է։</div></div></section>`;
 }
 
@@ -141,7 +141,7 @@ function certificateEn(d: CertData) {
 <p>(code <b>${esc(c.code)}</b>) supplementary (non-formal) modular education program<br>of <b>${c.hours} academic hours</b> (theory ${c.theoryHours}, practice ${c.practiceHours}),<br>and has achieved the learning outcomes listed in the supplement.</p>
 <p class="meta">The program is endorsed by Order No. ${c.endorsementNo ? esc(c.endorsementNo) : "………"} of ${end ? enDate(end) : "…………………… 20……"}<br>of the Minister of Education, Science, Culture and Sport of the Republic of Armenia.</p>
 <p class="meta">Registration No. <span class="v">${esc(d.number)}</span><br>Date of issue: <span class="v">${enDate(d.issuedAt)}</span> · Yerevan</p>
-<div class="foot"><div><img class="seal" src="/cert/seal.png" alt="ALTA Academy"></div><div class="sig"><img class="sg" src="${SIGNATURE_PNG}" alt="">Instructor, Individual Entrepreneur<br><b>L. A. Galstyan</b></div></div>
+<div class="foot"><div><img class="seal" src="/cert/seal.webp" alt="ALTA Academy"></div><div class="sig"><img class="sg" src="${SIGNATURE_PNG}" alt="">Instructor, Individual Entrepreneur<br><b>L. A. Galstyan</b></div></div>
 <div class="note">This certificate is not valid without the supplement.</div></div></section>`;
 }
 

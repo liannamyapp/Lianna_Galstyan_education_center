@@ -1,5 +1,5 @@
 import {
-  pgTable, text, integer, real, boolean, timestamp, jsonb, pgEnum, serial, index, uniqueIndex,
+  pgTable, text, integer, real, boolean, timestamp, jsonb, pgEnum, serial, index, uniqueIndex, customType,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
@@ -165,6 +165,14 @@ export const notifications = pgTable("notifications", {
   readAt: timestamp("read_at", { withTimezone: true }),
   createdAt: created(),
 }, (t) => [index("notifications_user_idx").on(t.userId)]);
+
+const bytea = customType<{ data: Buffer }>({ dataType: () => "bytea" });
+/** Rendered PDFs (certificates, registers), kept privately in the database so Chromium renders each version once. */
+export const pdfCache = pgTable("pdf_cache", {
+  key: text("key").primaryKey(),
+  data: bytea("data").notNull(),
+  createdAt: created(),
+});
 
 export const lessons = pgTable("lessons", {
   id: id(),

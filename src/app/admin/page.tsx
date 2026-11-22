@@ -17,22 +17,24 @@ export default async function Dashboard() {
     db.select({ n: sql<number>`count(*)::int` }).from(s.applications).where(eq(s.applications.status, "PAID")),
     db.select({ n: sql<number>`count(*)::int` }).from(s.messages).where(eq(s.messages.handled, false)),
   ]);
-  const cfg = (await getSettings()).payments;
-  const activeApps = await db.query.applications.findMany({ where: eq(s.applications.status, "PAID"), with: { user: true, course: true, group: true, payments: true } });
+  const [settings, live, certRows, recent, [chats], [unanswered]] = await Promise.all([
+    getSettings(),
+    db.query.applications.findMany({ where: notInArray(s.applications.status, ["REJECTED", "CANCELLED"]), orderBy: [desc(s.applications.createdAt)], with: { user: true, course: true, group: true, payments: true } }),
+    db.select({ userId: s.certificates.userId, courseId: s.certificates.courseId, revoked: s.certificates.revoked, receivedAt: s.certificates.receivedAt }).from(s.certificates),
+    db.query.applications.findMany({ orderBy: [desc(s.applications.createdAt)], limit: 8, with: { user: true, course: true } }),
+    db.select({ n: sql<number>`count(*)::int` }).from(s.chatThreads).where(and(eq(s.chatThreads.status, "open"), gt(s.chatThreads.adminUnread, 0))),
+    db.select({ n: sql<number>`count(*)::int` }).from(s.messages).where(eq(s.messages.handled, false)),
+  ]);
+  const cfg = settings.payments;
+  const activeApps = live.filter((a) => a.status === "PAID");
   const dues = activeApps.map((a) => ({ a, b: billing(a, a.course, a.group?.startDate, a.payments, cfg) }))
     .filter(({ b }) => b.next && b.daysLeft !== null && b.daysLeft <= 14)
     .sort((x, y) => (x.b.daysLeft ?? 0) - (y.b.daysLeft ?? 0));
   const expected = dues.filter(({ b }) => (b.daysLeft ?? 0) >= 0).reduce((n, { b }) => n + (b.next?.amount ?? 0), 0);
   // what needs the admin right now, in the order of the learner's journey
-  const live = await db.query.applications.findMany({ where: notInArray(s.applications.status, ["REJECTED", "CANCELLED"]), orderBy: [desc(s.applications.createdAt)], with: { user: true, course: true, group: true } });
-  const certRows = await db.select({ userId: s.certificates.userId, courseId: s.certificates.courseId, revoked: s.certificates.revoked, receivedAt: s.certificates.receivedAt }).from(s.certificates);
   const staged = live.map((a) => ({ a, g: flowStage(a, certRows.find((c) => c.userId === a.userId && c.courseId === a.courseId && !c.revoked)) }));
   const by = (k: FlowKey) => staged.filter((x) => x.g.key === k).map((x) => x.a);
   const overdue = dues.filter(({ b }) => (b.daysLeft ?? 0) < 0).map(({ a }) => a);
-  const [[chats], [unanswered]] = await Promise.all([
-    db.select({ n: sql<number>`count(*)::int` }).from(s.chatThreads).where(and(eq(s.chatThreads.status, "open"), gt(s.chatThreads.adminUnread, 0))),
-    db.select({ n: sql<number>`count(*)::int` }).from(s.messages).where(eq(s.messages.handled, false)),
-  ]);
   type Todo = { title: string; hint: string; apps?: typeof live; n: number; href: string; cta: string };
   const todos: Todo[] = [
     { title: "Նոր հայտեր", hint: "Կապվեք և հրավիրեք մուտքային զրույցի", apps: by("NEW"), n: by("NEW").length, href: "/admin/applications?status=NEW", cta: "Հրավիրել" },
@@ -49,7 +51,6 @@ export default async function Dashboard() {
     { title: "Կնքել են, սպասում ենք վճարմանը", n: by("PAY").length },
     { title: "Վկայականի ստացումը չեն հաստատել", n: by("RECEIPT").length },
   ].filter((x) => x.n > 0);
-  const recent = await db.query.applications.findMany({ orderBy: [desc(s.applications.createdAt)], limit: 8, with: { user: true, course: true } });
   const kpi = [
     ["Նոր հայտեր", apps.n, "/admin/applications?status=NEW"], ["Կարծիքներ՝ սպասող", pend.n, "/admin/reviews"],
     ["Վճարումներ այս ամիս", money(paid.n), "/admin/payments"], ["Ակտիվ ունկնդիրներ", active.n, "/admin/applications?status=PAID"], ["Չպատասխանված նամակներ", msgs.n, "/admin/messages"],

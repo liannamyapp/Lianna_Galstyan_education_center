@@ -1,7 +1,8 @@
-import { asc, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { db, s } from "@/db";
 import { getCurrentUser } from "@/lib/auth";
-import { certificatePage, type CertDocKind } from "@/lib/certificate-docs";
+import type { CertDocKind } from "@/lib/certificate-docs";
+import { certificateDoc } from "@/lib/cert-pdf";
 import { hyToLatin } from "@/lib/translit";
 import { htmlToPdf, pdfHeaders, pdfFailedPage } from "@/lib/pdf";
 
@@ -18,19 +19,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ locale: 
   if (!cert || (user.role !== "ADMIN" && cert.userId !== user.id)) return new Response("Not found", { status: 404 });
   // the holder opens the documents only after acknowledging receipt in their account (admins always can)
   if (user.role !== "ADMIN" && !cert.receivedAt) return Response.redirect(new URL(`/${locale}/account#documents`, req.url), 302);
-  const modules = await db.select().from(s.courseModules).where(eq(s.courseModules.courseId, cert.courseId)).orderBy(asc(s.courseModules.order));
-  const base = `/${locale}/account/certificate/${id}`;
-  const html = certificatePage(
-    {
-      number: cert.number, holderName: cert.holderName, holderNameEn: cert.holderNameEn || hyToLatin(cert.holderName),
-      startDate: cert.startDate, endDate: cert.endDate, issuedAt: cert.issuedAt,
-      projectTopic: cert.projectTopic, projectTopicEn: cert.projectTopicEn, projectUrl: cert.projectUrl, attendance: cert.attendance, revoked: cert.revoked,
-      course: cert.course, modules,
-    },
-    kind,
-    { hy: `${base}/hy`, en: `${base}/en`, insert: `${base}/insert` },
-    user.role === "ADMIN" ? "/admin/certificates" : `/${locale}/account#documents`,
-  );
+  const { html, cacheKey } = await certificateDoc(cert, kind, locale, user.role === "ADMIN");
   if (new URL(req.url).searchParams.has("download")) {
     const url = new URL(req.url);
     const who = (cert.holderNameEn || hyToLatin(cert.holderName)).trim();
@@ -40,7 +29,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ locale: 
     const ua = req.headers.get("user-agent") ?? "";
     const inline = /Instagram|FBAN|FBAV|Telegram|Line\/|; wv\)|GSA\//i.test(ua);
     try {
-      const pdf = await htmlToPdf(html, url.origin);
+      const pdf = await htmlToPdf(html, url.origin, cacheKey);
       return new Response(Buffer.from(pdf), { headers: pdfHeaders(name, inline) });
     } catch (e) {
       console.error("certificate pdf failed", e);

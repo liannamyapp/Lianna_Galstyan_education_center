@@ -137,7 +137,6 @@
     "pay": "Pay {price}",
     "applyOnly": "Send application without paying",
     "order": "Order",
-    "firstMonth": "First month",
     "today": "Due today",
     "trialNote": "The first lesson is a trial: if the course isn't right for you, you get a refund under the contract.",
     "receiptNote": "You'll receive an invoice by e-mail after payment.",
@@ -195,7 +194,6 @@
   "account": {
     "welcome": "Hello, {name}",
     "dashboard": "Overview",
-    "myCourses": "My courses",
     "payments": "Payments",
     "documents": "Documents",
     "myReview": "My review",
@@ -275,7 +273,6 @@
     "receiptText": "I confirm that I have received certificate No. {no} and its supplement.",
     "receiptName": "Your first and last name",
     "receiptHint": "The name you type and the time of confirmation are kept as an electronic acknowledgement of receipt in the certificate register.",
-    "receiptAgree": "I confirm receipt",
     "receiptBtn": "Confirm and open the certificate",
     "receiptDone": "Receipt confirmed: {date}",
     "receiptErr": "Type your first and last name as they appear on the certificate.",
@@ -349,7 +346,6 @@
     "privacy": "Privacy policy",
     "payment": "Payment",
     "contacts": "Contact",
-    "rights": "All rights reserved",
     "tin": "TIN",
     "legal": "Legal details",
     "address": "Address"
@@ -371,7 +367,6 @@
     "appSubject": "Application received",
     "appBody": "We have received your application for “{course}”. We'll contact you to arrange an intro call.",
     "statusSubject": "Application status updated",
-    "statusBody": "New status of your application for “{course}”: {status}.",
     "paidSubject": "Payment received",
     "paidBody": "We have received your payment of {amount}. Thank you!",
     "reviewSubject": "Your review is live",
@@ -545,7 +540,6 @@
     "learner": "Learner",
     "born": "born {date}",
     "clientGuardian": "{relation}, acting for the learner",
-    "minorBadge": "Minor learner",
     "adultOk": "The learner is an adult and signs the agreement themselves."
   },
   "journal": {
