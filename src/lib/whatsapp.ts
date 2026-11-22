@@ -28,3 +28,20 @@ export async function sendWhatsApp(phone: string | null | undefined, text: strin
 export async function notifyAdminWhatsApp(text: string) {
   await sendWhatsApp(process.env.GREEN_API_ADMIN_PHONE, text);
 }
+
+/** Which WhatsApp number is linked to the GREEN-API instance, and whether it is authorized. Never throws. */
+export async function greenApiAccount(): Promise<{ phone: string | null; state: string } | null> {
+  const { id, token } = cfg();
+  if (!id || !token) return null;
+  const base = `${greenApiUrl()}/waInstance${id}`;
+  try {
+    const [st, set] = await Promise.all([
+      fetch(`${base}/getStateInstance/${token}`, { signal: AbortSignal.timeout(6000), cache: "no-store" }).then((r) => r.json()) as Promise<{ stateInstance?: string }>,
+      fetch(`${base}/getSettings/${token}`, { signal: AbortSignal.timeout(6000), cache: "no-store" }).then((r) => r.json()) as Promise<{ wid?: string }>,
+    ]);
+    const digits = (set.wid || "").replace(/@.*$/, "").replace(/\D/g, "");
+    return { phone: digits || null, state: st.stateInstance || "unknown" };
+  } catch {
+    return { phone: null, state: "unreachable" };
+  }
+}

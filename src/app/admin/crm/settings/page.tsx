@@ -6,6 +6,8 @@ import { channelStatus, telegramStartLink } from "@/lib/crm/channels";
 import { siteUrl } from "@/lib/seo";
 import { connectWebhooks, importFromSite, runAutomationsNow, saveCrm } from "../actions";
 import { crmSecret, getCrmState } from "@/lib/crm/setup";
+import { greenApiAccount } from "@/lib/whatsapp";
+import { getSettings } from "@/lib/settings";
 
 const Status = ({ on }: { on: boolean }) => <span className={`chip font-semibold ${on ? "bg-[#e3f1e6] text-[#1f5f33]" : "bg-[#eef0f3] text-[#4b5563]"}`}>{on ? "Միացված է" : "Միացված չէ"}</span>;
 const Code = ({ children }: { children: React.ReactNode }) => <code className="rounded bg-sand px-1.5 py-0.5 font-mono text-[12.5px] break-all">{children}</code>;
@@ -14,6 +16,9 @@ export default async function CrmSettings() {
   const cfg = await getCrmSettings();
   const state = await getCrmState();
   const on = channelStatus();
+  const [wa, siteSt] = await Promise.all([greenApiAccount(), getSettings()]);
+  const want = (siteSt.contacts.whatsapp || "").replace(/\D/g, "");
+  const fmt = (d: string) => d.length === 11 && d.startsWith("374") ? `+374 ${d.slice(3, 5)} ${d.slice(5)}` : `+${d}`;
   const site = siteUrl();
   const tg = telegramStartLink("instagram", process.env.TELEGRAM_BOT_USERNAME || state.telegramUsername);
   const env = (k: string) => Boolean(process.env[k]);
@@ -84,6 +89,13 @@ export default async function CrmSettings() {
               {channels.map((c) => (
                 <li key={c.name} className="rounded-xl border border-line p-4 text-[14px]">
                   <div className="mb-2 flex flex-wrap items-center justify-between gap-2"><b className="text-navy-900">{c.name}</b><Status on={c.on} /></div>
+                  {c.name.startsWith("WhatsApp") && wa && (
+                    <p className={`m-0 mb-2 rounded-lg px-3 py-2 text-[13.5px] ${wa.state === "authorized" && wa.phone && (!want || wa.phone === want) ? "bg-[#e3f1e6] text-[#1f5f33]" : "bg-[#fdf1e3] text-[#7a4a12]"}`}>
+                      {wa.state === "authorized" && wa.phone
+                        ? <>CRM-ի WhatsApp-ը աշխատում է <b>{fmt(wa.phone)}</b> համարով{want && wa.phone !== want ? <> — սա կայքի համարը (<b>{fmt(want)}</b>) չէ։ GREEN-API console → Logout, ապա սկանավորեք QR-ը {fmt(want)} համարի WhatsApp-ով։</> : " ✓"}</>
+                        : <>GREEN-API-ին WhatsApp միացված չէ (կարգավիճակ՝ {wa.state})։ Console-ում սկանավորեք QR-ը{want ? <> {fmt(want)} համարի WhatsApp-ով</> : null}։</>}
+                    </p>
+                  )}
                   {c.hook && <p className="m-0 mb-2">Webhook՝ <Code>{c.hook}</Code></p>}
                   <p className="m-0 mb-2 text-[13px] text-[#3d4757]">{c.steps}</p>
                   {c.vars.length > 0 && <p className="m-0 text-[12.5px] text-muted">Vercel → Settings → Environment Variables՝ {c.vars.map((v) => <span key={v} className={`mr-1.5 inline-block ${env(v) ? "text-[#1f5f33]" : ""}`}><Code>{v}</Code>{env(v) ? " ✓" : ""}</span>)}</p>}
