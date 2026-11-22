@@ -43,15 +43,19 @@ export async function Footer({ locale }: { locale: Locale }) {
           <Link href={`/${locale}/p/refund`} className="text-[#b9c4d4] no-underline hover:text-white">{t.footer.refund}</Link>
           <Link href={`/${locale}/p/privacy`} className="text-[#b9c4d4] no-underline hover:text-white">{t.footer.privacy}</Link>
         </div>
-        {(idramEnabled() || ameriaEnabled()) && <div className="flex flex-col gap-3 text-[14px]">
+        {(st.payments.card || idramEnabled() || ameriaEnabled()) && <div className="flex flex-col gap-3 text-[14px]">
           <p className="font-semibold text-white">{t.footer.payment}</p>
-          <div className="flex flex-wrap gap-2">
-            {[...(idramEnabled() ? ["Idram"] : []), ...(ameriaEnabled() ? ["ArCa", "Visa", "Mastercard"] : [])].map((b) => <span key={b} className="rounded-lg border border-[#2c3d57] px-2.5 py-1 text-[13px]">{b}</span>)}
+          <div className="flex flex-wrap gap-2" aria-label="Visa, Mastercard, ArCa">
+            <span className="rounded-md bg-white px-2.5 py-1 font-sans text-[14px] font-extrabold italic tracking-wide text-[#1a1f71]">VISA</span>
+            <span className="rounded-md bg-white px-2.5 py-1 text-[13px] font-bold text-[#222]">Mastercard</span>
+            <span className="rounded-md bg-white px-2.5 py-1 text-[13px] font-bold text-[#0a5c36]">ArCa</span>
+            {idramEnabled() && <span className="rounded-md bg-white px-2.5 py-1 text-[13px] font-bold text-[#e4542b]">Idram</span>}
           </div>
+          <Link href={`/${locale}/p/refund`} className="text-[12.5px] text-[#b9c4d4] hover:text-white">{t.footer.refund}</Link>
         </div>}
       </div>
       <div className="container-x flex flex-wrap justify-between gap-3 border-t border-[#1f3049] pt-6 pb-24 text-[12.5px]">
-        <span>© {new Date().getFullYear()} {tr(st.legal.entity, locale)} · {t.footer.tin} {st.legal.tin}</span>
+        <span>© {new Date().getFullYear()} {tr(st.legal.entity, locale)} · {t.footer.tin} {st.legal.tin} · {tr(st.legal.address, locale)}</span>
         {tr(st.legal.endorsement, locale) && <span>{tr(st.legal.endorsement, locale)}</span>}
       </div>
     </footer>

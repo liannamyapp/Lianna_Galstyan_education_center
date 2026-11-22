@@ -316,12 +316,14 @@
   "footer": {
     "documents": "Documents",
     "contract": "Sample agreement",
-    "refund": "Payment and refund policy",
+    "refund": "Terms of sale, payment and refunds",
     "privacy": "Privacy policy",
     "payment": "Payment",
     "contacts": "Contact",
     "rights": "All rights reserved",
-    "tin": "TIN"
+    "tin": "TIN",
+    "legal": "Legal details",
+    "address": "Address"
   },
   "common": {
     "back": "Back",

@@ -16,7 +16,8 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: L
 export default async function Contact({ params }: { params: Promise<{ locale: Locale }> }) {
   const { locale } = await params;
   const t = getDict(locale);
-  const c = (await getSettings()).contacts;
+  const st = await getSettings();
+  const c = st.contacts;
   const items = [
     c.phone && { icon: "phone", label: c.phone, href: `tel:${c.phone.replace(/\s/g, "")}` },
     c.email && { icon: "mail", label: c.email, href: `mailto:${c.email}` },
@@ -37,6 +38,12 @@ export default async function Contact({ params }: { params: Promise<{ locale: Lo
           ))}
         </ul>
         <p className="mt-5 text-[14px] text-muted">{tr(c.city, locale)}</p>
+        <div className="card mt-5 p-5 text-[14px] leading-relaxed">
+          <p className="m-0 mb-1.5 font-semibold text-navy-900">{t.footer.legal}</p>
+          <p className="m-0">{tr(st.legal.entity, locale)}</p>
+          <p className="m-0">{t.footer.tin}: {st.legal.tin}</p>
+          <p className="m-0">{t.footer.address}: {tr(st.legal.address, locale)}</p>
+        </div>
       </div>
       <ActionForm action={contactAction} successReplace className="card flex min-w-0 flex-[1_1_480px] flex-col gap-4 p-7 sm:p-9">
         <input type="hidden" name="locale" value={locale} />
