@@ -18,8 +18,8 @@ const store = {
   set: (k: string, v: string) => { try { localStorage.setItem(k, v); } catch { /* private mode */ } },
 };
 
-export function ChatWidget({ locale, t, quick }: { locale: string; t: Dict["chat"]; quick: QuickAnswer[] }) {
-  const [open, setOpen] = useState(false);
+export function ChatWidget({ locale, t, quick, startOpen = false }: { locale: string; t: Dict["chat"]; quick: QuickAnswer[]; startOpen?: boolean }) {
+  const [open, setOpen] = useState(startOpen);
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [local, setLocal] = useState<Msg[]>([]);
   const [thread, setThread] = useState<ThreadInfo>(null);

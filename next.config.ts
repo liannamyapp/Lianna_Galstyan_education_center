@@ -16,6 +16,7 @@ const config: NextConfig = {
     formats: ["image/avif", "image/webp"],
     remotePatterns: [{ protocol: "https", hostname: "*.public.blob.vercel-storage.com" }],
   },
+  // critical CSS is inlined into the HTML: no render-blocking stylesheet request on slow mobile networks
   experimental: { serverActions: { bodySizeLimit: "8mb" } },
   // the CRM guide page reads docs/CRM.md at runtime
   outputFileTracingIncludes: {

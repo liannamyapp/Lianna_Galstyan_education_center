@@ -3,8 +3,9 @@ import { getDict, tr, fmt, type Locale } from "@/lib/i18n";
 import { money, date } from "@/lib/format";
 import type { CourseWithMeta } from "@/lib/data";
 
-export function CourseCard({ c, locale }: { c: CourseWithMeta; locale: Locale }) {
+export function CourseCard({ c, locale, level = 3 }: { c: CourseWithMeta; locale: Locale; level?: 2 | 3 }) {
   const t = getDict(locale);
+  const H = level === 2 ? "h2" : "h3";
   return (
     <article className="card group relative flex flex-col gap-5 p-7 transition-shadow hover:shadow-[0_24px_60px_rgba(15,36,64,.10)] sm:p-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -12,9 +13,9 @@ export function CourseCard({ c, locale }: { c: CourseWithMeta; locale: Locale })
         <span className="text-[13px] text-muted">{tr(c.level, locale)}</span>
       </div>
       <div>
-        <h3 className="font-serif text-[26px] leading-snug font-bold text-navy-900">
+        <H className="font-serif text-[26px] leading-snug font-bold text-navy-900">
           <Link href={`/${locale}/courses/${c.slug}`} className="text-inherit no-underline after:absolute after:inset-0 after:rounded-[18px]">{tr(c.title, locale)}</Link>
-        </h3>
+        </H>
         <p className="mt-2 text-muted">{tr(c.summary, locale)}</p>
       </div>
       <dl className="grid grid-cols-3 gap-2.5 text-[13.5px]">

@@ -38,7 +38,7 @@ export default async function Courses({ params, searchParams }: { params: Promis
           </nav>
         )}
         <div className="grid gap-6 [grid-template-columns:repeat(auto-fit,minmax(min(460px,100%),1fr))]">
-          {list.map((c) => <CourseCard key={c.id} c={c} locale={locale} />)}
+          {list.map((c) => <CourseCard key={c.id} c={c} locale={locale} level={2} />)}
         </div>
       </div>
     </>

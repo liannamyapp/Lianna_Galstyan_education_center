@@ -1,7 +1,8 @@
 import { getCourses, getFaqs } from "@/lib/data";
 import { getDict, tr, type Locale } from "@/lib/i18n";
 import { money } from "@/lib/format";
-import { ChatWidget, type QuickAnswer } from "./ChatWidget";
+import type { QuickAnswer } from "./ChatWidget";
+import { ChatLazy } from "./ChatLazy";
 
 const plain = (md: string) => md.replace(/\*\*|__|`|#+\s/g, "").replace(/\[([^\]]+)\]\([^)]+\)/g, "$1").trim();
 
@@ -22,5 +23,5 @@ export async function Chat({ locale }: { locale: Locale }) {
     const q = tr(f.question, locale), a = plain(tr(f.answer, locale));
     if (q && a) quick.push({ q, a: a.length > 700 ? a.slice(0, 700) + "…" : a });
   }
-  return <ChatWidget locale={locale} t={t} quick={quick} />;
+  return <ChatLazy locale={locale} t={t} quick={quick} />;
 }
