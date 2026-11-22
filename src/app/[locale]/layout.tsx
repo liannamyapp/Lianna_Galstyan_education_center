@@ -26,6 +26,8 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     formatDetection: { telephone: false },
     icons: { icon: [{ url: "/icon.svg", type: "image/svg+xml" }, { url: "/icon-192.png", sizes: "192x192", type: "image/png" }], apple: "/apple-touch-icon.png" },
     manifest: "/manifest.webmanifest",
+    // Google Search Console ownership check (the token is set in Vercel → Environment Variables)
+    ...(process.env.GOOGLE_SITE_VERIFICATION ? { verification: { google: process.env.GOOGLE_SITE_VERIFICATION } } : {}),
     openGraph: { siteName: name, images: [{ url: "/og.png", width: 1200, height: 630 }] },
   };
 }

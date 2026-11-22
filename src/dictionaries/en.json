@@ -626,5 +626,10 @@
     "newReply": "New reply",
     "closedText": "This conversation was closed by the academy. If you have a new question, start a new chat.",
     "newChat": "Start a new chat"
+  },
+  "seo": {
+    "homeTitle": "Programming & AI courses in Yerevan and online",
+    "coursesTitle": "Programming courses in Yerevan and online",
+    "coursesDescription": "Frontend, backend (Node.js) and AI courses in Yerevan and online — group or one-to-one, with a certificate. Prices, programmes and start dates."
   }
 }

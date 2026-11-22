@@ -10,7 +10,7 @@ export const revalidate = 600;
 export async function generateMetadata({ params }: { params: Promise<{ locale: Locale }> }): Promise<Metadata> {
   const { locale } = await params;
   const t = getDict(locale);
-  return pageMeta({ locale, path: "/courses", title: t.nav.courses, description: t.home.directionsText });
+  return pageMeta({ locale, path: "/courses", title: t.seo.coursesTitle, description: t.seo.coursesDescription });
 }
 
 export default async function Courses({ params, searchParams }: { params: Promise<{ locale: Locale }>; searchParams: Promise<{ d?: string }> }) {

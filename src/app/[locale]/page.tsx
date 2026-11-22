@@ -18,7 +18,9 @@ export const revalidate = 600;
 export async function generateMetadata({ params }: { params: Promise<{ locale: Locale }> }): Promise<Metadata> {
   const { locale } = await params;
   const st = await getSettings();
-  return { ...pageMeta({ locale, path: "/", title: `${tr(st.site.name, locale)} — ${tr(st.site.tagline, locale)}`, description: tr(st.site.description, locale) }), title: { absolute: `${tr(st.site.name, locale)} — ${tr(st.site.tagline, locale)}` } };
+  // the title carries what people search for ("programming courses Yerevan", "online lessons") plus the brand
+  const title = `${getDict(locale).seo.homeTitle} | ${tr(st.site.name, locale)}`;
+  return { ...pageMeta({ locale, path: "/", title, description: tr(st.site.description, locale) }), title: { absolute: title } };
 }
 
 export default async function Home({ params }: { params: Promise<{ locale: Locale }> }) {
@@ -33,7 +35,9 @@ export default async function Home({ params }: { params: Promise<{ locale: Local
   const orgLd = {
     "@context": "https://schema.org", "@type": "EducationalOrganization",
     name: tr(st.site.name, locale), description: tr(st.site.description, locale), url: `${siteUrl()}/${locale}`,
-    email: st.contacts.email, telephone: st.contacts.phone, address: { "@type": "PostalAddress", addressLocality: "Yerevan", addressCountry: "AM" },
+    email: st.contacts.email, telephone: st.contacts.phone, address: { "@type": "PostalAddress", streetAddress: tr(st.legal.address, "en").replace(/,?\s*Arabkir,?\s*Yerevan$/i, ""), addressLocality: "Yerevan", addressRegion: "Arabkir", addressCountry: "AM" },
+    logo: `${siteUrl()}/icon-512.png`, image: `${siteUrl()}/og.png`, areaServed: ["Armenia", "Online"],
+    sameAs: [st.contacts.instagram, st.contacts.facebook].filter(Boolean),
     ...(stats.n > 0 ? { aggregateRating: { "@type": "AggregateRating", ratingValue: stats.avg.toFixed(1), reviewCount: stats.n } } : {}),
   };
   const faqLd = faqs.length ? { "@context": "https://schema.org", "@type": "FAQPage", mainEntity: faqs.map((f) => ({ "@type": "Question", name: tr(f.question, locale), acceptedAnswer: { "@type": "Answer", text: tr(f.answer, locale) } })) } : null;
