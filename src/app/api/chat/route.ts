@@ -27,7 +27,7 @@ export async function GET(req: Request) {
   // the widget polls while open: that marks the replies as read and the visitor as present
   await db.update(s.chatThreads).set(open ? { visitorSeenAt: new Date(), visitorUnread: 0 } : { visitorSeenAt: new Date() }).where(eq(s.chatThreads.id, t.id));
   return json({
-    thread: { name: t.name, email: t.email, unread: open ? 0 : t.visitorUnread },
+    thread: { name: t.name, email: t.email, unread: open ? 0 : t.visitorUnread, closed: t.status === "closed" },
     messages: rows.map(publicMessage),
   });
 }
@@ -61,6 +61,9 @@ export async function POST(req: Request) {
     const me = session?.uid ? (await db.select({ name: s.users.name, email: s.users.email }).from(s.users).where(eq(s.users.id, session.uid)).limit(1))[0] : undefined;
     [t] = await db.insert(s.chatThreads).values({ token, locale, page: str("page", 300) || null, ipHash, userId: session?.uid ?? null, name: me?.name ?? null, email: me?.email ?? null }).returning();
     jar.set(CHAT_COOKIE, token, { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/", maxAge: 60 * 60 * 24 * 180 });
+  } else if (body && t.status === "closed") {
+    // the academy closed this conversation: the visitor starts a new one instead (DELETE, then POST)
+    return json({ ok: false, error: "closed" }, 409);
   } else if (body && (await tooManyMessages(t.id))) {
     return json({ ok: false, error: "rate" }, 429);
   }
@@ -80,4 +83,11 @@ export async function POST(req: Request) {
     }
   });
   return json({ ok: true, message: saved, thread: { name: thread.name, email: thread.email } });
+}
+
+/** DELETE /api/chat — forget the current (closed) conversation so the next message starts a new one. */
+export async function DELETE() {
+  const jar = await cookies();
+  jar.delete(CHAT_COOKIE);
+  return json({ ok: true });
 }

@@ -6,7 +6,7 @@ import type { Dict } from "@/lib/i18n";
 
 export type QuickAnswer = { q: string; a: string; link?: { href: string; label: string } };
 type Msg = { id: string; from: "visitor" | "admin" | "bot"; body: string; at: string; link?: QuickAnswer["link"] };
-type ThreadInfo = { name: string | null; email: string | null; unread?: number } | null;
+type ThreadInfo = { name: string | null; email: string | null; unread?: number; closed?: boolean } | null;
 
 const STARTED_KEY = "alta_chat_started";
 const ASKED_KEY = "alta_chat_contact_asked";
@@ -30,6 +30,7 @@ export function ChatWidget({ locale, t, quick }: { locale: string; t: Dict["chat
   const [askContact, setAskContact] = useState(false);
   const [contact, setContact] = useState({ name: "", email: "" });
   const [note, setNote] = useState("");
+  const carry = useRef<{ name: string; email: string } | null>(null); // contact details passed on to a new conversation
   const lastAt = useRef<string | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -115,6 +116,7 @@ export function ChatWidget({ locale, t, quick }: { locale: string; t: Dict["chat
   const post = async (payload: Record<string, string>) => {
     const r = await fetch("/api/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...payload, locale, page: window.location.pathname, website: hp.current?.value ?? "" }) });
     const d = await r.json().catch(() => ({}));
+    if (r.status === 409 && d.error === "closed") { await poll(true, true); throw new Error(t.closedText); }
     if (!r.ok) throw new Error(d.error === "rate" ? t.errRate : d.error === "email" ? t.errEmail : t.errSend);
     return d as { message?: Msg; thread?: ThreadInfo };
   };
@@ -125,7 +127,9 @@ export function ChatWidget({ locale, t, quick }: { locale: string; t: Dict["chat
     if (!body || sending) return;
     setSending(true); setError("");
     try {
-      const d = await post({ body });
+      const c = carry.current;
+      const d = await post(c ? { body, ...(c.name ? { name: c.name } : {}), ...(c.email ? { email: c.email } : {}) } : { body });
+      carry.current = null;
       if (d.message) merge([d.message]);
       if (d.thread) setThread(d.thread);
       setText("");
@@ -146,6 +150,14 @@ export function ChatWidget({ locale, t, quick }: { locale: string; t: Dict["chat
       setAskContact(false);
       setNote(contact.email ? t.saved : t.waiting);
     } catch (err) { setError((err as Error).message); }
+  };
+
+  const startNew = async () => {
+    setError("");
+    try { await fetch("/api/chat", { method: "DELETE" }); } catch { /* the next message will retry */ }
+    carry.current = thread?.name || thread?.email ? { name: thread?.name ?? "", email: thread?.email ?? "" } : null;
+    setThread(null); setMsgs([]); setLocal([]); setNote(""); setAskContact(false); lastAt.current = null;
+    setTimeout(() => inputRef.current?.focus(), 50);
   };
 
   const skipContact = () => { store.set(ASKED_KEY, "1"); setAskContact(false); setNote(t.waiting); };
@@ -188,7 +200,7 @@ export function ChatWidget({ locale, t, quick }: { locale: string; t: Dict["chat
                 </div>
               </div>
             ))}
-            {askContact && (
+            {askContact && !thread?.closed && (
               <form onSubmit={saveContact} className="space-y-2 rounded-2xl border border-[#ece5d6] bg-white p-3.5">
                 <p className="m-0 text-[14px] font-semibold text-navy-900">{t.contactTitle}</p>
                 <p className="m-0 text-[12.5px] text-[#5b6170]">{t.contactHint}</p>
@@ -210,6 +222,12 @@ export function ChatWidget({ locale, t, quick }: { locale: string; t: Dict["chat
             )}
           </div>
 
+          {thread?.closed ? (
+            <div className="flex-none border-t border-[#ece5d6] bg-white px-4 pt-3.5 pb-[max(0.9rem,env(safe-area-inset-bottom))] text-center">
+              <p className="m-0 mb-3 text-[13.5px] leading-snug text-[#5b6170]">{t.closedText}</p>
+              <button type="button" onClick={startNew} className="btn-navy min-h-11 w-full text-[14.5px]">{t.newChat}</button>
+            </div>
+          ) : (
           <form onSubmit={send} className="relative flex-none border-t border-[#ece5d6] bg-white px-3 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
             <input ref={hp} name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" className="absolute -left-[9999px] h-0 w-0 opacity-0" />
             {error && <p role="alert" className="m-0 mb-2 text-[12.5px] text-[#a33a2b]">{error}</p>}
@@ -223,6 +241,7 @@ export function ChatWidget({ locale, t, quick }: { locale: string; t: Dict["chat
             </div>
             <p className="m-0 mt-2 text-[11.5px] leading-snug text-[#6b7180]">{t.privacy}</p>
           </form>
+          )}
         </section>
       )}
 

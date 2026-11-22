@@ -560,6 +560,8 @@
     "errSend": "Could not send. Check your connection and try again.",
     "errEmail": "The e-mail address is not valid.",
     "privacy": "By writing you agree that we keep your messages in order to reply.",
-    "newReply": "New reply"
+    "newReply": "New reply",
+    "closedText": "This conversation was closed by the academy. If you have a new question, start a new chat.",
+    "newChat": "Start a new chat"
   }
 }
