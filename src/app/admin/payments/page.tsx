@@ -10,7 +10,8 @@ import { LiveRefresh } from "@/components/LiveRefresh";
 const payStatusHy: Record<string, string> = { PENDING: "Սպասում է հաստատման", PAID: "Հաստատված", FAILED: "Մերժված", REFUNDED: "Վերադարձված" };
 import { addManualPayment, setPaymentStatus } from "../actions";
 
-export default async function Payments() {
+export default async function Payments({ searchParams }: { searchParams: Promise<{ app?: string }> }) {
+  const { app: pick } = await searchParams;
   const list = await db.query.payments.findMany({ orderBy: [desc(s.payments.createdAt)], limit: 300, with: { user: true } });
   const apps = await db.query.applications.findMany({ where: inArray(s.applications.status, ["NEW", "INTERVIEW", "APPROVED", "PAID"]), with: { user: true, course: true } });
   const total = list.filter((p) => p.status === "PAID").reduce((n, p) => n + p.amount, 0);
@@ -20,7 +21,7 @@ export default async function Payments() {
       <PageHead title="Վճարումներ"><span className="chip bg-white font-semibold">Ընդամենը վճարված՝ {money(total)}</span></PageHead>
       <AdminCard title="Ավելացնել կանխիկ / բանկային փոխանցում">
         <ActionForm action={addManualPayment} resetOnSuccess className="grid gap-3 md:grid-cols-[2fr_1fr_2fr_auto] md:items-end">
-          <label className="label">Հայտ<select name="applicationId" required className="input">{apps.map((a) => <option key={a.id} value={a.id}>{a.user.name} · {a.course.code}</option>)}</select></label>
+          <label className="label">Հայտ<select name="applicationId" required defaultValue={pick} className="input">{apps.map((a) => <option key={a.id} value={a.id}>{a.user.name} · {a.course.code}</option>)}</select></label>
           <label className="label">Գումար (֏)<input name="amount" type="number" min={1} required className="input" /></label>
           <label className="label">Նկարագրություն<input name="description" placeholder="Օր.՝ 2-րդ ամիս, կանխիկ" className="input" /></label>
           <label className="flex items-start gap-2 text-[13.5px] md:col-span-4"><input type="checkbox" name="full" className="mt-0.5 size-4 accent-navy-800" /><span>Ամբողջ դասընթացի վճարում՝ զեղչված գնով (դրանից հետո ամսական վճար այլևս չի պահանջվի)։ Եթե առաջին վճարումը հավասար է ամբողջ դասընթացի գնին, սա նշվում է ինքնաշխատ։</span></label>

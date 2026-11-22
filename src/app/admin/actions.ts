@@ -181,6 +181,46 @@ export async function updateApplication(_: ActionResult, fd: FormData): Promise<
   } catch (e) { return fail(e); }
 }
 
+/**
+ * One-click next step from an application card: invite to the intake call, approve (optionally with a group),
+ * reject, or remind the learner of what is waiting for them. The learner is always notified.
+ */
+export async function quickApplication(_: ActionResult, fd: FormData): Promise<ActionResult> {
+  await requireAdmin();
+  try {
+    const id = str(fd, "id"), op = str(fd, "op");
+    const app = await db.query.applications.findFirst({ where: eq(s.applications.id, id), with: { user: true, course: true } });
+    if (!app) return { error: "Չի գտնվել" };
+    const loc = app.user.locale as Locale;
+    const t = getDict(loc);
+    const course = `${app.course.code} · ${tr(app.course.title, loc)}`;
+    const acc = { label: t.mail.openAccount, url: `${siteUrl()}/${loc}/account` };
+    const custom = str(fd, "message");
+    const extra = custom ? [t.mail.noteLabel, custom] : [];
+    if (op === "remind") {
+      const key = app.status === "APPROVED" ? (app.contractSignedAt ? "PAY" : "SIGN") : null;
+      if (!key) return { error: "Այս փուլում հիշեցում պետք չէ" };
+      await notifyStudent(app.user, tr({ hy: "Հիշեցում՝ հաջորդ քայլը", ru: "Напоминание: следующий шаг", en: "Reminder: your next step" }, loc), [course, t.account.next[key], ...extra], acc);
+      return ok("Հիշեցումն ուղարկված է");
+    }
+    const status = op === "interview" ? "INTERVIEW" : op === "approve" ? "APPROVED" : op === "reject" ? "REJECTED" : null;
+    if (!status) return { error: "Անհայտ գործողություն" };
+    if (status === "REJECTED" && !bool(fd, "confirm")) return { error: "Նշեք «Հաստատում եմ» վանդակը՝ մերժելու համար" };
+    const groupId = str(fd, "groupId") || null;
+    const g = groupId && groupId !== app.groupId ? await db.query.groups.findFirst({ where: eq(s.groups.id, groupId) }) : null;
+    await db.update(s.applications).set({ status, ...(g ? { groupId: g.id } : {}) }).where(eq(s.applications.id, app.id));
+    const [subject, body] = t.mail.statusMail[status];
+    const lines = [fmt(body, { course })];
+    if (g) lines.push(fmt(t.mail.groupBody, { course, group: g.name, date: date(g.startDate, loc), schedule: tr(g.schedule, loc) }));
+    await notifyStudent(app.user, subject, [...lines, ...extra], acc);
+    await syncLeadForUser(app.userId);
+    revalidatePath("/admin/applications");
+    revalidatePath("/admin");
+    return ok(`«${statusHyShort[status]}» · ունկնդիրը ծանուցված է`);
+  } catch (e) { return fail(e); }
+}
+const statusHyShort = { INTERVIEW: "Մուտքային զրույց", APPROVED: "Հաստատված", REJECTED: "Մերժված" } as const;
+
 /* ---------------- Payments ---------------- */
 export async function addManualPayment(_: ActionResult, fd: FormData): Promise<ActionResult> {
   await requireAdmin();

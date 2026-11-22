@@ -5,7 +5,7 @@ import "../globals.css";
 import { requireAdmin } from "@/lib/auth";
 import { Icon } from "@/components/Icon";
 import { logoutAction } from "../[locale]/actions";
-import { and, eq, gt, sql } from "drizzle-orm";
+import { and, eq, gt, inArray, sql } from "drizzle-orm";
 import { db, s } from "@/db";
 
 export const metadata: Metadata = { title: "Ադմին · ALTA Academy", robots: { index: false, follow: false } };
@@ -37,7 +37,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const me = await requireAdmin();
   const unreadChats = await db.select({ n: sql<number>`count(*)::int` }).from(s.chatThreads)
     .where(and(eq(s.chatThreads.status, "open"), gt(s.chatThreads.adminUnread, 0))).then((r) => r[0]?.n ?? 0).catch(() => 0);
-  const items = nav.map(([href, label, icon]) => [href, href === "/admin/chats" && unreadChats ? `${label} (${unreadChats})` : label, icon] as [string, string, string]);
+  const [{ n: freshApps } = { n: 0 }] = await db.select({ n: sql<number>`count(*)::int` }).from(s.applications).where(inArray(s.applications.status, ["NEW", "INTERVIEW"])).catch(() => []);
+  const items = nav.map(([href, label, icon]) => [href, href === "/admin/chats" && unreadChats ? `${label} (${unreadChats})` : href === "/admin/applications" && freshApps ? `${label} (${freshApps})` : label, icon] as [string, string, string]);
   return (
     <html lang="hy">
       <body className="bg-[#f3f1ec]">

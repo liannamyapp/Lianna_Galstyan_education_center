@@ -8,7 +8,8 @@ import { AdminCard, Field, PageHead, statusHy, th, td } from "@/components/admin
 import { issueCertificate, updateCertificate } from "../actions";
 import { CertStudentPicker, type PickerOption } from "@/components/admin/CertStudentPicker";
 
-export default async function Certificates() {
+export default async function Certificates({ searchParams }: { searchParams: Promise<{ app?: string }> }) {
+  const { app: pick } = await searchParams;
   const courses = await db.select().from(s.courses).orderBy(asc(s.courses.order));
   // every enrolled learner can be chosen (not rejected or cancelled); the label shows where they stand — the admin decides
   const students = await db.query.applications.findMany({ where: notInArray(s.applications.status, ["REJECTED", "CANCELLED"]), with: { user: true, course: true, group: true } });
@@ -18,7 +19,7 @@ export default async function Certificates() {
   const pickerOptions: PickerOption[] = students
     .sort((a, b) => a.user.name.localeCompare(b.user.name, "hy"))
     .map((a) => ({
-      userId: a.userId, courseId: a.courseId,
+      appId: a.id, userId: a.userId, courseId: a.courseId,
       ...(() => {
         // prefill: the group's (or individual) start; end = start + course length — the admin can correct both
         const st = a.group?.startDate ?? a.startDate;
@@ -48,7 +49,7 @@ export default async function Certificates() {
       <div className="h-6" />
       <AdminCard title="Տալ վկայական">
         <ActionForm action={issueCertificate} resetOnSuccess className="grid gap-4 md:grid-cols-3">
-          <Field label="Ունկնդիր"><CertStudentPicker options={pickerOptions} />{pickerOptions.length === 0 && <span className="mt-1 block text-[12.5px] font-normal text-muted">Ունկնդիրներ դեռ չկան։ Ունկնդիրը հայտնվում է այստեղ, երբ դասընթացի հայտ ունի (բացի մերժվածից և չեղարկվածից)։ Կարող եք նաև անունը գրել ձեռքով։</span>}</Field>
+          <Field label="Ունկնդիր"><CertStudentPicker options={pickerOptions} initial={pick} />{pickerOptions.length === 0 && <span className="mt-1 block text-[12.5px] font-normal text-muted">Ունկնդիրներ դեռ չկան։ Ունկնդիրը հայտնվում է այստեղ, երբ դասընթացի հայտ ունի (բացի մերժվածից և չեղարկվածից)։ Կարող եք նաև անունը գրել ձեռքով։</span>}</Field>
           <Field label="Կամ անուն, ազգանուն (ինչպես վկայականում)"><input name="holderName" className="input" /></Field>
           <Field label="Դասընթաց"><select name="courseId" required className="input">{courses.map((c) => <option key={c.id} value={c.id}>{c.code} · {tr(c.title, "hy")}</option>)}</select></Field>
           <div className="grid min-w-0 grid-cols-1 gap-3 min-[420px]:grid-cols-2 md:col-span-2 md:max-w-[460px]">
