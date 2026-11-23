@@ -27,12 +27,15 @@ const config: NextConfig = {
   // the site moved to altaacademy.am: old vercel.app links keep working via a permanent redirect
   // (API webhooks and the Search Console verification file stay on the old host)
   async redirects() {
+    // 301 (not 308) so Search Console's "Change of address" check accepts it
+    const has = [{ type: "host" as const, value: "lianna-galstyan-education.vercel.app" }];
     return [
+      { source: "/", has, destination: "https://altaacademy.am/", statusCode: 301 },
       {
-        source: "/:path((?!api/|google7c672a8654214504\\.html).*)",
-        has: [{ type: "host", value: "lianna-galstyan-education.vercel.app" }],
+        source: "/:path((?!api/|google7c672a8654214504\\.html).+)",
+        has,
         destination: "https://altaacademy.am/:path",
-        permanent: true,
+        statusCode: 301,
       },
     ];
   },
