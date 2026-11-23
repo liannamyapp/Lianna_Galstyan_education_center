@@ -24,6 +24,18 @@ const config: NextConfig = {
     "/[locale]/account/certificate/[id]/[doc]": ["./node_modules/@sparticuz/chromium/bin/**"],
   },
   serverExternalPackages: ["@sparticuz/chromium", "puppeteer-core"],
+  // the site moved to altaacademy.am: old vercel.app links keep working via a permanent redirect
+  // (API webhooks and the Search Console verification file stay on the old host)
+  async redirects() {
+    return [
+      {
+        source: "/:path((?!api/|google7c672a8654214504\\.html).*)",
+        has: [{ type: "host", value: "lianna-galstyan-education.vercel.app" }],
+        destination: "https://altaacademy.am/:path",
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },
