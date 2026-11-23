@@ -3,15 +3,6 @@ import { verifySession, SESSION_COOKIE } from "@/lib/session";
 
 const LOCALES = ["hy", "ru", "en"];
 
-function preferred(req: NextRequest) {
-  const c = req.cookies.get("lg_locale")?.value;
-  if (c && LOCALES.includes(c)) return c;
-  const al = req.headers.get("accept-language")?.toLowerCase() ?? "";
-  if (al.startsWith("ru")) return "ru";
-  if (al.startsWith("en")) return "en";
-  return "hy";
-}
-
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
@@ -29,8 +20,10 @@ export async function middleware(req: NextRequest) {
   const seg = pathname.split("/")[1];
   if (!LOCALES.includes(seg)) {
     const url = req.nextUrl.clone();
-    url.pathname = `/${preferred(req)}${pathname === "/" ? "" : pathname}`;
-    return NextResponse.redirect(url);
+    // Armenian is always the default: the home page and any link without a language open in Armenian,
+    // whatever the browser language or a previously chosen language
+    url.pathname = `/hy${pathname === "/" ? "" : pathname}`;
+    return NextResponse.redirect(url, 301);
   }
 
   if (/^\/(hy|ru|en)\/account/.test(pathname)) {
