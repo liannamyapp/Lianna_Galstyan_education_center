@@ -40,10 +40,16 @@ export default async function Home({ params }: { params: Promise<{ locale: Local
     sameAs: [st.contacts.instagram, st.contacts.facebook].filter(Boolean),
     ...(stats.n > 0 ? { aggregateRating: { "@type": "AggregateRating", ratingValue: stats.avg.toFixed(1), reviewCount: stats.n } } : {}),
   };
+  // tells Google the site name to show above results ("ALTA Academy", not the host)
+  const siteLd = {
+    "@context": "https://schema.org", "@type": "WebSite",
+    name: "ALTA Academy", alternateName: ["ALTA Academy Yerevan", "ԱԼՏԱ Ակադեմիա", "altaacademy.am"], url: `${siteUrl()}/`,
+  };
   const faqLd = faqs.length ? { "@context": "https://schema.org", "@type": "FAQPage", mainEntity: faqs.map((f) => ({ "@type": "Question", name: tr(f.question, locale), acceptedAnswer: { "@type": "Answer", text: tr(f.answer, locale) } })) } : null;
 
   return (
     <>
+      <JsonLd data={siteLd} />
       <JsonLd data={orgLd} />
       {faqLd && <JsonLd data={faqLd} />}
 
