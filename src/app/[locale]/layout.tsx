@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     description: tr(st.site.description, locale),
     applicationName: name,
     formatDetection: { telephone: false },
-    icons: { icon: [{ url: "/icon.svg", type: "image/svg+xml" }, { url: "/icon-192.png", sizes: "192x192", type: "image/png" }], apple: "/apple-touch-icon.png" },
+    icons: { icon: [{ url: "/favicon.ico?v=2", sizes: "48x48" }, { url: "/icon.svg?v=2", type: "image/svg+xml" }, { url: "/icon-192.png?v=2", sizes: "192x192", type: "image/png" }], apple: "/apple-touch-icon.png?v=2" },
     manifest: "/manifest.webmanifest",
     // Google Search Console ownership check (the token is set in Vercel → Environment Variables)
     ...(process.env.GOOGLE_SITE_VERIFICATION ? { verification: { google: process.env.GOOGLE_SITE_VERIFICATION } } : {}),
