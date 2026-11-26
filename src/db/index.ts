@@ -41,7 +41,7 @@ function make() {
     keepAlive: true,
   };
   const pool = new RetryPool(cfg);
-  pool.on("error", (e) => console.error("[db] idle client error:", e.message)); // never crash on a dropped idle socket
+  pool.on("error", (e) => console.warn("[db] idle client dropped (harmless, reconnects):", e.message)); // never crash on a dropped idle socket
   return { pool, db: drizzle(pool, { schema }) };
 }
 
